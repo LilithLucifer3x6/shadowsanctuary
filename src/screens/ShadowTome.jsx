@@ -16,6 +16,8 @@ export default function ShadowTome({ pose }) {
   const [moodsList, setMoodsList] = useState([]);
   const [selectedMoods, setSelectedMoods] = useState(new Set());
   const [entryText, setEntryText] = useState('');
+  const [showCustomMood, setShowCustomMood] = useState(false);
+  const [customMoodText, setCustomMoodText] = useState('');
   
   // THC Calc State
   const [thcStrength, setThcStrength] = useState(10);
@@ -94,6 +96,23 @@ export default function ShadowTome({ pose }) {
     if (next.has(id)) next.delete(id);
     else next.add(id);
     setSelectedMoods(next);
+  };
+
+  const handleAddCustomMood = () => {
+    const txt = customMoodText.trim();
+    if (txt) {
+      const id = txt.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      // If it doesn't already exist, add it to the list
+      if (!moodsList.find(m => m.id === id)) {
+        setMoodsList(prev => [...prev, { id, label: txt }]);
+      }
+      // Select it
+      const next = new Set(selectedMoods);
+      next.add(id);
+      setSelectedMoods(next);
+      setCustomMoodText('');
+      setShowCustomMood(false);
+    }
   };
 
   const handleSave = async () => {
@@ -322,15 +341,40 @@ export default function ShadowTome({ pose }) {
                 {moodsList.length === 0 ? (
                   <div style={{ opacity: 0.5 }}>Divining moods...</div>
                 ) : (
-                  moodsList.map(m => (
-                    <span 
-                      key={m.id} 
-                      className={`chip ${selectedMoods.has(m.id) ? 'on' : ''}`} 
-                      onClick={() => toggleMood(m.id)}
-                    >
-                      {m.label}
-                    </span>
-                  ))
+                  <>
+                    {moodsList.map(m => (
+                      <span 
+                        key={m.id} 
+                        className={`chip ${selectedMoods.has(m.id) ? 'on' : ''}`} 
+                        onClick={() => toggleMood(m.id)}
+                      >
+                        {m.label}
+                      </span>
+                    ))}
+                    {!showCustomMood ? (
+                      <span 
+                        className="chip" 
+                        style={{ borderStyle: 'dashed' }}
+                        onClick={() => setShowCustomMood(true)}
+                      >
+                        <Icon name="plus" /> Add Your Own
+                      </span>
+                    ) : (
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card2)', padding: '0.2rem', borderRadius: '20px', border: '1px solid var(--plum)' }}>
+                        <input 
+                          type="text" 
+                          autoFocus
+                          value={customMoodText} 
+                          onChange={e => setCustomMoodText(e.target.value)} 
+                          onKeyDown={e => e.key === 'Enter' && handleAddCustomMood()}
+                          onBlur={() => { if(!customMoodText.trim()) setShowCustomMood(false); }}
+                          placeholder="Name your temper..." 
+                          style={{ background: 'transparent', border: 'none', color: 'var(--plum)', outline: 'none', paddingLeft: '0.5rem', width: '120px' }} 
+                        />
+                        <button className="btn sm plum" style={{ padding: '0.2rem 0.6rem', borderRadius: '15px' }} onClick={handleAddCustomMood}>Add</button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>

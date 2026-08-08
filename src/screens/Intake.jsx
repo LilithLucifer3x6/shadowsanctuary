@@ -14,12 +14,17 @@ export default function Intake({ onComplete }) {
   const totalSteps = 7;
 
   // Fast Path State
+  const [skinTypesOptions, setSkinTypesOptions] = useState([]);
   const [concernsOptions, setConcernsOptions] = useState([]);
   const [conditionsOptions, setConditionsOptions] = useState([]);
   const [traditionsOptions, setTraditionsOptions] = useState([]);
+  const [texturesOptions, setTexturesOptions] = useState([]);
   
+  const [selectedSkinType, setSelectedSkinType] = useState('');
   const [selectedConcerns, setSelectedConcerns] = useState([]);
+  const [primaryConcern, setPrimaryConcern] = useState('');
   const [selectedConditions, setSelectedConditions] = useState([]);
+  const [selectedTextures, setSelectedTextures] = useState([]);
   const [selectedTraditions, setSelectedTraditions] = useState([]);
   
   const [rxList, setRxList] = useState([]);
@@ -50,8 +55,11 @@ export default function Intake({ onComplete }) {
         }
         if (data.intake_answers) {
           const ans = data.intake_answers;
+        if (ans.skinType) setSelectedSkinType(ans.skinType);
         if (ans.concerns) setSelectedConcerns(ans.concerns);
+        if (ans.primaryConcern) setPrimaryConcern(ans.primaryConcern);
         if (ans.conditions) setSelectedConditions(ans.conditions);
+        if (ans.textures) setSelectedTextures(ans.textures);
         if (ans.traditions) setSelectedTraditions(ans.traditions);
         if (ans.rxList) setRxList(ans.rxList);
         if (ans.oralList) setOralList(ans.oralList);
@@ -72,8 +80,10 @@ export default function Intake({ onComplete }) {
   }, []);
 
   useEffect(() => {
+    AI.generateSkinTypes().then(setSkinTypesOptions);
     AI.generateConcerns().then(setConcernsOptions);
     AI.generateConditions().then(setConditionsOptions);
+    AI.generateTextures().then(setTexturesOptions);
     AI.generateTraditions().then(setTraditionsOptions);
   }, []);
 
@@ -139,10 +149,15 @@ export default function Intake({ onComplete }) {
     const { data: existing } = await supabase.from('user_profile').select('id').maybeSingle();
     const profileData = {
       intake_completed: true,
+    const profileData = {
+      intake_completed: true,
       intake_answers: { 
-        concerns, 
-        conditions, 
-        traditions, 
+        skinType: selectedSkinType,
+        concerns: selectedConcerns, 
+        primaryConcern,
+        conditions: selectedConditions, 
+        textures: selectedTextures,
+        traditions: selectedTraditions, 
         noRx, 
         noOral, 
         noAlg, 
@@ -165,14 +180,17 @@ export default function Intake({ onComplete }) {
   };
 
   const canProceed = () => {
-    if (currentStep === 1) return selectedConcerns.length > 0;
-    if (currentStep === 2) return selectedConditions.length > 0;
-    if (currentStep === 3) return noRx || rxList.some(r => r.name.trim() !== '');
-    if (currentStep === 4) return noOral || oralList.some(o => o.trim() !== '');
-    if (currentStep === 5) return noAlg || algList.length > 0 || newAlg.trim() !== '';
-    if (currentStep === 6) return selectedTraditions.length > 0;
+    if (currentStep === 1) return selectedSkinType !== '';
+    if (currentStep === 2) return selectedConcerns.length > 0 && (selectedConcerns.includes('relaxation') || selectedConcerns.includes('na') || primaryConcern !== '');
+    if (currentStep === 3) return selectedConditions.length > 0;
+    if (currentStep === 4) return selectedTextures.length > 0;
+    if (currentStep === 5) return noRx || rxList.some(r => r.name.trim() !== '');
+    if (currentStep === 6) return noOral || oralList.some(o => o.trim() !== '');
+    if (currentStep === 7) return noAlg || algList.length > 0 || newAlg.trim() !== '';
+    if (currentStep === 8) return selectedTraditions.length > 0;
     return true;
   };
+  const totalSteps = 9;
 
   const toggleSelection = (setter, item) => {
     setter(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
@@ -314,44 +332,66 @@ export default function Intake({ onComplete }) {
         <div id="ins-steps" style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }}>
           {currentStep === 1 && (
             <div className="ins-step">
-              {renderTitle('What brings you to this place?')}
-              <div className="mt">Select all that weigh upon you.</div>
+              {renderTitle('The Foundation of the Vessel')}
+              <div className="mt">Which best describes your skin\'s natural state?</div>
               <div className="chips">
-                <div 
-                  className={`chip ${selectedConcerns.includes('relaxation') ? 'on' : ''}`}
-                  onClick={() => setSelectedConcerns(['relaxation'])}
-                >
-                  Relaxation, just for the sake of relaxation
-                </div>
-                <div 
-                  className={`chip ${selectedConcerns.includes('na') ? 'on' : ''}`}
-                  onClick={() => setSelectedConcerns(['na'])}
-                >
-                  Not Applicable
-                </div>
-                {concernsOptions.length > 0 ? concernsOptions.map(c => (
+                {skinTypesOptions.length > 0 ? skinTypesOptions.map(st => (
                   <div 
-                    key={c.id}
-                    className={`chip ${selectedConcerns.includes(c.id) ? 'on' : ''}`}
-                    onClick={() => {
-                      if (selectedConcerns.includes('relaxation') || selectedConcerns.includes('na')) {
-                        setSelectedConcerns([c.id]);
-                      } else {
-                        toggleSelection(setSelectedConcerns, c.id);
-                      }
-                    }}
+                    key={st.id}
+                    className={`chip ${selectedSkinType === st.id ? 'on' : ''}`}
+                    onClick={() => setSelectedSkinType(st.id)}
                   >
-                    {c.label}
+                    {st.label}
                   </div>
-                )) : <div style={{ opacity: 0.5 }}>Divining concerns...</div>}
+                )) : <div style={{ opacity: 0.5 }}>Divining skin types...</div>}
               </div>
             </div>
           )}
 
           {currentStep === 2 && (
             <div className="ins-step">
+              {renderTitle('What brings you to this place?')}
+              <div className="mt mb-4">Select all that weigh upon you. <strong>Double-tap one to mark it as your Primary focus.</strong></div>
+              <div className="chips">
+                <div 
+                  className={`chip ${selectedConcerns.includes('relaxation') ? 'on' : ''}`}
+                  onClick={() => { setSelectedConcerns(['relaxation']); setPrimaryConcern('relaxation'); }}
+                >
+                  Relaxation, just for the sake of relaxation
+                </div>
+                <div 
+                  className={`chip ${selectedConcerns.includes('na') ? 'on' : ''}`}
+                  onClick={() => { setSelectedConcerns(['na']); setPrimaryConcern('na'); }}
+                >
+                  Not Applicable
+                </div>
+                {concernsOptions.length > 0 ? concernsOptions.map(c => (
+                  <div 
+                    key={c.id}
+                    className={`chip ${selectedConcerns.includes(c.id) ? 'on' : ''} ${primaryConcern === c.id ? 'primary-concern-chip' : ''}`}
+                    style={{ border: primaryConcern === c.id ? '2px solid var(--gold)' : '' }}
+                    onClick={() => {
+                      if (selectedConcerns.includes('relaxation') || selectedConcerns.includes('na')) {
+                        setSelectedConcerns([c.id]);
+                        setPrimaryConcern('');
+                      } else {
+                        toggleSelection(setSelectedConcerns, c.id);
+                        if (primaryConcern === c.id) setPrimaryConcern('');
+                      }
+                    }}
+                    onDoubleClick={() => setPrimaryConcern(c.id)}
+                  >
+                    {c.label} {primaryConcern === c.id && <span style={{fontSize: '0.7rem', color: 'var(--gold)', marginLeft: '0.3rem'}}>(Primary)</span>}
+                  </div>
+                )) : <div style={{ opacity: 0.5 }}>Divining concerns...</div>}
+              </div>
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div className="ins-step">
               {renderTitle('What must the Lounge protect?')}
-              <div className="mt">Conditions that shape how you care for yourself.</div>
+              <div className="mt">Conditions that shape how you care for yourself. Be sure to include systemic, scalp, or full-body conditions.</div>
               <div className="chips" style={{ marginTop: '1rem' }}>
                 <div 
                   className={`chip ${selectedConditions.includes('na') ? 'on' : ''}`}
@@ -378,7 +418,37 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 3 && (
+          {currentStep === 4 && (
+            <div className="ins-step">
+              {renderTitle('Sensory Preferences')}
+              <div className="mt">What product formats and textures do you prefer to apply?</div>
+              <div className="chips" style={{ marginTop: '1rem' }}>
+                <div 
+                  className={`chip ${selectedTextures.includes('na') ? 'on' : ''}`}
+                  onClick={() => setSelectedTextures(['na'])}
+                >
+                  I have no preference
+                </div>
+                {texturesOptions.length > 0 ? texturesOptions.map(t => (
+                  <div 
+                    key={t.id} 
+                    className={`chip ${selectedTextures.includes(t.id) ? 'on' : ''}`}
+                    onClick={() => {
+                      if (selectedTextures.includes('na')) {
+                        setSelectedTextures([t.id]);
+                      } else {
+                        toggleSelection(setSelectedTextures, t.id);
+                      }
+                    }}
+                  >
+                    {t.label}
+                  </div>
+                )) : <div style={{ opacity: 0.5 }}>Divining textures...</div>}
+              </div>
+            </div>
+          )}
+
+          {currentStep === 5 && (
             <div className="ins-step">
               {renderTitle('Sacred Healing Directives (Topical Decrees)')}
               <div className="mt mb-4">Potent formulas prescribed by healers. These take priority in all routines.</div>
@@ -421,7 +491,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 6 && (
             <div className="ins-step">
               {renderTitle('Medical Directives (Oral)')}
               <div className="mt mb-4">Internal remedies that may cause systemic shifts (e.g. dryness, sensitivity).</div>
@@ -453,7 +523,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 5 && (
+          {currentStep === 7 && (
             <div className="ins-step">
               {renderTitle('The ingredients to never touch')}
               <div className="mt mb-4">Allergies and sensitivities.</div>
@@ -488,7 +558,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 6 && (
+          {currentStep === 8 && (
             <div className="ins-step">
               {renderTitle('Which traditions call to you?')}
               <div className="mt">Your preferred approaches to care.</div>
@@ -518,7 +588,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 7 && (
+          {currentStep === 9 && (
             <div className="ins-step" style={{ textAlign: 'center', margin: 'auto' }}>
               <h3 style={{ fontSize: '3rem', color: 'var(--plum)' }}>The First Inscription is consecrated</h3>
               <div className="mt" style={{ fontSize: '1.2rem', marginTop: '2rem' }}>Your chamber awaits.</div>

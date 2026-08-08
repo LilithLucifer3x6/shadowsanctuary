@@ -6,7 +6,7 @@ export async function generateConcerns() {
   try {
     const { data } = await invokeAnthropicProxy({
       max_tokens: 300,
-      messages: [{ role: 'user', content: 'Generate exactly 15 highly varied and recognizable skin, body, or wellness concerns (e.g., "Acne & Breakouts", "Barrier Damage & Flaking", "Hyperpigmentation"). Return ONLY a valid JSON array of strings.' }]
+      messages: [{ role: 'user', content: 'Generate exactly 15 highly varied and recognizable skin, body, or wellness concerns. IMPORTANT: Draw from global dermatological knowledge, not just Eurocentric sources. Explicitly include conditions presenting in melanated skin (e.g. Post-Inflammatory Hyperpigmentation, keloiding tendency). The first two items in your array MUST be hyperpigmentation or dark-spot related. Return ONLY a valid JSON array of strings.' }]
     });
     if (data?.content?.[0]?.text) {
       const text = data.content[0].text;
@@ -37,7 +37,7 @@ export async function generateConditions() {
   try {
     const { data } = await invokeAnthropicProxy({
       max_tokens: 300,
-      messages: [{ role: 'user', content: 'Generate exactly 15 highly varied underlying health or neurodivergent conditions that shape self-care (e.g., "ADHD (Executive Function)", "Rheumatoid Arthritis", "PCOS"). Return ONLY a valid JSON array of strings.' }]
+      messages: [{ role: 'user', content: 'Generate exactly 15 highly varied underlying health or neurodivergent conditions that shape self-care (e.g. ADHD, PCOS, Rheumatoid Arthritis, Keloids, Sickle Cell). Do not assume Eurocentric beauty or health standards. Return ONLY a valid JSON array of strings.' }]
     });
     if (data?.content?.[0]?.text) {
       const text = data.content[0].text;
@@ -98,7 +98,7 @@ export async function generateMoods() {
       messages: [
         {
           role: 'user',
-          content: 'Generate exactly 18 highly evocative, poetic, and nuanced moods for a gothic self-care shadow-work journal (e.g., "Drained of Essence", "Sweetly Melancholic", "Fierce & Emboldened"). Do not use standard numeric scales or boring words like "Happy" or "Sad". Return ONLY a valid JSON array of strings, nothing else.'
+          content: 'Generate exactly 18 highly evocative, poetic, and nuanced moods for a gothic self-care shadow-work journal (e.g., "Drained of Essence", "Fierce & Emboldened"). Do not use standard numeric scales, Eurocentric assumptions, or boring words. Return ONLY a valid JSON array of strings.'
         }
       ]
     });
@@ -121,6 +121,50 @@ export async function generateMoods() {
     { id: 'clouded', label: 'Clouded & Heavy' },
     { id: 'restless', label: 'Restless Spirit' },
     { id: 'serene', label: 'Serene as Moonlight' }
+  ];
+}
+
+export async function generateSkinTypes() {
+  try {
+    const { data } = await invokeAnthropicProxy({
+      max_tokens: 300,
+      messages: [{ role: 'user', content: 'Generate exactly 10 descriptive skin types. The first 5 MUST be the standard Baumann clinical axes: Oily, Dry, Combination, Sensitive, Normal. The remaining 5 should be nuanced clinical subtypes (e.g. Dehydration-Prone Combination, Extremely Oily & Acneic). Return ONLY a valid JSON array of strings.' }]
+    });
+    if (data?.content?.[0]?.text) {
+      const text = data.content[0].text;
+      const jsonStart = text.indexOf('[');
+      const jsonEnd = text.lastIndexOf(']') + 1;
+      const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
+      return parsed.map(label => ({ id: label.toLowerCase().replace(/[^a-z0-9]/g, '-'), label }));
+    }
+  } catch (err) { console.error("AI skin types failed", err); }
+  return [
+    { id: 'oily', label: 'Oily' },
+    { id: 'dry', label: 'Dry' },
+    { id: 'combo', label: 'Combination' },
+    { id: 'sensitive', label: 'Sensitive' },
+    { id: 'normal', label: 'Normal' }
+  ];
+}
+
+export async function generateTextures() {
+  try {
+    const { data } = await invokeAnthropicProxy({
+      max_tokens: 300,
+      messages: [{ role: 'user', content: 'Generate exactly 12 descriptive cosmetic product textures or format preferences (e.g. "Water-light gels", "Heavy occlusives", "Silicone-free serums", "Powder cleansers"). Return ONLY a valid JSON array of strings.' }]
+    });
+    if (data?.content?.[0]?.text) {
+      const text = data.content[0].text;
+      const jsonStart = text.indexOf('[');
+      const jsonEnd = text.lastIndexOf(']') + 1;
+      const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
+      return parsed.map(label => ({ id: label.toLowerCase().replace(/[^a-z0-9]/g, '-'), label }));
+    }
+  } catch (err) { console.error("AI textures failed", err); }
+  return [
+    { id: 'gels', label: 'Water-light gels' },
+    { id: 'creams', label: 'Heavy creams/occlusives' },
+    { id: 'oils', label: 'Rich botanical oils' }
   ];
 }
 
@@ -235,7 +279,8 @@ export async function converseReading(history, userProfile) {
 
     const promptText = `
 You are the Keeper of the Sanctuary, leading "The Reading", a monthly reflection on the user's wellness rituals.
-Goal: Have a short conversation to check if they are experiencing any new skin concerns (dryness, breakouts), lifestyle changes (more stress, less sleep), or if any products are causing irritation.
+Goal: Have a short conversation to check if they are experiencing any new skin concerns (especially hyperpigmentation or breakouts), lifestyle changes (more stress, less sleep), or if any products are causing irritation.
+You MUST also re-evaluate their explicit skin type (e.g. "Has your skin shifted from oily to dry this season?") and check if their current product textures are still serving them or causing congestion.
 Ask one question at a time. Be empathetic, poetic, and concise (1-2 sentences).
 ${mustConclude
   ? `This is your FINAL response, regardless of what has been discussed so far. You must end this response with exactly: "[READING_COMPLETE: <summary of changes or 'No changes'>]". Do not ask another question.`
