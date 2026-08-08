@@ -3,6 +3,20 @@ import { invokeAnthropicProxy } from './ai-engine.js';
 
 
 export async function generateConcerns() {
+  try {
+    const { data } = await invokeAnthropicProxy({
+      max_tokens: 300,
+      messages: [{ role: 'user', content: 'Generate exactly 15 highly varied and recognizable skin, body, or wellness concerns (e.g., "Acne & Breakouts", "Barrier Damage & Flaking", "Hyperpigmentation"). Return ONLY a valid JSON array of strings.' }]
+    });
+    if (data?.content?.[0]?.text) {
+      const text = data.content[0].text;
+      const jsonStart = text.indexOf('[');
+      const jsonEnd = text.lastIndexOf(']') + 1;
+      const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
+      return parsed.map(label => ({ id: label.toLowerCase().replace(/[^a-z0-9]/g, '-'), label }));
+    }
+  } catch (err) { console.error("AI concerns failed", err); }
+
   return [
     { id: 'acne', label: 'Acne & Breakouts' },
     { id: 'dryness', label: 'Barrier Damage & Flaking' },
@@ -20,6 +34,20 @@ export async function generateConcerns() {
 }
 
 export async function generateConditions() {
+  try {
+    const { data } = await invokeAnthropicProxy({
+      max_tokens: 300,
+      messages: [{ role: 'user', content: 'Generate exactly 15 highly varied underlying health or neurodivergent conditions that shape self-care (e.g., "ADHD (Executive Function)", "Rheumatoid Arthritis", "PCOS"). Return ONLY a valid JSON array of strings.' }]
+    });
+    if (data?.content?.[0]?.text) {
+      const text = data.content[0].text;
+      const jsonStart = text.indexOf('[');
+      const jsonEnd = text.lastIndexOf(']') + 1;
+      const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
+      return parsed.map(label => ({ id: label.toLowerCase().replace(/[^a-z0-9]/g, '-'), label }));
+    }
+  } catch (err) { console.error("AI conditions failed", err); }
+
   return [
     { id: 'adhd', label: 'ADHD (Executive Function)' },
     { id: 'autism', label: 'Autism Spectrum' },
@@ -37,6 +65,20 @@ export async function generateConditions() {
 }
 
 export async function generateTraditions() {
+  try {
+    const { data } = await invokeAnthropicProxy({
+      max_tokens: 300,
+      messages: [{ role: 'user', content: 'Generate exactly 15 highly varied cosmetic product philosophies or traditions (e.g., "Western Clinical", "K-Beauty", "Ayurvedic Principles"). Return ONLY a valid JSON array of strings.' }]
+    });
+    if (data?.content?.[0]?.text) {
+      const text = data.content[0].text;
+      const jsonStart = text.indexOf('[');
+      const jsonEnd = text.lastIndexOf(']') + 1;
+      const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
+      return parsed.map(label => ({ id: label.toLowerCase().replace(/[^a-z0-9]/g, '-'), label }));
+    }
+  } catch (err) { console.error("AI traditions failed", err); }
+
   return [
     { id: 'western', label: 'Western Clinical / Dermatological' },
     { id: 'kbeauty', label: 'K-Beauty / Korean Heritage' },
