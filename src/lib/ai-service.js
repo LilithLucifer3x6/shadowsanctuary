@@ -50,32 +50,35 @@ export async function generateTraditions() {
 }
 
 export async function generateMoods() {
+  try {
+    const { data, error } = await invokeAnthropicProxy({
+      max_tokens: 300,
+      messages: [
+        {
+          role: 'user',
+          content: 'Generate exactly 18 highly evocative, poetic, and nuanced moods for a gothic self-care shadow-work journal (e.g., "Drained of Essence", "Sweetly Melancholic", "Fierce & Emboldened"). Do not use standard numeric scales or boring words like "Happy" or "Sad". Return ONLY a valid JSON array of strings, nothing else.'
+        }
+      ]
+    });
+    
+    if (data?.content?.[0]?.text) {
+      const text = data.content[0].text;
+      const jsonStart = text.indexOf('[');
+      const jsonEnd = text.lastIndexOf(']') + 1;
+      const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
+      return parsed.map(label => ({ id: label.toLowerCase().replace(/[^a-z0-9]/g, '-'), label }));
+    }
+  } catch (err) {
+    console.error("Failed to generate AI moods, falling back", err);
+  }
+
+  // Fallback if AI fails
   return [
     { id: 'drained', label: 'Drained of Essence' },
     { id: 'vibrant', label: 'Vibrant & Luminous' },
     { id: 'clouded', label: 'Clouded & Heavy' },
     { id: 'restless', label: 'Restless Spirit' },
-    { id: 'serene', label: 'Serene as Moonlight' },
-    { id: 'melancholic', label: 'Sweetly Melancholic' },
-    { id: 'fierce', label: 'Fierce & Emboldened' },
-    { id: 'fragile', label: 'Delicate as Glass' },
-    { id: 'grounded', label: 'Rooted & Grounded' },
-    { id: 'whimsical', label: 'Lost in Whimsy' },
-    { id: 'shadowed', label: 'Embracing the Shadows' },
-    { id: 'renewed', label: 'Cleansed & Renewed' },
-    { id: 'withering', label: 'Wilted & Withering' },
-    { id: 'enchanted', label: 'Enchanted' },
-    { id: 'stagnant', label: 'Still & Stagnant' },
-    { id: 'scattered', label: 'Scattered to the Winds' },
-    { id: 'radiant', label: 'Radiant as Dawn' },
-    { id: 'hollow', label: 'Hollow & Echoing' },
-    { id: 'tempestuous', label: 'Tempestuous & Wild' },
-    { id: 'nurtured', label: 'Softly Nurtured' },
-    { id: 'feral', label: 'Untamed & Feral' },
-    { id: 'submerged', label: 'Submerged in Thought' },
-    { id: 'ethereal', label: 'Floating & Ethereal' },
-    { id: 'anchored', label: 'Heavy & Anchored' },
-    { id: 'bewitched', label: 'Quietly Bewitched' }
+    { id: 'serene', label: 'Serene as Moonlight' }
   ];
 }
 
