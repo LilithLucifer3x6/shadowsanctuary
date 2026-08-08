@@ -291,6 +291,7 @@ Both intake and check-in are AI-led conversations rather than forms. The user sp
 - Intake copy never explains the system to itself. Cadence, re-prompting, and internal mechanics are not narrated to the user.
 - Nothing is pre-populated into inventory at intake except prescriptions the user confirms. Products discussed during design are not seeded.
 - Option pools are broad by default, not minimal. Every question presents a wide, recognisable set — dozens of conditions, concerns, and traditions — because the user cannot name an affliction they have not heard of. Recognition, not recall.
+- **5-Domain Intake Requirement:** Intake must evaluate all five domains (Crown, Gaze, Grin, Visage, Vessel) with identical evaluation depth. It cannot simply ask for "general concerns." The AI or fast-path flow must specifically gather concerns for the scalp/hair, under-eyes/lashes, gums/teeth, facial skin, and body skin using domain-specific, AI-generated, open-ended pools. This follows the Guided Conversation Guardrails (Rule 9), ensuring meaningful follow-up for each domain before considering the intake section complete.
 - An add-your-own control is a supplement to a rich pool, never a substitute for one. A short list with an other button is a failure of the requirement.
 - AI widens each pool at presentation time, drawing adjacent and related conditions the user has not named, and refines what it offers as it learns what is relevant.
 
