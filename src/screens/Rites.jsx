@@ -371,7 +371,7 @@ export default function Rites({ pose }) {
                 onClick={handleCompleteAllAm}
                 disabled={amSaving || amSaved || amItems.every(i => checkedIds.has(i.id) || (i.id.startsWith('iso-') && checkedIds.has('iso-missed')))}
               >
-                {amSaving ? 'Sealing...' : (amSaved || amItems.every(i => checkedIds.has(i.id) || (i.id.startsWith('iso-') && checkedIds.has('iso-missed'))) ? 'The Morning Altar is Sealed' : 'Seal the Morning Altar')}
+                {amSaving ? 'Consecrating...' : (amSaved || amItems.every(i => checkedIds.has(i.id) || (i.id.startsWith('iso-') && checkedIds.has('iso-missed'))) ? 'The Morning Altar is Consecrated' : 'Consecrate the Morning Altar')}
               </button>
             </div>
           )}
@@ -391,7 +391,7 @@ export default function Rites({ pose }) {
               onClick={handleCompleteAllLongHours}
               disabled={scheduleSaving || scheduleSaved || ['The Awakening', 'The Morning Respite', 'The Midday Sustenance', 'The Afternoon Respite', 'The Descent'].every(i => scheduleChecked.has(i))}
             >
-              {scheduleSaving ? 'Sealing...' : (scheduleSaved || ['The Awakening', 'The Morning Respite', 'The Midday Sustenance', 'The Afternoon Respite', 'The Descent'].every(i => scheduleChecked.has(i)) ? 'The Long Hours are Sealed' : 'Seal the Long Hours')}
+              {scheduleSaving ? 'Consecrating...' : (scheduleSaved || ['The Awakening', 'The Morning Respite', 'The Midday Sustenance', 'The Afternoon Respite', 'The Descent'].every(i => scheduleChecked.has(i)) ? 'The Long Hours are Consecrated' : 'Consecrate the Long Hours')}
             </button>
           </div>
           <div className="mt mb-4" style={{ textAlign: 'center' }}>The Order of the Day</div>
@@ -415,7 +415,7 @@ export default function Rites({ pose }) {
                 onClick={handleCompleteAllPm}
                 disabled={pmSaving || pmSaved || pmItems.every(i => checkedIds.has(i.id))}
               >
-                {pmSaved || pmItems.every(i => checkedIds.has(i.id)) ? 'The Altar is Sealed' : 'Seal the Evening Altar'}
+                {pmSaved || pmItems.every(i => checkedIds.has(i.id)) ? 'The Altar is Consecrated' : 'Consecrate the Evening Altar'}
               </button>
             </div>
           )}

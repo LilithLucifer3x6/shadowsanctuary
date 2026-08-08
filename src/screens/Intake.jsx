@@ -520,7 +520,7 @@ export default function Intake({ onComplete }) {
 
           {currentStep === 7 && (
             <div className="ins-step" style={{ textAlign: 'center', margin: 'auto' }}>
-              <h3 style={{ fontSize: '3rem', color: 'var(--plum)' }}>The First Inscription is sealed</h3>
+              <h3 style={{ fontSize: '3rem', color: 'var(--plum)' }}>The First Inscription is consecrated</h3>
               <div className="mt" style={{ fontSize: '1.2rem', marginTop: '2rem' }}>Your chamber awaits.</div>
             </div>
           )}

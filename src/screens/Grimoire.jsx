@@ -4,7 +4,7 @@ import { G } from '../lib/icons.jsx';
 import Icon from '../components/Icon.jsx';
 import { fetchTodayEvents, fetchMonthEvents } from '../lib/gcal.js';
 import SpeakerButton from '../components/SpeakerButton.jsx';
-import { syncAppointments } from '../lib/calendar.js';
+
 
 import VoiceInput from '../components/VoiceInput.jsx';
 
@@ -104,11 +104,7 @@ export default function Grimoire({ pose }) {
     ));
     setMarked(prev => ({ ...prev, [type]: true }));
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.provider_token) {
-        syncAppointments().then(setAppointments);
-      }
-    });
+
   };
 
   const handleOverride = (type) => {
@@ -415,7 +411,7 @@ export default function Grimoire({ pose }) {
                   onClick={() => markDone('retie')}
                   style={{ opacity: marked['retie'] ? 0.5 : 1 }}
                 >
-                  {marked['retie'] ? 'Sealed' : 'Seal'}
+                  {marked['retie'] ? 'Consecrated' : 'Consecrate'}
                 </button>
                 <button className="spk btn-override" title="Override Calendar Fate" onClick={() => handleOverride('retie')}>
                   <i className="ph-duotone ph-dots-three-vertical"></i>
@@ -438,7 +434,7 @@ export default function Grimoire({ pose }) {
                   onClick={() => markDone('nails')}
                   style={{ opacity: marked['nails'] ? 0.5 : 1 }}
                 >
-                  {marked['nails'] ? 'Sealed' : 'Seal'}
+                  {marked['nails'] ? 'Consecrated' : 'Consecrate'}
                 </button>
                 <button className="spk btn-override" title="Override Calendar Fate" onClick={() => handleOverride('nails')}>
                   <i className="ph-duotone ph-dots-three-vertical"></i>
@@ -607,7 +603,7 @@ export default function Grimoire({ pose }) {
                 <div style={{ color: 'var(--plum)', fontSize: '1.1rem', marginBottom: '1rem' }}>
                   The Reading is complete. Changes noted: <br/><strong>{readingState.completeSummary}</strong>
                 </div>
-                <button className="btn plum" onClick={finishReading} style={{ width: '100%' }}>Seal The Reading</button>
+                <button className="btn plum" onClick={finishReading} style={{ width: '100%' }}>Consecrate The Reading</button>
               </div>
             )}
 
