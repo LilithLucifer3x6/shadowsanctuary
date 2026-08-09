@@ -5,6 +5,14 @@ import Icon from '../components/Icon.jsx';
 import SpeakerButton from '../components/SpeakerButton.jsx';
 import { buildBaseRoutines, fetchHydratedItems, filterLesserRite } from '../lib/routine-engine.js';
 
+const isUUID = (str) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+const buildPayload = (id, rType) => ({
+  completed_at: new Date().toISOString(),
+  routine_type: rType,
+  step_name: id,
+  ...(isUUID(id) ? { item_id: id } : {})
+});
+
 const ALTARS = [
   { id: 'crown', name: 'Crown', icon: G.crown },
   { id: 'gaze', name: 'Gaze', icon: G.gaze },
@@ -21,6 +29,7 @@ export default function Altars({ pose }) {
   const [opacity, setOpacity] = useState(1);
   const [items, setItems] = useState([]);
   const [checkedIds, setCheckedIds] = useState(new Set());
+  const [checkedRoutineTypes, setCheckedRoutineTypes] = useState({});
   const [lesserRites, setLesserRites] = useState({});
   
   useEffect(() => {
@@ -44,25 +53,24 @@ export default function Altars({ pose }) {
     if (next.has(id)) {
       next.delete(id);
       const today = new Date().toISOString().split('T')[0];
+      const rType = checkedRoutineTypes[id] || (new Date().getHours() < 17 ? 'morning' : 'evening');
       supabase.from('routine_history')
-        .select('*')
-        .contains('items_used', [id])
+        .delete()
+        .eq('step_name', id)
+        .eq('routine_type', rType)
         .gte('completed_at', today)
-        .then(({ data }) => {
-          if (data && data.length > 0) {
-            data.forEach(row => {
-              const updated = row.items_used.filter(x => x !== id);
-              if (updated.length === 0) {
-                supabase.from('routine_history').delete().eq('id', row.id).then();
-              } else {
-                supabase.from('routine_history').update({ items_used: updated }).eq('id', row.id).then();
-              }
-            });
-          }
-        });
+        .then();
+        
+      setCheckedRoutineTypes(prev => {
+        const p = { ...prev };
+        delete p[id];
+        return p;
+      });
     } else {
       next.add(id);
-      supabase.from('routine_history').insert({ completed_at: new Date().toISOString(), items_used: [id] }).then();
+      const rType = new Date().getHours() < 17 ? 'morning' : 'evening';
+      supabase.from('routine_history').insert(buildPayload(id, rType)).then();
+      setCheckedRoutineTypes(prev => ({ ...prev, [id]: rType }));
       
       // The Veil: Trigger Mandatory Removal Mechanism
       const checkedItem = items.find(i => i.id === id);
@@ -143,10 +151,16 @@ export default function Altars({ pose }) {
               onClick={() => {
                 const toSave = itemsInRhythm.filter(i => !checkedIds.has(i.id)).map(i => i.id);
                 if (toSave.length > 0) {
-                  supabase.from('routine_history').insert({ completed_at: new Date().toISOString(), items_used: toSave }).then();
+                  const rType = new Date().getHours() < 17 ? 'morning' : 'evening';
+                  supabase.from('routine_history').insert(toSave.map(id => buildPayload(id, rType))).then();
                   const nextChecked = new Set(checkedIds);
-                  toSave.forEach(id => nextChecked.add(id));
+                  const nextTypes = { ...checkedRoutineTypes };
+                  toSave.forEach(id => {
+                    nextChecked.add(id);
+                    nextTypes[id] = rType;
+                  });
                   setCheckedIds(nextChecked);
+                  setCheckedRoutineTypes(nextTypes);
                   
                   // The Veil: Trigger Mandatory Removal Mechanism
                   let veilTriggered = false;

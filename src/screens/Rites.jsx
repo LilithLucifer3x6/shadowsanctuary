@@ -6,6 +6,14 @@ import SpeakerButton from '../components/SpeakerButton.jsx';
 import { buildRoutines, checkConflicts, filterLesserRite } from '../lib/routine-engine.js';
 import { getReadiness, getHeavySweat, getSleepDuration } from '../lib/health-connect.js';
 
+const isUUID = (str) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+const buildPayload = (id, rType) => ({
+  completed_at: new Date().toISOString(),
+  routine_type: rType,
+  step_name: id,
+  ...(isUUID(id) ? { item_id: id } : {})
+});
+
 export default function Rites({ pose }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -97,10 +105,7 @@ export default function Rites({ pose }) {
     setAmSaving(true);
     const amChecked = amItems.filter(i => checkedIds.has(i.id)).map(i => i.id);
     if (amChecked.length > 0) {
-      await supabase.from('routine_history').insert({
-        completed_at: new Date().toISOString(),
-        items_used: amChecked
-      });
+      await supabase.from('routine_history').insert(amChecked.map(id => buildPayload(id, 'morning')));
     }
     setAmSaved(true);
     setAmSaving(false);
@@ -110,10 +115,7 @@ export default function Rites({ pose }) {
     setPmSaving(true);
     const pmChecked = pmItems.filter(i => checkedIds.has(i.id)).map(i => i.id);
     if (pmChecked.length > 0) {
-      await supabase.from('routine_history').insert({
-        completed_at: new Date().toISOString(),
-        items_used: pmChecked
-      });
+      await supabase.from('routine_history').insert(pmChecked.map(id => buildPayload(id, 'evening')));
     }
     setPmSaved(true);
     setPmSaving(false);
@@ -165,35 +167,30 @@ export default function Rites({ pose }) {
     
     // Also record in routine_history so the day's record shows it was handled (not silently absent)
     const historyId = taken ? id : 'iso-missed';
-    await supabase.from('routine_history').insert({ completed_at: new Date().toISOString(), items_used: [historyId] });
+    await supabase.from('routine_history').insert(buildPayload(historyId, 'morning'));
   };
 
   const handleCheck = async (id) => {
     const newChecked = new Set(checkedIds);
     const isNowChecked = !newChecked.has(id);
     
+    const rType = amItems.some(i => i.id === id) ? 'morning' : 'evening';
+    
     if (isNowChecked) {
       newChecked.add(id);
       if (!id.startsWith('iso-')) {
-        supabase.from('routine_history').insert({ completed_at: new Date().toISOString(), items_used: [id] }).then();
+        supabase.from('routine_history').insert(buildPayload(id, rType)).then();
       }
     } else {
       newChecked.delete(id);
       if (!id.startsWith('iso-')) {
         const today = new Date().toISOString().split('T')[0];
-        supabase.from('routine_history').select('*').contains('items_used', [id]).gte('completed_at', today)
-          .then(({ data }) => {
-            if (data && data.length > 0) {
-              data.forEach(row => {
-                const updated = row.items_used.filter(x => x !== id);
-                if (updated.length === 0) {
-                  supabase.from('routine_history').delete().eq('id', row.id).then();
-                } else {
-                  supabase.from('routine_history').update({ items_used: updated }).eq('id', row.id).then();
-                }
-              });
-            }
-          });
+        supabase.from('routine_history')
+          .delete()
+          .eq('step_name', id)
+          .eq('routine_type', rType)
+          .gte('completed_at', today)
+          .then();
       }
     }
     setCheckedIds(newChecked);
@@ -204,10 +201,7 @@ export default function Rites({ pose }) {
     // Don't mark Iso as taken if they already marked it as missed
     const toSave = amItems.filter(i => !checkedIds.has(i.id) && !(i.id.startsWith('iso-') && checkedIds.has('iso-missed'))).map(i => i.id);
     if (toSave.length > 0) {
-      await supabase.from('routine_history').insert({
-        completed_at: new Date().toISOString(),
-        items_used: toSave
-      });
+      await supabase.from('routine_history').insert(toSave.map(id => buildPayload(id, 'morning')));
       const newChecked = new Set(checkedIds);
       toSave.forEach(id => newChecked.add(id));
       setCheckedIds(newChecked);
@@ -220,10 +214,7 @@ export default function Rites({ pose }) {
     setPmSaving(true);
     const toSave = pmItems.filter(i => !checkedIds.has(i.id) && !i.isInjected).map(i => i.id);
     if (toSave.length > 0) {
-      await supabase.from('routine_history').insert({
-        completed_at: new Date().toISOString(),
-        items_used: toSave
-      });
+      await supabase.from('routine_history').insert(toSave.map(id => buildPayload(id, 'evening')));
       const newChecked = new Set(checkedIds);
       toSave.forEach(id => newChecked.add(id));
       setCheckedIds(newChecked);
