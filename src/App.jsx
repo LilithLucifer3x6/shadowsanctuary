@@ -583,8 +583,6 @@ export default function App() {
                     )}
                   </div>
                 </div>
-              </div>
-
                 <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem', color: 'var(--crimson)', textAlign: 'center' }}>Danger Zone</h3>
 
                 <div>

@@ -1,0 +1,40 @@
+name: Daily Supabase Backup
+
+on:
+  schedule:
+    # Runs at 03:00 UTC every day
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Allows manual trigger from the Actions tab
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Generate timestamp
+        id: timestamp
+        run: echo "date=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_OUTPUT
+
+      - name: Run pg_dump
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          if [ -z "$SUPABASE_DB_URL" ]; then
+            echo "Error: SUPABASE_DB_URL secret is not set."
+            exit 1
+          fi
+          
+          # Use pg_dump to dump the entire database schema and data
+          # --clean ensures tables are dropped before creation if restoring
+          # --if-exists prevents errors on dropping non-existent tables
+          # --no-owner prevents role errors when restoring
+          pg_dump "$SUPABASE_DB_URL" --clean --if-exists --no-owner > backup_${{ steps.timestamp.outputs.date }}.sql
+          
+          echo "Dump completed successfully."
+
+      - name: Upload Backup Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: supabase-backup-${{ steps.timestamp.outputs.date }}
+          path: backup_${{ steps.timestamp.outputs.date }}.sql
+          retention-days: 90 # Auto-deletes after 90 days to prevent limitless storage consumption
