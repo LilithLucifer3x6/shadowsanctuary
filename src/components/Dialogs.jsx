@@ -11,8 +11,16 @@ export function DialogProvider({ children }) {
 
   const showDialog = useCallback((type, title, message) => {
     return new Promise((resolve) => {
-      const id = Date.now().toString() + Math.random().toString();
-      setDialogs(prev => [...prev, { id, type, title, message, resolve }]);
+      setDialogs(prev => {
+        // Skip if an identical dialog is already pending — prevents stacking
+        // from rapid clicks before the (formerly invisible) dialog registered.
+        if (prev.some(d => d.type === type && d.title === title && d.message === message)) {
+          resolve(undefined);
+          return prev;
+        }
+        const id = Date.now().toString() + Math.random().toString();
+        return [...prev, { id, type, title, message, resolve }];
+      });
     });
   }, []);
 
