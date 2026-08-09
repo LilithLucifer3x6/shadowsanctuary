@@ -984,6 +984,7 @@ export default function Rootwork({ pose }) {
                     <option value="Gaze">Gaze (Eyes)</option>
                     <option value="Grin">Grin (Mouth & Teeth)</option>
                     <option value="Vessel">Vessel (Body)</option>
+                    <option value="Veil">Veil (Makeup & Color Cosmetics)</option>
                   </select>
                 </div>
 

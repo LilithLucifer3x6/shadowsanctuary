@@ -64,7 +64,7 @@ const HAIR_COLORS = [
   { id: 'dark_ombre_red', label: 'Dark Red Ombré',     hex: '#3a0a00',  type: 'unnatural' },
 ];
 
-// ── ROBE COLORS (no pink, no blue, gold permitted sparingly, no yellow) ─────────────────────
+// ── ROBE COLORS (absolute ban: robes may never be predominantly green, blue, or pink; gold permitted sparingly, no yellow) ─────────────────────
 const ROBE_COLORS = [
   // Blacks & Grays
   { id: 'obsidian',       label: 'Obsidian',           hex: '#0d0d0d' },

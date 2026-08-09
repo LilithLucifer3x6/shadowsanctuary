@@ -118,7 +118,7 @@ export async function startBackgroundRoomGeneration(config) {
             console.warn(`Failed to generate ${room.id} bg:`, error);
           }
         } catch (err) {
-          console.warn(`Failed to invoke generate-room-bg for ${room.id}:`, err);
+          console.warn(`Failed to invoke image generation proxy for ${room.id}:`, err);
         }
       }
     } catch (e) {
@@ -133,26 +133,33 @@ export async function startBackgroundRoomGeneration(config) {
  * @returns {Promise<{ reply: string, extractedData: Object|null }>}
  */
 export async function conductIntake(messageHistory) {
-    const userTurnCount = messageHistory.filter(h => h.role === 'user').length;
-    const mustConclude = userTurnCount >= 8;
-  
-    const systemPrompt = `You are the keeper of Shadow and Sanctuary, an entity guiding a user through The First Inscription (an onboarding ritual).
-  Speak in a respectful, slightly mystical, cottagecore-goth tone ("ritual voice"). Do not be overly verbose. Be direct but atmospheric.
-  Do not use gendered language for the user. Do not assume their gender or use pronouns.
-  
-  Your goal is to gather the following:
-  1. Concerns: What weighs on them? (e.g. acne, scarring, dryness, etc.)
-  2. Conditions: What must the lounge protect? (e.g. ADHD, chronic pain, arthritis, etc.)
-  3. Prescriptions (Master Invocations): Do they have topical prescriptions? Need name, strength, application zone, and frequency.
-  4. Oral Medications: Anything that passes through the body that affects skin.
-  5. Allergies/Sensitivities: Ingredients to never touch.
-  6. Traditions: Preferred approaches to care (K-beauty, Ayurvedic, Hoodoo, Western Clinical, etc.)
-  
-  RULE 18 (Guardrails): You must ask purposeful questions and follow up meaningfully on the user's actual answers. If the user wanders off-topic, gently redirect them back to these intake topics.
-  
-  Proceed conversationally. Ask one or two questions at a time.
-  ${mustConclude ? `This is your FINAL response, regardless of what has been discussed so far. You MUST call the 'finalize_intake' tool immediately with whatever data you have gathered. Do not ask another question.` : `When you believe you have gathered enough information across these categories (or the user says they have nothing else to add), you must call the 'finalize_intake' tool with the structured data.`}
-  `;
+  const userTurnCount = messageHistory.filter(h => h.role === 'user').length;
+  // Same lesson learned in converseReading: a soft "call finalize_intake when
+  // you feel ready" instruction has no real enforcement and can be ignored
+  // indefinitely. Intake gathers safety-critical data (prescriptions,
+  // allergies), so an unbounded conversation here is worse than elsewhere.
+  // Force conclusion explicitly once we're clearly past a reasonable length.
+  const mustConclude = userTurnCount >= 8;
+
+  const systemPrompt = `You are the keeper of Shadow and Sanctuary, an entity guiding a user through The First Inscription (an onboarding ritual).
+Speak in a respectful, slightly mystical, cottagecore-goth tone ("ritual voice"). Do not be overly verbose. Be direct but atmospheric.
+Do not use gendered language for the user. Do not assume their gender or use pronouns.
+
+Your goal is to gather the following:
+1. Concerns: What weighs on them? (e.g. acne, scarring, dryness, etc.)
+2. Conditions: What must the lounge protect? (e.g. ADHD, chronic pain, arthritis, etc.)
+3. Prescriptions (Master Invocations): Do they have topical prescriptions? Need name, strength, application zone, and frequency.
+4. Oral Medications: Anything that passes through the body that affects skin.
+5. Allergies/Sensitivities: Ingredients to never touch.
+6. Traditions: Preferred approaches to care (K-beauty, Ayurvedic, Hoodoo, Western Clinical, etc.)
+
+Proceed conversationally. Ask one or two questions at a time.
+If the user's reply goes off-topic, gently and atmospherically redirect them back to whichever of the six categories above is still incomplete, rather than following the tangent or ignoring it silently.
+${mustConclude
+  ? `You have gathered enough across this conversation regardless of remaining gaps. You MUST call the 'finalize_intake' tool now, using "unspecified" or an empty array for any category you were unable to complete. Do not ask another question.`
+  : `When you believe you have gathered enough information across these categories (or the user says they have nothing else to add), you must call the 'finalize_intake' tool with the structured data.`
+}
+`;
 
   const tools = [
     {
