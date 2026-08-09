@@ -91,14 +91,16 @@ export default function Scrying({ pose }) {
           item_id: reactionForm.productId,
           zone: reactionForm.zone,
           severity: String(reactionForm.severity),
-          symptoms: Array.from(reactionForm.reactions)
+          symptoms: Array.from(reactionForm.reactions),
+          reaction_type: 'adverse_reaction'
         }).eq('id', editId).select().maybeSingle();
       } else {
         result = await supabase.from('somatic_reactions').insert({
           item_id: reactionForm.productId,
           zone: reactionForm.zone,
           severity: String(reactionForm.severity),
-          symptoms: Array.from(reactionForm.reactions)
+          symptoms: Array.from(reactionForm.reactions),
+          reaction_type: 'adverse_reaction'
         }).select().maybeSingle();
       }
       const { error, data } = result;
