@@ -309,6 +309,52 @@ export async function buildRoutines(items, userProfile = {}, wearables = {}) {
     });
   }
   
+  // The Veil: Mandatory Removal Mechanism
+  if (typeof window !== 'undefined' && window.localStorage && window.localStorage.getItem('makeup_worn_today') === 'true') {
+    let doubleCleanseItem = allItems.find(i => 
+      (i.category || '').toLowerCase().includes('cleanser') && 
+      ((i.texture || '').toLowerCase() === 'oil' || (i.texture || '').toLowerCase() === 'balm')
+    );
+
+    let itemToInject = null;
+    if (doubleCleanseItem) {
+      itemToInject = {
+        ...doubleCleanseItem,
+        behavior_flags: {
+          ...(doubleCleanseItem.behavior_flags || {}),
+          layering_weight: 0.5
+        },
+        isInjected: true
+      };
+    } else {
+      itemToInject = {
+        id: 'virtual-double-cleanse',
+        name: 'The First Cleanse - Oil/Balm',
+        category: 'cleanser',
+        domain: 'visage',
+        behavior_flags: { layering_weight: 0.5 },
+        desc: 'Remove The Veil',
+        isInjected: true
+      };
+    }
+
+    if (!pmItems.some(p => p.id === itemToInject.id)) {
+      const firstRealCleanserIdx = pmItems.findIndex(p => !p.isInjected && (p.category || '').toLowerCase().includes('cleanser'));
+      if (firstRealCleanserIdx !== -1) {
+        pmItems.splice(firstRealCleanserIdx, 0, itemToInject);
+      } else {
+        let insertIdx = 0;
+        for (let i = pmItems.length - 1; i >= 0; i--) {
+          if (pmItems[i].id && pmItems[i].id.toString().startsWith('wd-')) {
+            insertIdx = i + 1;
+            break;
+          }
+        }
+        pmItems.splice(insertIdx, 0, itemToInject);
+      }
+    }
+  }
+  
   return { amItems, pmItems, getWeight };
 }
 

@@ -218,7 +218,7 @@ export default function Rites({ pose }) {
 
   const handleCompleteAllPm = async () => {
     setPmSaving(true);
-    const toSave = pmItems.filter(i => !checkedIds.has(i.id)).map(i => i.id);
+    const toSave = pmItems.filter(i => !checkedIds.has(i.id) && !i.isInjected).map(i => i.id);
     if (toSave.length > 0) {
       await supabase.from('routine_history').insert({
         completed_at: new Date().toISOString(),
