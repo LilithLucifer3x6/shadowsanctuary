@@ -1,0 +1,65 @@
+// Reads REPLICATE_API_TOKEN from .env — never logs or prints the value.
+import { readFileSync, writeFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __dir = dirname(fileURLToPath(import.meta.url));
+const envPath = join(__dir, '..', '.env');
+
+const token = readFileSync(envPath, 'utf8')
+  .split('\n')
+  .find(l => l.startsWith('REPLICATE_API_TOKEN='))
+  ?.split('=').slice(1).join('=').trim();
+
+if (!token) { console.error('REPLICATE_API_TOKEN not found in .env'); process.exit(1); }
+
+// Exact portraitPrompt from ConjureVisage.jsx, robeDesign=flowing_ceremonial, robeColor=mahogany
+const prompt = [
+  "Hand-painted 2D animated dark-fantasy illustration portrait of a mystical Keeper.",
+  "Plus size, full figure body type.",
+  "Androgynous, dark rich umber skin, and long extremely fine, thread-thin microlocs,",
+  "each strand clearly individually visible, no thicker than embroidery floss adorned with nothing.",
+  "Wearing a deep mahogany gothic cottagecore robe of flowing_ceremonial design, adorned with no jewelry.",
+  "Plain neutral gray background.",
+  "Lush painterly rendering, expressive stylized character design, gothic dark-fantasy video-game aesthetic,",
+  "moody atmospheric lighting with dramatic shadows.",
+  "No velvet texture anywhere; prefer flowing silk, brocade, or heavy wool-like fabrics instead.",
+  "Soft glowing aura, calm expression."
+].join(' ');
+
+// Flux Dev uses the model-scoped predictions endpoint, not /v1/predictions
+// See: https://replicate.com/docs/reference/http#models.predictions.create
+const endpoint = 'https://api.replicate.com/v1/models/black-forest-labs/flux-dev/predictions';
+
+const payload = {
+  input: { prompt, width: 1024, height: 1024 }
+};
+
+console.log('Submitting to Replicate (flux-dev, Prefer: wait)...');
+
+const res = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    'Authorization': `Token ${token}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'wait'
+  },
+  body: JSON.stringify(payload)
+});
+
+const data = await res.json();
+
+if (!res.ok) {
+  console.error(`HTTP ${res.status}: ${data.detail ?? JSON.stringify(data)}`);
+  process.exit(1);
+}
+
+console.log(`Prediction ID : ${data.id}`);
+console.log(`Status        : ${data.status}`);
+console.log(`Model         : ${data.model ?? 'black-forest-labs/flux-dev'}`);
+console.log(`Output URL    : ${Array.isArray(data.output) ? data.output[0] : data.output ?? '(none yet)'}`);
+
+const outputUrl = Array.isArray(data.output) ? data.output[0] : data.output;
+if (outputUrl) {
+  writeFileSync(join(__dir, 'flux_output_url.txt'), outputUrl);
+}
