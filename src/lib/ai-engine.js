@@ -419,7 +419,7 @@ export async function evaluateScryingPool(productInfo, userProfile, inventory, r
 The user seeks your wisdom on a prospective new product or formula (The Echo).
 Perform a strict Safety Check against their known allergies (The Codex), medical conditions, and past Somatic Reactions. 
 If they have banished items or reacted poorly (peeling, redness, burning), deduce the common denominator ingredients and explicitly warn them if the prospective item contains them.
-Perform a Redundancy Guard: compare the prospective item's primary actives against their current inventory. If they already own a formula that serves the exact same purpose or uses the same actives, explicitly warn them to guard against redundant spending.
+Perform a Redundancy Guard: compare the prospective item's primary actives against their current inventory. If they already own a formula that serves the exact same purpose or uses the same actives, explicitly warn them to guard against redundant spending. Composite blends in the inventory list are annotated with their individual components in brackets — check redundancy against both the blend as a whole AND its listed components. If the prospective item shares a primary active with a blend's component even though the blend itself serves a different purpose, that's still worth flagging.
 If you detect a safety conflict or redundancy, you MUST suggest valid alternative replacements. STRICT CONSTRAINT: You must suggest replacements from their *owned* Current Inventory first. Do not suggest new real-world purchases unless they literally own nothing that serves the same purpose.
 Speak in a mystical, cottagecore-goth tone ("ritual voice"). Be concise but insightful.
 Do not use gendered language or pronouns.
@@ -474,7 +474,7 @@ Analyze their active inventory, banished products, somatic reactions, and intake
 Output a comprehensive report formatted in Markdown that covers the following areas:
 
 ### Ingredient Patterns
-Deduce exactly what common denominator ingredients are causing their reactions across banished products and the Ledger of Afflictions. Name the suspected offending ingredients directly.
+Deduce exactly what common denominator ingredients are causing their reactions across banished products and the Ledger of Afflictions. Name the suspected offending ingredients directly. Composite blends are annotated with a blend_components field listing their individual components — when two different blends share a component and reactions follow the shared component rather than either blend as a whole, that is a strong attribution signal worth naming explicitly.
 
 ### Goal Trajectory
 Assess if their current routine is actively moving them toward their stated intake goals. Highlight any counterproductive habits.
