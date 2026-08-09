@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase.js';
 import { G } from '../lib/icons.jsx';
 import Icon from '../components/Icon.jsx';
 import SpeakerButton from '../components/SpeakerButton.jsx';
-import { buildRoutines, checkConflicts } from '../lib/routine-engine.js';
+import { buildRoutines, checkConflicts, filterLesserRite } from '../lib/routine-engine.js';
 import { getReadiness, getHeavySweat, getSleepDuration } from '../lib/health-connect.js';
 
 export default function Rites({ pose }) {
@@ -22,7 +22,8 @@ export default function Rites({ pose }) {
   const [scheduleSaving, setScheduleSaving] = useState(false);
   const [scheduleSaved, setScheduleSaved] = useState(false);
   
-  const [useLesserRite, setUseLesserRite] = useState(false);
+  const [useAmLesserRite, setUseAmLesserRite] = useState(false);
+  const [usePmLesserRite, setUsePmLesserRite] = useState(false);
   const [suggestLesserRite, setSuggestLesserRite] = useState(false);
 
   const todayKey = new Date().toISOString().split('T')[0];
@@ -137,25 +138,8 @@ export default function Rites({ pose }) {
     );
   }
 
-  const filterLesserRite = (routineItems) => {
-    if (!useLesserRite) return routineItems;
-    return routineItems.filter(item => {
-      // Keep immutable steps (like brushing teeth, showering)
-      if (item.category === 'immutable' || item.isInjected) return true;
-      // Keep true prescriptions
-      if (item.is_prescription || item.isRx) return true;
-      // Keep user-flagged load-bearing items
-      if (item.behavior_flags?.load_bearing) return true;
-      // Keep SPF / Sunscreen
-      const cat = (item.category || '').toLowerCase();
-      if (cat.includes('spf') || cat.includes('sunscreen')) return true;
-      // Everything else is dropped for the low-friction routine
-      return false;
-    });
-  };
-
-  const activeAmItems = filterLesserRite(amItems);
-  const activePmItems = filterLesserRite(pmItems);
+  const activeAmItems = useAmLesserRite ? filterLesserRite(amItems) : amItems;
+  const activePmItems = usePmLesserRite ? filterLesserRite(pmItems) : pmItems;
 
   const handleScheduleCheck = (time) => {
     const newChecked = new Set(scheduleChecked);
@@ -389,14 +373,18 @@ export default function Rites({ pose }) {
         
         {/* Lesser Rite Banner - Full Width */}
         {suggestLesserRite && (
-          <div className="card" style={{ gridColumn: '1 / -1', border: '1px solid var(--plum)', background: useLesserRite ? 'var(--card-bg)' : 'rgba(20, 15, 25, 0.8)' }}>
+          <div className="card" style={{ gridColumn: '1 / -1', border: '1px solid var(--plum)', background: (useAmLesserRite && usePmLesserRite) ? 'var(--card-bg)' : 'rgba(20, 15, 25, 0.8)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
                 <h3 style={{ margin: 0, color: 'var(--plum)' }}>The Lesser Rite is Recommended</h3>
                 <div style={{ opacity: 0.8, marginTop: '0.5rem' }}>Your corporeal readiness is low today. The spirits advise rest.</div>
               </div>
-              <button className={`btn ${useLesserRite ? 'plum' : 'g'}`} onClick={() => setUseLesserRite(!useLesserRite)} style={{ padding: '0.8rem 1.5rem', fontSize: '1.1rem' }}>
-                {useLesserRite ? 'Restore Full Rites' : 'Invoke the Lesser Rite'}
+              <button className={`btn ${(useAmLesserRite && usePmLesserRite) ? 'plum' : 'g'}`} onClick={() => {
+                const nextVal = !(useAmLesserRite && usePmLesserRite);
+                setUseAmLesserRite(nextVal);
+                setUsePmLesserRite(nextVal);
+              }} style={{ padding: '0.8rem 1.5rem', fontSize: '1.1rem' }}>
+                {(useAmLesserRite && usePmLesserRite) ? 'Restore Full Rites' : 'Invoke the Lesser Rite'}
               </button>
             </div>
           </div>
@@ -405,7 +393,12 @@ export default function Rites({ pose }) {
         {/* Left Column: Morning Invocation */}
         <div className="card">
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-          <h3>The Morning Invocation <SpeakerButton text='The Morning Invocation' /></h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3>The Morning Invocation <SpeakerButton text='The Morning Invocation' /></h3>
+            <button className={`btn ${useAmLesserRite ? 'plum' : 'g'}`} onClick={() => setUseAmLesserRite(!useAmLesserRite)} style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>
+              {useAmLesserRite ? 'Full' : 'Lesser'}
+            </button>
+          </div>
           {activeAmItems.length > 0 && (
             <div style={{ margin: '0.5rem 0 1rem 0', textAlign: 'center' }}>
               <button 
@@ -449,7 +442,12 @@ export default function Rites({ pose }) {
         {/* Right Column: Evening Invocation */}
         <div className="card">
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-          <h3>The Evening Invocation <SpeakerButton text='The Evening Invocation' /></h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3>The Evening Invocation <SpeakerButton text='The Evening Invocation' /></h3>
+            <button className={`btn ${usePmLesserRite ? 'plum' : 'g'}`} onClick={() => setUsePmLesserRite(!usePmLesserRite)} style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>
+              {usePmLesserRite ? 'Full' : 'Lesser'}
+            </button>
+          </div>
           {activePmItems.length > 0 && (
             <div style={{ margin: '0.5rem 0 1rem 0', textAlign: 'center' }}>
               <button 

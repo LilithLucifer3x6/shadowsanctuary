@@ -409,9 +409,10 @@ export function filterLesserRite(routineItems) {
     if (item.is_prescription || item.isRx) return true;
     // Keep user-flagged load-bearing items
     if (item.behavior_flags?.load_bearing) return true;
-    // Keep SPF / Sunscreen
+    // Keep SPF, Sunscreen, Cleansers, and Moisturizers
     const cat = (item.category || '').toLowerCase();
     if (cat.includes('spf') || cat.includes('sunscreen')) return true;
+    if (cat.includes('cleanser') || cat.includes('moisturizer') || cat.includes('moisturiser')) return true;
     // Everything else is dropped for the low-friction routine
     return false;
   });
