@@ -456,6 +456,7 @@ State names and domain names are settled. Ebbing and Hollow are confirmed. The G
 
 **Avatar & Room**:
 - **Avatar Builder**: The UI incorporates plus-size body types, ultra-skinny microlocs (shoulder length / high updo), and 10 robe styles. Avatar previews are generated live using the image model rather than SVG line drawings.
+- **Swatch Rendering**: Hair color and robe color swatches must show the color applied to actual texture — a sample of locks for hair colors, a sample of draped fabric for robe colors — not flat color chips. Implement this efficiently: generate ONE neutral reference photo of loose microlocs and ONE neutral reference photo of draped fabric, then apply CSS-based hue/color tinting per swatch value rather than running separate paid AI generations per color.
 - **Room Backgrounds**: Upon onboarding completion, the app uses `generate-room-bg` to permanently embed the generated Avatar into the dynamic backgrounds of the 6 rooms. The aesthetic remains explicitly cottagecore goth.
 
 **AppSpeak Glossary**:
