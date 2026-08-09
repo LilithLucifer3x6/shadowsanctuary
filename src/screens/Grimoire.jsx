@@ -22,6 +22,7 @@ export default function Grimoire({ pose }) {
   
   const [readingState, setReadingState] = useState(null);
   const [showScrying, setShowScrying] = useState(false);
+  const [scryingMessage, setScryingMessage] = useState('');
 
   useEffect(() => {
     let mounted = true;
@@ -576,16 +577,28 @@ export default function Grimoire({ pose }) {
                 if (data) {
                   const todayStr = new Date().toISOString().split('T')[0];
                   // Append to today's journal
-                  await supabase.from('journal_moon_and_photos').upsert({
+                  await supabase.from('journal_entries').insert([{
                     entry_date: todayStr,
                     moon_phase: 'waxing',
-                    notes: 'Flesh Scrying: ' + data
-                  }, { onConflict: 'entry_date' });
+                    body_text: 'Flesh Scrying: ' + data
+                  }]);
                 }
                 setShowScrying(false);
-                alert('The Keeper has recorded your visage.');
+                setScryingMessage('The Keeper has recorded your visage in the Shadow Tome.');
               }}
             />
+          </div>
+        </div>
+      )}
+
+      {scryingMessage && (
+        <div className="modal" style={{display: 'block'}}>
+          <div className="modal-content card" style={{maxWidth: '400px', textAlign: 'center'}}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <Icon name="ph-eye" style={{fontSize: '3rem', color: 'var(--plum)', marginBottom: '1rem'}} />
+            <h3 style={{color: 'var(--plum)', margin: '0 0 1rem 0'}}>Visage Recorded</h3>
+            <p style={{color: 'var(--dim)', marginBottom: '1.5rem'}}>{scryingMessage}</p>
+            <button className="btn plum" onClick={() => setScryingMessage('')} style={{width: '100%'}}>Return</button>
           </div>
         </div>
       )}
