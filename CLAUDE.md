@@ -333,7 +333,7 @@ Palette: obsidian ground, plum accents throughout, silver and platinum metals. P
 - Theme is Virgin Islander and Hoodoo heritage blended with cottagecore goth, handled with respect and never as caricature.
 - Display names are consistent. Every tab and section heading carries the definite article: The Mortal Rites, The Grimoire, The Altars, The Rootwork, The Scrying Pool, The Shadow Tome. Running prose follows ordinary grammar.
 - Voice applies to all interface copy, including anything AI generates for display. Consecrate the Morning Rite, not Mark Complete. Replenish, not Mark as Restocked. Invoke and Banish for accepting or dismissing. Empty states speak in the same voice. Backend vocabulary never surfaces.
-- The landing screen is a static illustrated exterior view of a witch's cottage, preceding the avatar builder, by explicit decision. The avatar and a single familiar appear within the application after the builder, not on this initial exterior screen. Nothing animates.
+- The landing screen is a static illustrated exterior view of a small, richly-appointed manor deep in an ancient forest, isolated by choice not by need, preceding the avatar builder, by explicit decision. The avatar and a single familiar appear within the application after the builder, not on this initial exterior screen. Nothing animates.
 - An avatar builder runs before The First Inscription, on first launch only. Defaults: melanated skin, red cat eyes, shoulder-length microlocs. Options lean goth and cat-girl. Every hairstyle offered is 4C-textured and loc-compatible; no European hair textures are offered.
 - A familiar is chosen alongside the avatar and appears in the same scene.
 - The avatar and familiar are editable later without repeating intake.
@@ -446,7 +446,7 @@ Version one carries everything in this document, including Google Calendar synch
 
 ## 33. Open decisions
 
-State names and domain names are settled. Ebbing and Hollow are confirmed. The Gaze and The Grin are confirmed. Isotretinoin's sequence-based dosing logic, described in section 15, is settled. The landing screen is the illustrated cottage exterior, preceding the avatar builder on first launch, per section 28. No open decisions remain.
+State names and domain names are settled. Ebbing and Hollow are confirmed. The Gaze and The Grin are confirmed. Isotretinoin's sequence-based dosing logic, described in section 15, is settled. The landing screen is the illustrated exterior of a small, richly-appointed manor deep in an ancient forest, isolated by choice not by need, preceding the avatar builder on first launch, per section 28. No open decisions remain.
 
 ## 34. Final Build Updates (August 2026)
 
