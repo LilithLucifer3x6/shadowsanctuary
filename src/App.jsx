@@ -50,6 +50,12 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [dateStr, setDateStr] = useState(getSpellDate());
   const [supabaseError, setSupabaseError] = useState(false);
+  const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [loginSubmitting, setLoginSubmitting] = useState(false);
   
   // Settings state
   const [settings, setSettings] = useState({
@@ -67,6 +73,34 @@ export default function App() {
   });
 
   const [availableVoices, setAvailableVoices] = useState([]);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoginError('');
+    setLoginSubmitting(true);
+    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
+    setLoginSubmitting(false);
+    if (error) {
+      setLoginError(error.message);
+    } else {
+      setLoginPassword('');
+    }
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   useEffect(() => {
     sessionStorage.setItem('al_currentScreen', currentScreen);
@@ -242,6 +276,55 @@ export default function App() {
       default: return null;
     }
   };
+
+  if (authLoading) {
+    return (
+      <div className="land" style={{ backgroundColor: 'transparent' }}>
+        <div className="scene" style={{ maxWidth: '400px', textAlign: 'center', padding: '2rem', position: 'relative', zIndex: 10 }}>
+          <div className="tag" style={{ textShadow: '0 0 10px rgba(0,0,0,0.8)', color: 'var(--plum)' }}>Consulting the wards...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="land" style={{ backgroundColor: 'transparent' }}>
+        <div className="scene" style={{ maxWidth: '400px', textAlign: 'center', padding: '2rem', position: 'relative', zIndex: 10 }}>
+          <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+          <Icon name="ph-lock" style={{fontSize: '3rem', color: 'var(--plum)'}} />
+          <h2 style={{marginTop: '1rem', marginBottom: '1rem'}}>The Wards Hold Fast</h2>
+          <p style={{color: 'var(--dim)', marginBottom: '1.5rem'}}>Only the Keeper may enter this Sanctuary.</p>
+          <form onSubmit={handleLogin}>
+            <input
+              id="login-email"
+              type="email"
+              placeholder="Email"
+              value={loginEmail}
+              onChange={e => setLoginEmail(e.target.value)}
+              required
+              style={{ width: '100%', marginBottom: '0.75rem', padding: '0.6rem', boxSizing: 'border-box', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--fg)', borderRadius: '6px' }}
+            />
+            <input
+              id="login-password"
+              type="password"
+              placeholder="Password"
+              value={loginPassword}
+              onChange={e => setLoginPassword(e.target.value)}
+              required
+              style={{ width: '100%', marginBottom: '1rem', padding: '0.6rem', boxSizing: 'border-box', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--fg)', borderRadius: '6px' }}
+            />
+            {loginError && (
+              <p style={{ color: 'var(--crimson-b)', marginBottom: '1rem', fontSize: '0.9rem' }}>{loginError}</p>
+            )}
+            <button id="login-submit" type="submit" className="btn plum" style={{ width: '100%' }} disabled={loginSubmitting}>
+              {loginSubmitting ? 'Testing the Wards...' : 'Enter the Sanctuary'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   if (supabaseError) {
     return (
@@ -508,6 +591,13 @@ export default function App() {
                     setShowSettings(false);
                     setCurrentScreen('avatar');
                   }} className="btn plum" style={{ width: '100%', marginBottom: '1rem' }}>Reshape Visage (Avatar Builder)</button>
+
+                  <button id="logout-btn" onClick={async () => {
+                    if (await confirm("Do you wish to leave the Sanctuary for now? You may return with your credentials.")) {
+                      setShowSettings(false);
+                      await handleLogout();
+                    }
+                  }} className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--card2)', borderColor: 'var(--plum)', color: 'var(--plum)' }}>Leave the Sanctuary (Log Out)</button>
 
                   <button onClick={async () => {
                     if (await confirm("Do you truly wish to shatter the First Inscription? You will be cast back to the initial inquiry.")) {
