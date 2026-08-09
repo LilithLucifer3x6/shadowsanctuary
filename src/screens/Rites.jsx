@@ -21,6 +21,9 @@ export default function Rites({ pose }) {
   const [pmSaved, setPmSaved] = useState(false);
   const [scheduleSaving, setScheduleSaving] = useState(false);
   const [scheduleSaved, setScheduleSaved] = useState(false);
+  
+  const [useLesserRite, setUseLesserRite] = useState(false);
+  const [suggestLesserRite, setSuggestLesserRite] = useState(false);
 
   const todayKey = new Date().toISOString().split('T')[0];
   const [scheduleChecked, setScheduleChecked] = useState(() => {
@@ -45,6 +48,11 @@ export default function Rites({ pose }) {
       const sleepDuration = await getSleepDuration();
       const heavySweat = await getHeavySweat();
       const readinessObj = await getReadiness();
+      const score = readinessObj?.score || 100;
+      
+      if (score < 60) {
+        setSuggestLesserRite(true);
+      }
       
       if (readinessObj?.captured_at) {
         setHealthStaleness(new Date(readinessObj.captured_at).toLocaleString());
@@ -53,7 +61,7 @@ export default function Rites({ pose }) {
       const realWearables = {
         sleepDuration: parseFloat(sleepDuration),
         heavySweat: heavySweat,
-        readiness: readinessObj?.score || 100
+        readiness: score
       };
       
       const { data: userProfile } = await supabase.from('user_profile').select('*').maybeSingle();
@@ -128,6 +136,26 @@ export default function Rites({ pose }) {
       </div>
     );
   }
+
+  const filterLesserRite = (routineItems) => {
+    if (!useLesserRite) return routineItems;
+    return routineItems.filter(item => {
+      // Keep immutable steps (like brushing teeth, showering)
+      if (item.category === 'immutable' || item.isInjected) return true;
+      // Keep true prescriptions
+      if (item.is_prescription || item.isRx) return true;
+      // Keep user-flagged load-bearing items
+      if (item.behavior_flags?.load_bearing) return true;
+      // Keep SPF / Sunscreen
+      const cat = (item.category || '').toLowerCase();
+      if (cat.includes('spf') || cat.includes('sunscreen')) return true;
+      // Everything else is dropped for the low-friction routine
+      return false;
+    });
+  };
+
+  const activeAmItems = filterLesserRite(amItems);
+  const activePmItems = filterLesserRite(pmItems);
 
   const handleScheduleCheck = (time) => {
     const newChecked = new Set(scheduleChecked);
@@ -359,24 +387,39 @@ export default function Rites({ pose }) {
       )}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start', marginTop: '1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
         
+        {/* Lesser Rite Banner - Full Width */}
+        {suggestLesserRite && (
+          <div className="card" style={{ gridColumn: '1 / -1', border: '1px solid var(--plum)', background: useLesserRite ? 'var(--card-bg)' : 'rgba(20, 15, 25, 0.8)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h3 style={{ margin: 0, color: 'var(--plum)' }}>The Lesser Rite is Recommended</h3>
+                <div style={{ opacity: 0.8, marginTop: '0.5rem' }}>Your corporeal readiness is low today. The spirits advise rest.</div>
+              </div>
+              <button className={`btn ${useLesserRite ? 'plum' : 'g'}`} onClick={() => setUseLesserRite(!useLesserRite)} style={{ padding: '0.8rem 1.5rem', fontSize: '1.1rem' }}>
+                {useLesserRite ? 'Restore Full Rites' : 'Invoke the Lesser Rite'}
+              </button>
+            </div>
+          </div>
+        )}
+        
         {/* Left Column: Morning Invocation */}
         <div className="card">
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
           <h3>The Morning Invocation <SpeakerButton text='The Morning Invocation' /></h3>
-          {amItems.length > 0 && (
+          {activeAmItems.length > 0 && (
             <div style={{ margin: '0.5rem 0 1rem 0', textAlign: 'center' }}>
               <button 
-                className={`btn ${amSaved || amItems.every(i => checkedIds.has(i.id) || (i.id.startsWith('iso-') && checkedIds.has('iso-missed'))) ? 'g' : 'plum'}`} 
+                className={`btn ${amSaved || activeAmItems.every(i => checkedIds.has(i.id) || (i.id.startsWith('iso-') && checkedIds.has('iso-missed'))) ? 'g' : 'plum'}`} 
                 style={{ fontSize: '1rem', padding: '0.6rem 1.5rem', width: '100%' }}
                 onClick={handleCompleteAllAm}
-                disabled={amSaving || amSaved || amItems.every(i => checkedIds.has(i.id) || (i.id.startsWith('iso-') && checkedIds.has('iso-missed')))}
+                disabled={amSaving || amSaved || activeAmItems.every(i => checkedIds.has(i.id) || (i.id.startsWith('iso-') && checkedIds.has('iso-missed')))}
               >
-                {amSaving ? 'Consecrating...' : (amSaved || amItems.every(i => checkedIds.has(i.id) || (i.id.startsWith('iso-') && checkedIds.has('iso-missed'))) ? 'The Morning Altar is Consecrated' : 'Consecrate the Morning Altar')}
+                {amSaving ? 'Consecrating...' : (amSaved || activeAmItems.every(i => checkedIds.has(i.id) || (i.id.startsWith('iso-') && checkedIds.has('iso-missed'))) ? 'The Morning Altar is Consecrated' : 'Consecrate the Morning Altar')}
               </button>
             </div>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {amItems.length > 0 ? amItems.map(i => renderStep(i)) : <div className="empty">The altar is bare. No morning rites are required.</div>}
+            {activeAmItems.length > 0 ? activeAmItems.map(i => renderStep(i)) : <div className="empty">The altar is bare. No morning rites are required.</div>}
           </div>
         </div>
 
@@ -407,20 +450,20 @@ export default function Rites({ pose }) {
         <div className="card">
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
           <h3>The Evening Invocation <SpeakerButton text='The Evening Invocation' /></h3>
-          {pmItems.length > 0 && (
+          {activePmItems.length > 0 && (
             <div style={{ margin: '0.5rem 0 1rem 0', textAlign: 'center' }}>
               <button 
-                className={`btn ${pmSaved || pmItems.every(i => checkedIds.has(i.id)) ? 'g' : 'plum'}`} 
+                className={`btn ${pmSaved || activePmItems.every(i => checkedIds.has(i.id)) ? 'g' : 'plum'}`} 
                 style={{ fontSize: '1rem', padding: '0.6rem 1.5rem', width: '100%' }}
                 onClick={handleCompleteAllPm}
-                disabled={pmSaving || pmSaved || pmItems.every(i => checkedIds.has(i.id))}
+                disabled={pmSaving || pmSaved || activePmItems.every(i => checkedIds.has(i.id))}
               >
-                {pmSaved || pmItems.every(i => checkedIds.has(i.id)) ? 'The Altar is Consecrated' : 'Consecrate the Evening Altar'}
+                {pmSaved || activePmItems.every(i => checkedIds.has(i.id)) ? 'The Altar is Consecrated' : 'Consecrate the Evening Altar'}
               </button>
             </div>
           )}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {pmItems.length > 0 ? pmItems.map(i => renderStep(i)) : <div className="empty">The altar is bare. No evening rites are required.</div>}
+            {activePmItems.length > 0 ? activePmItems.map(i => renderStep(i)) : <div className="empty">The altar is bare. No evening rites are required.</div>}
           </div>
         </div>
         
