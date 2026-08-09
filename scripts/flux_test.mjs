@@ -15,14 +15,12 @@ if (!token) { console.error('REPLICATE_API_TOKEN not found in .env'); process.ex
 
 // Exact portraitPrompt from ConjureVisage.jsx, robeDesign=flowing_ceremonial, robeColor=mahogany
 const prompt = [
-  "Hand-painted 2D animated dark-fantasy illustration portrait of a mystical Keeper.",
+  "Hand-painted 2D animated illustration in a soft painterly style with visible brushwork texture and gentle cel-shading (soft-edged shading transitions, not hard vector lines, not photographic smoothness or skin-pore detail) — combined with dramatic gothic chiaroscuro lighting (strong contrast between deep shadow and warm highlight), richly ornamental Victorian detail work, and moody saturated dark-fantasy color grading, anime-influenced expressive linework, illustrated portrait of a mystical Keeper.",
   "Plus size, full figure body type.",
   "Dark rich umber skin, and long extremely fine, thread-thin microlocs,",
   "each strand clearly individually visible, no thicker than embroidery floss adorned with nothing.",
   "Wearing an extravagantly opulent deep mahogany robe of flowing_ceremonial design — the wardrobe of a Victorian-era vampiric noble, dripping in opulence as though an entire country's treasury were behind it: dense silver embroidery, intricate beadwork, jeweled clasps, high structured collars, dramatic fitted sleeves, ornate brooches and cameos, dark romantic elegance, rich brocade and heavy embellished trim, sumptuous and expensive-looking in every detail, adorned with no jewelry.",
   "Plain neutral gray background.",
-  "Lush painterly rendering, expressive stylized character design, gothic dark-fantasy video-game aesthetic,",
-  "moody atmospheric lighting with dramatic shadows.",
   "No velvet texture anywhere; prefer flowing silk, brocade, or heavy wool-like fabrics instead.",
   "Soft glowing aura, calm expression."
 ].join(' ');
