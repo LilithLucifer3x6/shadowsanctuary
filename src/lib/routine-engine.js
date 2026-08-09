@@ -399,3 +399,20 @@ export function checkConflicts(items, userProfile = {}) {
 
   return conflicts;
 }
+
+export function filterLesserRite(routineItems) {
+  if (!routineItems) return [];
+  return routineItems.filter(item => {
+    // Keep immutable steps (like brushing teeth, showering)
+    if (item.category === 'immutable' || item.isInjected) return true;
+    // Keep true prescriptions
+    if (item.is_prescription || item.isRx) return true;
+    // Keep user-flagged load-bearing items
+    if (item.behavior_flags?.load_bearing) return true;
+    // Keep SPF / Sunscreen
+    const cat = (item.category || '').toLowerCase();
+    if (cat.includes('spf') || cat.includes('sunscreen')) return true;
+    // Everything else is dropped for the low-friction routine
+    return false;
+  });
+}
