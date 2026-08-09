@@ -29,34 +29,34 @@
    possible — use `.maybeSingle()` and treat null as valid. This is the most likely crash in the
    entire application.
 8. **Every text input takes voice.** Every transcription is reviewable before commit.
-9. **Guided Conversation Guardrails:** Every AI-led conversation in the app (e.g., The First Inscription, The Reading, banish workflows, tolerance check-ins) MUST follow a strictly guided, structured pattern rather than free-form chat.
-   - **Purposeful Questioning:** The AI must ask a specific, purposeful question tied to the information it needs to collect.
-   - **Meaningful Follow-up:** The AI must analyze the user's answer and ask relevant, domain-specific follow-up questions (e.g., if a user reports dry skin, the AI must ask about duration, location, flaking, or tightness) *before* advancing to a new topic.
-   - **Tangent Redirection:** If the user's response goes off-topic, the AI must gently and atmospherically redirect them back to the active question.
-   - **Steering to the Goal:** Every conversation has a defined end-goal. The AI is responsible for actively steering the conversation toward completing that goal, not just generating pleasant dialogue.
-   - **Implementation Mandate:** Every conversational AI prompt in the codebase must explicitly contain instructions enforcing this structured pattern. It cannot be assumed.
-10. **Every visible string is in voice.** Amend not Edit. Strike from the record not Delete. Product
-    categories stay plain because they must stay scannable.
-11. **Never show spec vocabulary.** load-bearing, requires-rinse, layering weight, partner-assisted
+9. **Every visible string is in voice.** Amend not Edit. Strike from the record not Delete. Product
+   categories stay plain because they must stay scannable.
+10. **Never show spec vocabulary.** load-bearing, requires-rinse, layering weight, partner-assisted
     are internal terms. Translate before display.
-12. **Use `design-tokens.css` and `custom-icons.js` verbatim.** They are committed from the approved
+11. **Use `design-tokens.css` and `custom-icons.js` verbatim.** They are committed from the approved
     mockup. Do not restyle, reinterpret, or improve them. A screen with no mockup equivalent copies
     the nearest one that has. Inventing new visual treatment is a defect.
-13. **Icons are drawn, never emoji.** Phosphor for functional marks, game-icons for ritual marks, AI
+12. **Icons are drawn, never emoji.** Phosphor for functional marks, game-icons for ritual marks, AI
     draws an inline SVG when neither is exact. Resemblance to the real object is the standard.
-14. **Health Connect is the wearable broker on Android.** The web build has no direct wearable
+13. **Health Connect is the wearable broker on Android.** The web build has no direct wearable
     connection — browsers cannot reach Android's Health Connect API. Instead, the web build reads
     the most recently synced snapshot from the shared Supabase database, written by the Android app
     whenever it syncs fresh Health Connect data. This is an intentional, permanent architectural
     split, not a bug or a stopgap. The web build always shows a visible timestamp of when its data
     was last synced, so staleness is never presented as live.
-15. **Everything degrades cleanly.** No wearable connected, or no synced snapshot yet available,
+14. **Everything degrades cleanly.** No wearable connected, or no synced snapshot yet available,
     means those features simply do not appear.
-16. **Prescriptions are always named with strength.** Never a generic label.
-17. **No streaks, no guilt, no notifications** except the two restock nudges.
-18. **No gendered language anywhere**, including the avatar. Their complexion, their crown, the
+15. **Prescriptions are always named with strength.** Never a generic label.
+16. **No streaks, no guilt, no notifications** except the two restock nudges.
+17. **No gendered language anywhere**, including the avatar. Their complexion, their crown, the
     Keeper stands ready. Never she/her/he/his. Physiology is accounted for accurately where it
     matters medically, but nothing in the interface assumes a gender. Gendered wording is a defect.
+18. **Guided Conversation Guardrails:** Every AI-led conversation in the app (e.g., The First Inscription, The Reading, banish workflows, tolerance check-ins) MUST follow a strictly guided, structured pattern rather than free-form chat.
+    - **Purposeful Questioning:** The AI must ask a specific, purposeful question tied to the information it needs to collect.
+    - **Meaningful Follow-up:** The AI must analyze the user's answer and ask relevant, domain-specific follow-up questions (e.g., if a user reports dry skin, the AI must ask about duration, location, flaking, or tightness) *before* advancing to a new topic.
+    - **Tangent Redirection:** If the user's response goes off-topic, the AI must gently and atmospherically redirect them back to the active question.
+    - **Steering to the Goal:** Every conversation has a defined end-goal. The AI is responsible for actively steering the conversation toward completing that goal, not just generating pleasant dialogue.
+    - **Implementation Mandate:** Every conversational AI prompt in the codebase must explicitly contain instructions enforcing this structured pattern. It cannot be assumed.
 
 ## BUILD ORDER — finish each phase before starting the next
 
@@ -305,7 +305,7 @@ Both intake and check-in are AI-led conversations rather than forms. The user sp
 - Intake copy never explains the system to itself. Cadence, re-prompting, and internal mechanics are not narrated to the user.
 - Nothing is pre-populated into inventory at intake except prescriptions the user confirms. Products discussed during design are not seeded.
 - Option pools are broad by default, not minimal. Every question presents a wide, recognisable set — dozens of conditions, concerns, and traditions — because the user cannot name an affliction they have not heard of. Recognition, not recall.
-- **5-Domain Intake Requirement:** Intake must evaluate all five domains (Crown, Gaze, Grin, Visage, Vessel) with identical evaluation depth. It cannot simply ask for "general concerns." The AI or fast-path flow must specifically gather concerns for the scalp/hair, under-eyes/lashes, gums/teeth, facial skin, and body skin using domain-specific, AI-generated, open-ended pools. This follows the Guided Conversation Guardrails (Rule 9), ensuring meaningful follow-up for each domain before considering the intake section complete.
+- **5-Domain Intake Requirement:** Intake must evaluate all five domains (Crown, Gaze, Grin, Visage, Vessel) with identical evaluation depth. It cannot simply ask for "general concerns." The AI or fast-path flow must specifically gather concerns for the scalp/hair, under-eyes/lashes, gums/teeth, facial skin, and body skin using domain-specific, AI-generated, open-ended pools. This follows the Guided Conversation Guardrails (Rule 18), ensuring meaningful follow-up for each domain before considering the intake section complete.
 - An add-your-own control is a supplement to a rich pool, never a substitute for one. A short list with an other button is a failure of the requirement.
 - AI widens each pool at presentation time, drawing adjacent and related conditions the user has not named, and refines what it offers as it learns what is relevant.
 
@@ -454,7 +454,7 @@ State names and domain names are settled. Ebbing and Hollow are confirmed. The G
 
 **AI Engine**:
 - `claude-sonnet-5` is locked as the universal intelligence engine across the entire application for all text, extraction, reasoning, and vision capabilities.
-- Image generation strictly uses the `gemini-3.1-flash-image` API or Fal AI Flux endpoints, exclusively to construct a painterly, hand-illustrated, gothic, muted palette for the Avatar and dynamic backgrounds. No reference to any named real animation studio or artist is used as a generation target, for both aesthetic and legal reasons.
+- Image generation strictly uses Replicate (via REPLICATE_API_TOKEN) using the DreamShaper XL model, exclusively to construct a painterly, hand-illustrated, gothic, muted palette for the Avatar and dynamic backgrounds. No reference to any named real animation studio or artist is used as a generation target, for both aesthetic and legal reasons.
 
 **Avatar & Room**:
 - **Avatar Builder**: The UI incorporates plus-size body types, ultra-skinny microlocs (shoulder length / high updo), and 10 robe styles. Avatar previews are generated live using the image model rather than SVG line drawings.
