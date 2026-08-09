@@ -60,3 +60,29 @@ CREATE POLICY "Authenticated users only" ON public.codex_entries
 
 CREATE POLICY "Authenticated users only" ON public.conflict_rules
   FOR ALL USING (auth.uid() IS NOT NULL) WITH CHECK (auth.uid() IS NOT NULL);
+
+-- ── Tables missing from initial draft ────────────────────────────────────────
+
+-- storage_locations, glyph_registry, titration_log, prospective_items — unused
+-- schema, no client code references them, but tightening for completeness.
+DROP POLICY IF EXISTS "Allow all access" ON storage_locations;
+CREATE POLICY "Require authentication" ON storage_locations FOR ALL USING (auth.uid() IS NOT NULL) WITH CHECK (auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "Allow all access" ON glyph_registry;
+CREATE POLICY "Require authentication" ON glyph_registry FOR ALL USING (auth.uid() IS NOT NULL) WITH CHECK (auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "Allow all access" ON titration_log;
+CREATE POLICY "Require authentication" ON titration_log FOR ALL USING (auth.uid() IS NOT NULL) WITH CHECK (auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "Allow all access" ON prospective_items;
+CREATE POLICY "Require authentication" ON prospective_items FOR ALL USING (auth.uid() IS NOT NULL) WITH CHECK (auth.uid() IS NOT NULL);
+
+-- wearable_snapshots — actively used, real health data (readiness, sleep).
+-- Had two separate policies (read-only, insert-only), no update/delete
+-- policy at all. Tightening both existing ones; leaving update/delete
+-- un-policied as it already was (default-deny with RLS + no matching policy).
+DROP POLICY IF EXISTS "Allow read access to all users" ON wearable_snapshots;
+CREATE POLICY "Require authentication to read" ON wearable_snapshots FOR SELECT USING (auth.uid() IS NOT NULL);
+
+DROP POLICY IF EXISTS "Allow insert access to all users" ON wearable_snapshots;
+CREATE POLICY "Require authentication to insert" ON wearable_snapshots FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
