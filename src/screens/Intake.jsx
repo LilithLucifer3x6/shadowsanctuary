@@ -11,7 +11,7 @@ import VoiceInput from '../components/VoiceInput.jsx';
 export default function Intake({ onComplete }) {
   const [path, setPath] = useState('ai');
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 7;
+  const totalSteps = 9;
 
   // Fast Path State
   const [skinTypesOptions, setSkinTypesOptions] = useState([]);
@@ -149,8 +149,6 @@ export default function Intake({ onComplete }) {
     const { data: existing } = await supabase.from('user_profile').select('id').maybeSingle();
     const profileData = {
       intake_completed: true,
-    const profileData = {
-      intake_completed: true,
       intake_answers: { 
         skinType: selectedSkinType,
         concerns: selectedConcerns, 
@@ -190,7 +188,7 @@ export default function Intake({ onComplete }) {
     if (currentStep === 8) return selectedTraditions.length > 0;
     return true;
   };
-  const totalSteps = 9;
+
 
   const toggleSelection = (setter, item) => {
     setter(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
