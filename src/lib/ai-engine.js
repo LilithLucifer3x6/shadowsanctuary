@@ -406,7 +406,14 @@ export async function evaluateScryingPool(productInfo, userProfile, inventory, r
   
 
   const banished = inventory.filter(i => i.lifecycle_state === 'banished');
-  const banishedStr = banished.map(i => `${i.name} (Ingredients: ${i.ingredients})`).join('\n');
+  const banishedStr = banished.map(i => {
+    let base = `${i.name} (Ingredients: ${i.ingredients})`;
+    if (i.item_type === 'composite' && i.composite_components && i.composite_components.length > 0) {
+      const components = i.composite_components.map(cc => cc.items?.name).filter(Boolean).join(', ');
+      base += ` [Blend containing: ${components}]`;
+    }
+    return base;
+  }).join('\n');
 
   const systemPrompt = `You are the Scrying Pool, an oracle within Shadow and Sanctuary.
 The user seeks your wisdom on a prospective new product or formula (The Echo).
@@ -427,7 +434,14 @@ Banished Items (The Crypt of Ashes) [Max 40]:
 ${banishedStr ? banishedStr.substring(0, 4000) + (banishedStr.length > 4000 ? '\n...[TRUNCATED]' : '') : 'None'}
 
 Current Inventory [Max 40 items]:
-${JSON.stringify(inventory.slice(0, 40).map(i => i.name + ' (' + i.category + ')'), null, 2)}
+${JSON.stringify(inventory.slice(0, 40).map(i => {
+  let base = `${i.name} (${i.category})`;
+  if (i.item_type === 'composite' && i.composite_components && i.composite_components.length > 0) {
+    const components = i.composite_components.map(cc => cc.items?.name).filter(Boolean).join(', ');
+    base += ` [Blend containing: ${components}]`;
+  }
+  return base;
+}), null, 2)}
 ${inventory.length > 40 ? '...[TRUNCATED - Showing 40 of ' + inventory.length + ' items]' : ''}
 `;
 
@@ -483,17 +497,27 @@ Intake Profile (Goals & Allergies):
 ${JSON.stringify(intakeAnswers, null, 2)}
 
 Active Inventory (Truncated to Top 50):
-${JSON.stringify(inventory.slice(0, 50).map(i => ({ name: i.name, category: i.category, ingredients: i.ingredients, state: i.lifecycle_state })), null, 2)}
+${JSON.stringify(inventory.slice(0, 50).map(i => {
+  const ret = { name: i.name, category: i.category, ingredients: i.ingredients, state: i.lifecycle_state };
+  if (i.item_type === 'composite' && i.composite_components && i.composite_components.length > 0) {
+    ret.blend_components = i.composite_components.map(cc => cc.items?.name).filter(Boolean);
+  }
+  return ret;
+}), null, 2)}
 ${inventory.length > 50 ? '...[TRUNCATED - Showing 50 of ' + inventory.length + ' items]' : ''}
 
 Banished Items (Crypt of Ashes, Truncated to Top 30):
 ${JSON.stringify(banishedItems.slice(0, 30).map(i => {
   const isCostOrAvail = i.banish_reason?.includes('Material Toll') || i.banish_reason?.includes('Elusive');
-  return { 
+  const ret = { 
     name: i.name, 
     ingredients: isCostOrAvail ? '[EXCLUDED FROM ANALYSIS DUE TO COST/AVAILABILITY]' : i.ingredients, 
     reason: i.banish_reason 
   };
+  if (i.item_type === 'composite' && i.composite_components && i.composite_components.length > 0 && !isCostOrAvail) {
+    ret.blend_components = i.composite_components.map(cc => cc.items?.name).filter(Boolean);
+  }
+  return ret;
 }), null, 2)}
 ${banishedItems.length > 30 ? '...[TRUNCATED - Showing 30 of ' + banishedItems.length + ' banished items]' : ''}
 
