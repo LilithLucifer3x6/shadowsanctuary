@@ -22,6 +22,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client-17
 
+      - name: Check pg_dump Version
+        run: |
+          which pg_dump
+          pg_dump --version
+
       - name: Run pg_dump
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
