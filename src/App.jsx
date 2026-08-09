@@ -59,7 +59,8 @@ export default function App() {
   
   // Settings state
   const [settings, setSettings] = useState({
-    fontSize: '16',
+    fontSize: '18',
+    fontFamily: 'Elsie',
     tts: false,
     health: false,
     cal: false,
@@ -206,9 +207,11 @@ export default function App() {
   }, []);
 
   const applySettings = (s) => {
-    document.documentElement.style.setProperty('--fs', s.fontSize + 'px');
-    document.documentElement.style.fontSize = s.fontSize + 'px';
-    document.documentElement.style.setProperty('--ff', `"${s.fontFamily}", serif`);
+    const fontSize = s.fontSize || '18';
+    const fontFamily = s.fontFamily || 'Elsie';
+    document.documentElement.style.setProperty('--fs', fontSize + 'px');
+    document.documentElement.style.fontSize = fontSize + 'px';
+    document.documentElement.style.setProperty('--ff', `"${fontFamily}", cursive, -apple-system,'Segoe UI',Roboto,sans-serif`);
     if (s.tts) {
       document.body.classList.remove('tts-disabled');
       setTtsEnabled(true);
@@ -494,7 +497,7 @@ export default function App() {
                 </div>
               </div>
               
-              {/* Middle Column: Voice & Integrations */}
+              {/* Right Column: Ethereal Echoes & Conduits, then Danger Zone stacked below */}
               <div>
                 <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', textAlign: 'center' }}>Ethereal Echoes & Conduits</h3>
 
@@ -581,12 +584,10 @@ export default function App() {
                   </div>
                 </div>
               </div>
-              
-              {/* Right Column: Danger Zone & Actions */}
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+
+                <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem', color: 'var(--crimson)', textAlign: 'center' }}>Danger Zone</h3>
+
                 <div>
-                  <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', color: 'var(--crimson)', textAlign: 'center' }}>Danger Zone</h3>
-                  
                   <button onClick={() => {
                     alert('Glossary:\nAppSpeak Translation Guide\n\nCrown = Hair\nGaze = Eyes\nGrin = Mouth/Teeth\nVisage = Face\nVessel = Body\nSanctuary = App\nReliquary = Tools/Devices\nApothecary = Consumables', 'Glossary');
                   }} className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--card2)', borderColor: 'var(--plum)', color: 'var(--plum)' }}>Glossary of AppSpeak</button>
