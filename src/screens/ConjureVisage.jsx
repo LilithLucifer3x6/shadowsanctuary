@@ -86,12 +86,6 @@ const ROBE_COLORS = [
   { id: 'chocolate',      label: 'Dark Chocolate',     hex: '#2a1a0a' },
   { id: 'terracotta',     label: 'Terracotta',         hex: '#8b4a2a' },
   { id: 'deep_orange',    label: 'Deep Orange',        hex: '#8b4a00' },
-  // Greens
-  { id: 'forest_em',      label: 'Forest Emerald',     hex: '#0a2e1a' },
-  { id: 'hunter',         label: 'Hunter Green',       hex: '#2d4a2d' },
-  { id: 'sage_robe',      label: 'Sage / Moss',        hex: '#3a4a2a' },
-  { id: 'jade',           label: 'Jade',               hex: '#1a4a3a' },
-  { id: 'olive',          label: 'Olive',              hex: '#3a3a1a' },
   // Purples & Violets
   { id: 'midnight_v',     label: 'Midnight Violet',    hex: '#1e0a2e' },
   { id: 'deep_plum',      label: 'Deep Plum',          hex: '#2a0a2a' },
