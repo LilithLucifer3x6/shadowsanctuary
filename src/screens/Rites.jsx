@@ -228,6 +228,12 @@ export default function Rites({ pose }) {
       toSave.forEach(id => newChecked.add(id));
       setCheckedIds(newChecked);
     }
+    
+    // The Veil: Reset flag on PM completion
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem('makeup_worn_today');
+    }
+    
     setPmSaved(true);
     setPmSaving(false);
   };

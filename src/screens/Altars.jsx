@@ -63,6 +63,19 @@ export default function Altars({ pose }) {
     } else {
       next.add(id);
       supabase.from('routine_history').insert({ completed_at: new Date().toISOString(), items_used: [id] }).then();
+      
+      // The Veil: Trigger Mandatory Removal Mechanism
+      const checkedItem = items.find(i => i.id === id);
+      if (checkedItem) {
+        let isVeil = (checkedItem.domain || '').toLowerCase() === 'veil';
+        if (!isVeil && checkedItem.item_type === 'composite' && checkedItem.composite_components) {
+          const components = checkedItem.composite_components.map(cc => cc.items).filter(Boolean);
+          isVeil = components.some(c => (c.domain || '').toLowerCase() === 'veil');
+        }
+        if (isVeil && typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('makeup_worn_today', 'true');
+        }
+      }
     }
     setCheckedIds(next);
   };
@@ -134,6 +147,22 @@ export default function Altars({ pose }) {
                   const nextChecked = new Set(checkedIds);
                   toSave.forEach(id => nextChecked.add(id));
                   setCheckedIds(nextChecked);
+                  
+                  // The Veil: Trigger Mandatory Removal Mechanism
+                  let veilTriggered = false;
+                  toSave.forEach(id => {
+                    const checkedItem = items.find(i => i.id === id);
+                    if (checkedItem) {
+                      if ((checkedItem.domain || '').toLowerCase() === 'veil') veilTriggered = true;
+                      if (checkedItem.item_type === 'composite' && checkedItem.composite_components) {
+                        const components = checkedItem.composite_components.map(cc => cc.items).filter(Boolean);
+                        if (components.some(c => (c.domain || '').toLowerCase() === 'veil')) veilTriggered = true;
+                      }
+                    }
+                  });
+                  if (veilTriggered && typeof window !== 'undefined' && window.localStorage) {
+                    window.localStorage.setItem('makeup_worn_today', 'true');
+                  }
                 }
               }}
               disabled={itemsInRhythm.every(i => checkedIds.has(i.id))}
