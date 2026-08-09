@@ -7,6 +7,7 @@ import SpeakerButton from '../components/SpeakerButton.jsx';
 
 
 import VoiceInput from '../components/VoiceInput.jsx';
+import VisualInscription from '../components/VisualInscription.jsx';
 
 export default function Grimoire({ pose }) {
   const [appointments, setAppointments] = useState([]);
@@ -20,6 +21,7 @@ export default function Grimoire({ pose }) {
   const [isoLogs, setIsoLogs] = useState([]);
   
   const [readingState, setReadingState] = useState(null);
+  const [showScrying, setShowScrying] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -459,6 +461,13 @@ export default function Grimoire({ pose }) {
                 >
                   Commune
                 </button>
+                <button 
+                  className="btn" 
+                  onClick={() => setShowScrying(true)}
+                  style={{ background: 'var(--card2)', color: 'var(--plum)', borderColor: 'var(--plum)' }}
+                >
+                  Offer a Visage (The Flesh Scrying)
+                </button>
               </div>
             </div>
           </div>
@@ -554,6 +563,29 @@ export default function Grimoire({ pose }) {
               <button className="btn" onClick={() => setOverrideModal({ show: false, type: '', date: '' })}>Abandon</button>
               <button className="btn plum" onClick={handleOverrideSubmit}>Rewrite</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {showScrying && (
+        <div className="modal" style={{display: 'block'}}>
+          <div className="modal-content" style={{maxWidth: '550px', background: 'transparent', border: 'none', padding: 0}}>
+            <VisualInscription 
+              onSkip={() => setShowScrying(false)}
+              onComplete={async (data) => {
+                if (data) {
+                  const todayStr = new Date().toISOString().split('T')[0];
+                  // Append to today's journal
+                  await supabase.from('journal_moon_and_photos').upsert({
+                    entry_date: todayStr,
+                    moon_phase: 'waxing',
+                    notes: 'Flesh Scrying: ' + data
+                  }, { onConflict: 'entry_date' });
+                }
+                setShowScrying(false);
+                alert('The Keeper has recorded your visage.');
+              }}
+            />
           </div>
         </div>
       )}

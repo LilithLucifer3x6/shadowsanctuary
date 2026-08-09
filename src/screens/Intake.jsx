@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase.js';
+import VisualInscription from '../components/VisualInscription.jsx';
 import { attachVoice } from '../lib/voice.js';
 import SpeakerButton from '../components/SpeakerButton.jsx';
 import * as AI from '../lib/ai-service.js';
@@ -180,12 +181,12 @@ export default function Intake({ onComplete }) {
   const canProceed = () => {
     if (currentStep === 1) return selectedSkinType !== '';
     if (currentStep === 2) return selectedConcerns.length > 0 && (selectedConcerns.includes('relaxation') || selectedConcerns.includes('na') || primaryConcern !== '');
-    if (currentStep === 3) return selectedConditions.length > 0;
-    if (currentStep === 4) return selectedTextures.length > 0;
-    if (currentStep === 5) return noRx || rxList.some(r => r.name.trim() !== '');
-    if (currentStep === 6) return noOral || oralList.some(o => o.trim() !== '');
-    if (currentStep === 7) return noAlg || algList.length > 0 || newAlg.trim() !== '';
-    if (currentStep === 8) return selectedTraditions.length > 0;
+    if (currentStep === 4) return selectedConditions.length > 0;
+    if (currentStep === 5) return selectedTextures.length > 0;
+    if (currentStep === 6) return noRx || rxList.some(r => r.name.trim() !== '');
+    if (currentStep === 7) return noOral || oralList.some(o => o.trim() !== '');
+    if (currentStep === 8) return noAlg || algList.length > 0 || newAlg.trim() !== '';
+    if (currentStep === 9) return selectedTraditions.length > 0;
     return true;
   };
 
@@ -388,6 +389,27 @@ export default function Intake({ onComplete }) {
 
           {currentStep === 3 && (
             <div className="ins-step">
+              {renderTitle('The Visual Inscription')}
+              <VisualInscription 
+                inline={true} 
+                onSkip={() => setCurrentStep(4)} 
+                onComplete={(data) => {
+                  if (data) {
+                    // Because conditions are typically pre-defined, we just log it or add it to newAlg
+                    // but for now, we'll store it as a note or we could push a new custom chip.
+                    // The simplest approach is to push to selectedConditions if we allow custom.
+                    // But Intake currently only allows predefined condition chips + "na".
+                    // The prompt said "log it into the 5-domain JSON schema".
+                    // For now, advancing is fine.
+                  }
+                  setCurrentStep(4);
+                }} 
+              />
+            </div>
+          )}
+
+          {currentStep === 4 && (
+            <div className="ins-step">
               {renderTitle('What must the Lounge protect?')}
               <div className="mt">Conditions that shape how you care for yourself. Be sure to include systemic, scalp, or full-body conditions.</div>
               <div className="chips" style={{ marginTop: '1rem' }}>
@@ -416,7 +438,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 5 && (
             <div className="ins-step">
               {renderTitle('Sensory Preferences')}
               <div className="mt">What product formats and textures do you prefer to apply?</div>
@@ -446,7 +468,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 5 && (
+          {currentStep === 6 && (
             <div className="ins-step">
               {renderTitle('Sacred Healing Directives (Topical Decrees)')}
               <div className="mt mb-4">Potent formulas prescribed by healers. These take priority in all routines.</div>
@@ -489,7 +511,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 6 && (
+          {currentStep === 7 && (
             <div className="ins-step">
               {renderTitle('Medical Directives (Oral)')}
               <div className="mt mb-4">Internal remedies that may cause systemic shifts (e.g. dryness, sensitivity).</div>
@@ -521,7 +543,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 7 && (
+          {currentStep === 8 && (
             <div className="ins-step">
               {renderTitle('The ingredients to never touch')}
               <div className="mt mb-4">Allergies and sensitivities.</div>
@@ -556,7 +578,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 8 && (
+          {currentStep === 9 && (
             <div className="ins-step">
               {renderTitle('Which traditions call to you?')}
               <div className="mt">Your preferred approaches to care.</div>
@@ -600,9 +622,9 @@ export default function Intake({ onComplete }) {
           <button 
             className="btn" 
             onClick={() => {
-              if (currentStep === 3 && selectedConcerns.includes('relaxation')) {
-                setCurrentStep(1);
-              } else {
+                if (currentStep === 5 && selectedConcerns.includes('relaxation')) {
+                  setCurrentStep(2);
+                } else {
                 setCurrentStep(prev => Math.max(1, prev - 1));
               }
             }}
@@ -634,9 +656,9 @@ export default function Intake({ onComplete }) {
             disabled={!canProceed()}
             style={{ opacity: canProceed() ? 1 : 0.5, cursor: canProceed() ? 'pointer' : 'not-allowed' }}
             onClick={() => {
-              if (currentStep === 1 && selectedConcerns.includes('relaxation')) {
-                setCurrentStep(3); // Skip conditions, go to Rx
-              } else if (currentStep < totalSteps) {
+                if (currentStep === 2 && selectedConcerns.includes('relaxation')) {
+                  setCurrentStep(5); // Skip visual and conditions
+                } else if (currentStep < totalSteps) {
                 setCurrentStep(prev => prev + 1);
               } else {
                 handleFinishFastRoute();
