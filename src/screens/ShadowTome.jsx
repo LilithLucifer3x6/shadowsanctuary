@@ -433,9 +433,9 @@ export default function ShadowTome({ pose }) {
         </div>
 
         {/* Right Column: Widgets */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
           
-          <div className="card" style={{ padding: '1.5rem', textAlign: 'center', maxWidth: '300px', margin: '0 auto' }}>
+          <div className="card" style={{ padding: '1.5rem', textAlign: 'center', order: 1 }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <div>
@@ -466,7 +466,7 @@ export default function ShadowTome({ pose }) {
             </div>
           </div>
 
-          <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+          <div className="card" style={{ padding: '1.5rem', textAlign: 'center', order: 3 }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" /></h3>
             
@@ -481,7 +481,7 @@ export default function ShadowTome({ pose }) {
             </div>
           </div>
 
-          <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+          <div className="card" style={{ padding: '1.5rem', textAlign: 'center', order: 4 }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Botanical Trove <SpeakerButton text="The Botanical Trove" /></h3>
             
@@ -510,7 +510,7 @@ export default function ShadowTome({ pose }) {
             </div>
           </div>
 
-          <div className="card" style={{ width: 'fit-content', margin: '0 auto', padding: '1.5rem', textAlign: 'center' }}>
+          <div className="card" style={{ padding: '1.5rem', textAlign: 'center', order: 2 }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Ethereal Vapors <SpeakerButton text="The Ethereal Vapors" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>Document the potency of infused provisions.</div>
