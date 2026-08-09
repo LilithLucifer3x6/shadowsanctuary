@@ -24,16 +24,16 @@ const HAIRSTYLES = [
 
 // ── ROBE DESIGNS ─────────────────────────────────────────────────────────────
 const ROBE_DESIGNS = [
-  { id: 'flowing_ceremonial', label: 'Flowing Ceremonial Robe',    desc: 'Full-length flowing robe with wide sleeves and embroidered magical trim', img: 'robe_flowing_ceremonial_1786057541423.jpg' },
-  { id: 'structured_coat',    label: 'Sorceress Coat',             desc: 'Structured long coat with a cinched waist belt and high dramatic collar', img: 'robe_structured_coat_1786057548830.jpg' },
-  { id: 'kimono_wrap',        label: 'Kimono-Style Wrap Robe',     desc: 'Elegant wrap robe with a wide obi-style sash belt', img: 'robe_kimono_wrap_1785969853409.jpg' },
-  { id: 'asymmetric',         label: 'Asymmetric Ritual Robe',     desc: 'Dramatic asymmetric hem with layered fabric and one exposed shoulder', img: 'robe_asymmetric_1785969883713.jpg' },
-  { id: 'layered_scholar',    label: "Scholar's Layered Robes",    desc: 'Multiple layered robes with intricate detail and overlapping panels', img: 'robe_layered_scholar_1785969892009.jpg' },
-  { id: 'cape_gown',          label: 'Cape & Gown Ensemble',       desc: 'Elegant fitted gown with a sweeping dramatic floor-length cape', img: 'robe_cape_gown_1785969860343.jpg' },
-  { id: 'embroidered_gown',   label: 'Embroidered Ritual Gown',    desc: 'Form-flattering gown covered in glowing magical embroidery patterns', img: 'robe_embroidered_1785991478740.jpg' },
-  { id: 'velvet_robe',        label: 'Velvet Wrap Robe',           desc: 'Luxurious velvet robe with plush dark fur trim and deep side pockets', img: 'robe_velvet_1785991487069.jpg' },
-  { id: 'off_shoulder',       label: 'Off-Shoulder Sorceress Gown',desc: 'Dramatic off-shoulder gown with puffed sleeves and layered skirt', img: 'robe_off_shoulder_1785991494990.jpg' },
-  { id: 'hooded_cloak',       label: 'Hooded Ritual Cloak',        desc: 'Long hooded cloak with a fitted inner robe visible at the hem', img: 'robe_hooded_1785991503119.jpg' },
+  { id: 'flowing_ceremonial', label: 'Flowing Ceremonial Robe',    desc: 'Full-length flowing robe with wide sleeves and embroidered magical trim', img: 'flowing_ceremonial_mahogany_v4.jpg' },
+  { id: 'structured_coat',    label: 'Sorceress Coat',             desc: 'Structured long coat with a cinched waist belt and high dramatic collar', img: 'robe_structured_coat_v4.jpg' },
+  { id: 'kimono_wrap',        label: 'Kimono-Style Wrap Robe',     desc: 'Elegant wrap robe with a wide obi-style sash belt', img: 'robe_kimono_wrap_v4.jpg' },
+  { id: 'asymmetric',         label: 'Asymmetric Ritual Robe',     desc: 'Dramatic asymmetric hem with layered fabric and one exposed shoulder', img: 'robe_asymmetric_v4.jpg' },
+  { id: 'layered_scholar',    label: "Scholar's Layered Robes",    desc: 'Multiple layered robes with intricate detail and overlapping panels', img: 'robe_layered_scholar_v4.jpg' },
+  { id: 'cape_gown',          label: 'Cape & Gown Ensemble',       desc: 'Elegant fitted gown with a sweeping dramatic floor-length cape', img: 'robe_cape_gown_v4.jpg' },
+  { id: 'embroidered_gown',   label: 'Embroidered Ritual Gown',    desc: 'Form-flattering gown covered in glowing magical embroidery patterns', img: 'robe_embroidered_gown_v4.jpg' },
+  { id: 'brocade_robe',       label: 'Brocade Wrap Robe',          desc: 'Luxurious brocade robe with plush dark fur trim and deep side pockets', img: 'robe_brocade_wrap_v4.jpg' },
+  { id: 'off_shoulder',       label: 'Off-Shoulder Sorceress Gown',desc: 'Dramatic off-shoulder gown with puffed sleeves and layered skirt', img: 'robe_off_shoulder_v4.jpg' },
+  { id: 'hooded_cloak',       label: 'Hooded Ritual Cloak',        desc: 'Long hooded cloak with a fitted inner robe visible at the hem', img: 'robe_hooded_cloak_v4.jpg' },
 ];
 
 // ── HAIR COLORS (natural + unnatural; no pink, no blue, gold permitted sparingly, no yellow, no blonde) ────
