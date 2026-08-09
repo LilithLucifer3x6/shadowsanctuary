@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase.js';
 import { G } from '../lib/icons.jsx';
 import Icon from '../components/Icon.jsx';
 import SpeakerButton from '../components/SpeakerButton.jsx';
-import { buildBaseRoutines, fetchHydratedItems } from '../lib/routine-engine.js';
+import { buildBaseRoutines, fetchHydratedItems, filterLesserRite } from '../lib/routine-engine.js';
 
 const ALTARS = [
   { id: 'crown', name: 'Crown', icon: G.crown },
@@ -21,6 +21,7 @@ export default function Altars({ pose }) {
   const [opacity, setOpacity] = useState(1);
   const [items, setItems] = useState([]);
   const [checkedIds, setCheckedIds] = useState(new Set());
+  const [lesserRites, setLesserRites] = useState({});
   
   useEffect(() => {
     fetchHydratedItems(['stocked', 'ebbing', 'enshrined']).then(data => {
@@ -106,9 +107,13 @@ export default function Altars({ pose }) {
   const renderAltarContent = () => {
     // Sort items by weight using engine logic
     const { getWeight } = buildBaseRoutines(items, {});
-    const domainItems = items
+    let domainItems = items
       .filter(i => (i.domain || '').toLowerCase() === activeAltarId)
       .sort((a, b) => getWeight(a) - getWeight(b));
+
+    if (lesserRites[activeAltarId]) {
+      domainItems = filterLesserRite(domainItems);
+    }
 
     if (domainItems.length === 0) {
       return <div className="mt mb-4">No rites currently summoned for this domain. The shelves are bare.</div>;
@@ -200,7 +205,16 @@ export default function Altars({ pose }) {
       
       <div className="card" style={{ width: '100%', minHeight: '300px', transition: 'opacity 0.3s ease', opacity }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-        <h3>The {displayedAltar} <SpeakerButton text={`The ${displayedAltar}`} /></h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3>The {displayedAltar} <SpeakerButton text={`The ${displayedAltar}`} /></h3>
+          <button 
+            className={`btn ${lesserRites[activeAltarId] ? 'plum' : 'g'}`} 
+            onClick={() => setLesserRites(prev => ({...prev, [activeAltarId]: !prev[activeAltarId]}))}
+            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}
+          >
+            {lesserRites[activeAltarId] ? 'Full' : 'Lesser'}
+          </button>
+        </div>
         {renderAltarContent()}
       </div>
     </div>
