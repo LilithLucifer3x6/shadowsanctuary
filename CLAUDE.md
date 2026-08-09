@@ -29,26 +29,32 @@
    possible — use `.maybeSingle()` and treat null as valid. This is the most likely crash in the
    entire application.
 8. **Every text input takes voice.** Every transcription is reviewable before commit.
-9. **Every visible string is in voice.** Amend not Edit. Strike from the record not Delete. Product
-   categories stay plain because they must stay scannable.
-10. **Never show spec vocabulary.** load-bearing, requires-rinse, layering weight, partner-assisted
+9. **Guided Conversation Guardrails:** Every AI-led conversation in the app (e.g., The First Inscription, The Reading, banish workflows, tolerance check-ins) MUST follow a strictly guided, structured pattern rather than free-form chat.
+   - **Purposeful Questioning:** The AI must ask a specific, purposeful question tied to the information it needs to collect.
+   - **Meaningful Follow-up:** The AI must analyze the user's answer and ask relevant, domain-specific follow-up questions (e.g., if a user reports dry skin, the AI must ask about duration, location, flaking, or tightness) *before* advancing to a new topic.
+   - **Tangent Redirection:** If the user's response goes off-topic, the AI must gently and atmospherically redirect them back to the active question.
+   - **Steering to the Goal:** Every conversation has a defined end-goal. The AI is responsible for actively steering the conversation toward completing that goal, not just generating pleasant dialogue.
+   - **Implementation Mandate:** Every conversational AI prompt in the codebase must explicitly contain instructions enforcing this structured pattern. It cannot be assumed.
+10. **Every visible string is in voice.** Amend not Edit. Strike from the record not Delete. Product
+    categories stay plain because they must stay scannable.
+11. **Never show spec vocabulary.** load-bearing, requires-rinse, layering weight, partner-assisted
     are internal terms. Translate before display.
-11. **Use `design-tokens.css` and `custom-icons.js` verbatim.** They are committed from the approved
+12. **Use `design-tokens.css` and `custom-icons.js` verbatim.** They are committed from the approved
     mockup. Do not restyle, reinterpret, or improve them. A screen with no mockup equivalent copies
     the nearest one that has. Inventing new visual treatment is a defect.
-12. **Icons are drawn, never emoji.** Phosphor for functional marks, game-icons for ritual marks, AI
+13. **Icons are drawn, never emoji.** Phosphor for functional marks, game-icons for ritual marks, AI
     draws an inline SVG when neither is exact. Resemblance to the real object is the standard.
-13. **Health Connect is the wearable broker on Android.** The web build has no direct wearable
+14. **Health Connect is the wearable broker on Android.** The web build has no direct wearable
     connection — browsers cannot reach Android's Health Connect API. Instead, the web build reads
     the most recently synced snapshot from the shared Supabase database, written by the Android app
     whenever it syncs fresh Health Connect data. This is an intentional, permanent architectural
     split, not a bug or a stopgap. The web build always shows a visible timestamp of when its data
     was last synced, so staleness is never presented as live.
-14. **Everything degrades cleanly.** No wearable connected, or no synced snapshot yet available,
+15. **Everything degrades cleanly.** No wearable connected, or no synced snapshot yet available,
     means those features simply do not appear.
-15. **Prescriptions are always named with strength.** Never a generic label.
-16. **No streaks, no guilt, no notifications** except the two restock nudges.
-17. **No gendered language anywhere**, including the avatar. Their complexion, their crown, the
+16. **Prescriptions are always named with strength.** Never a generic label.
+17. **No streaks, no guilt, no notifications** except the two restock nudges.
+18. **No gendered language anywhere**, including the avatar. Their complexion, their crown, the
     Keeper stands ready. Never she/her/he/his. Physiology is accounted for accurately where it
     matters medically, but nothing in the interface assumes a gender. Gendered wording is a defect.
 
@@ -268,6 +274,14 @@ Data originates through Android Health Connect, which acts as the single live br
 ## 20. Screens
 
 Six tabs across the top, horizontally scrollable on narrow screens. A landing screen (an illustrated exterior cottage view) precedes them, serving as the immediate and only entry point before The First Inscription. First launch routes to intake before anything else. Mortal Rites. Morning Rite and Evening Rite, both present. Generic category labels for ordinary products, real names for prescriptions. Each step is an independent checkbox logging on check. No button requires all steps to be complete. Optional steps use a toggle rather than a checkbox and gate nothing. The Grimoire. Weekly Wheel at top, showing everything scheduled for each day rather than a token entry or two. The month view is sized so day numbers and marks are legible without strain. Below it a real calendar month with the correct day count for the current month and year. Below that, completion history. Salon appointments live here with a Mark Done action that recalculates the next date from actual completion: nails roughly two weeks, retie roughly eight (this is powered by a dedicated `appointments` table and is fully decoupled from external calendar integrations). Veet and shaving are tracked as two separate independently-learned cadences, both permanently optional. The Altars. Five sub-views, always ordered head to toe and never alphabetically or by any other arrangement: The Crown for hair and scalp, with distinct daily-maintenance and wash-day layers; The Gaze for eye care; The Grin for oral care; The Visage for face; The Vessel for body, personal hygiene, and the bath ritual. The Gaze and The Grin do not appear on the calendar; their steps appear in the Rites. Rootwork. The Summoning Scroll at top. Below it The Apothecary for consumables and The Arsenal for durable tools, each grouped by category then sub-category. Add by photo; search is the fallback. The Scrying Pool. Per section 12. The Shadow Tome. A private journal, isolated from all routine logic. Mood is chosen from named feelings, never a numeric scale, and more than one may be true at once. The vocabulary of feeling is AI-generated and broad rather than a fixed handful. A guided breathing and meditation space lives here, drawing on readiness data where a wearable is connected. Voice-to-text throughout, with a visible microphone. Each Altar shows its complete routine in executable order, not an unordered list of the products it draws on. Where an Altar holds more than one rhythm, such as The Crown's daily maintenance and wash day, each is shown whole and in order. Steps name the action, not the product category alone: a toothbrush step reads as brushing teeth so the system and the user share the same meaning.
+
+**Occasional Altars and Surface Augmentation (The Veil):**
+Makeup and pure color cosmetics exist outside the therapeutic baseline of The Crown, Gaze, Grin, Visage, and Vessel. They are housed in an occasional-use domain called **The Veil**. Makeup items are strictly classified as `anytime` items and are invoked manually (often grouped as Composite Items like "Date Night Routine"). 
+- **Safety Parity:** Makeup items undergo the exact same deterministic Codex, Melanin Ward, and Synergy Engine checks as skincare, as they contain comedogenic and sensitizing ingredients.
+- **Mandatory Removal Mechanism:** 
+  - **The Trigger:** If the user taps a makeup item in their inventory to log it as "Applied", or if they invoke a Composite Item (like "Date Night") that contains *any* item categorized under The Veil, the application deterministically sets a local/database flag: `makeup_worn_today = true`.
+  - **The Consequence:** During evening routine generation, the Synergy Engine checks this flag. If true, it dynamically prepends a Double Cleanse/Oil Cleanse step to the top of The Visage routine.
+  - **The Reset:** The `makeup_worn_today` flag auto-resets to `false` the moment the user taps "Complete" on their evening Visage routine, or automatically at 4:00 AM local time (when the new day's Morning Rite generates) to ensure un-cleared flags do not permanently force double-cleansing on subsequent days.
 
 ## 21. Fixed sequences
 
