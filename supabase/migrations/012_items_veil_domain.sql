@@ -1,28 +1,16 @@
 -- The Veil (occasional-use makeup domain) was designed and implemented
 -- with Double Cleanse removal mechanism, makeup_worn_today triggers,
 -- and Lesser Rite exemption — all under the assumption that items can have
--- domain = 'Veil'. But the items.domain CHECK constraint has only ever
--- allowed ('Crown', 'Gaze', 'Grin', 'Visage', 'Vessel') — there has never
--- been a way to actually create a Veil-domain item, via the UI or
--- directly against the database. This adds it.
+-- domain = 'Veil'. But the items.domain CHECK constraint in 001_core_schema.sql
+-- only ever allowed ('Crown', 'Gaze', 'Grin', 'Visage', 'Vessel') — there was
+-- never a way to actually create a Veil-domain item, via the UI or the database.
 --
--- Uses a DO block rather than a hardcoded constraint name since the exact
--- auto-generated name wasn't confirmed against the live database.
-DO $$
-DECLARE
-  constraint_name TEXT;
-BEGIN
-  SELECT con.conname INTO constraint_name
-  FROM pg_constraint con
-  JOIN pg_class rel ON rel.oid = con.conrelid
-  WHERE rel.relname = 'items'
-    AND con.contype = 'c'
-    AND pg_get_constraintdef(con.oid) LIKE '%domain%IN%';
-
-  IF constraint_name IS NOT NULL THEN
-    EXECUTE format('ALTER TABLE items DROP CONSTRAINT %I', constraint_name);
-  END IF;
-
-  ALTER TABLE items ADD CONSTRAINT items_domain_check
-    CHECK (domain IN ('Crown', 'Gaze', 'Grin', 'Visage', 'Vessel', 'Veil'));
-END $$;
+-- The original inline CHECK in 001 was auto-named 'items_domain_check' by
+-- Postgres (confirmed against the live database). Drop it by that name and
+-- recreate with 'Veil' added.
+--
+-- Idempotent: IF EXISTS means re-running is safe even if the constraint has
+-- already been replaced (as is the case on the current live database).
+ALTER TABLE items DROP CONSTRAINT IF EXISTS items_domain_check;
+ALTER TABLE items ADD CONSTRAINT items_domain_check
+  CHECK (domain IN ('Crown', 'Gaze', 'Grin', 'Visage', 'Vessel', 'Veil'));
