@@ -51,12 +51,10 @@
 17. **No gendered language anywhere**, including the avatar. Their complexion, their crown, the
     Keeper stands ready. Never she/her/he/his. Physiology is accounted for accurately where it
     matters medically, but nothing in the interface assumes a gender. Gendered wording is a defect.
-18. **Guided Conversation Guardrails:** Every AI-led conversation in the app (e.g., The First Inscription, The Reading, banish workflows, tolerance check-ins) MUST follow a strictly guided, structured pattern rather than free-form chat.
-    - **Purposeful Questioning:** The AI must ask a specific, purposeful question tied to the information it needs to collect.
-    - **Meaningful Follow-up:** The AI must analyze the user's answer and ask relevant, domain-specific follow-up questions (e.g., if a user reports dry skin, the AI must ask about duration, location, flaking, or tightness) *before* advancing to a new topic.
-    - **Tangent Redirection:** If the user's response goes off-topic, the AI must gently and atmospherically redirect them back to the active question.
-    - **Steering to the Goal:** Every conversation has a defined end-goal. The AI is responsible for actively steering the conversation toward completing that goal, not just generating pleasant dialogue.
-    - **Implementation Mandate:** Every conversational AI prompt in the codebase must explicitly contain instructions enforcing this structured pattern. It cannot be assumed.
+18. **Guided conversations stay purposeful.** Every AI-led conversation
+    (intake, The Reading, banishing) must ask purposeful questions, follow
+    up meaningfully on the user's actual responses, gently redirect genuine
+    tangents, and steer toward its defined end goal rather than drifting.
 
 ## BUILD ORDER — finish each phase before starting the next
 
@@ -454,7 +452,7 @@ State names and domain names are settled. Ebbing and Hollow are confirmed. The G
 
 **AI Engine**:
 - `claude-sonnet-5` is locked as the universal intelligence engine across the entire application for all text, extraction, reasoning, and vision capabilities.
-- Image generation strictly uses Replicate (via REPLICATE_API_TOKEN) using the DreamShaper XL model, exclusively to construct a painterly, hand-illustrated, gothic, muted palette for the Avatar and dynamic backgrounds. No reference to any named real animation studio or artist is used as a generation target, for both aesthetic and legal reasons.
+- Image generation uses Replicate, via a dedicated REPLICATE_API_TOKEN configured on the Supabase edge function, using a full-quality (non-turbo, non-lightning) SDXL-family model to construct a hand-painted, animated dark-fantasy illustration style for the Avatar and dynamic backgrounds — never a distilled/speed-optimized model variant, which measurably sacrifices detail and prompt adherence.
 
 **Avatar & Room**:
 - **Avatar Builder**: The UI incorporates plus-size body types, ultra-skinny microlocs (shoulder length / high updo), and 10 robe styles. Avatar previews are generated live using the image model rather than SVG line drawings.
