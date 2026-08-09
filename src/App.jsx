@@ -538,6 +538,7 @@ export default function App() {
                         await supabase.from('routine_history').delete().not('id', 'is', null);
                         await supabase.from('appointments').delete().not('id', 'is', null);
                         await supabase.from('isotretinoin_log').delete().not('id', 'is', null);
+                        await supabase.from('codex_entries').delete().not('id', 'is', null);
                         await supabase.from('items').delete().not('id', 'is', null);
                       } catch (err) {
                         console.error('Failed to erase Codex', err);

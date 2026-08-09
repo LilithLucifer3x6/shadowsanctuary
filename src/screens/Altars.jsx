@@ -19,6 +19,7 @@ const ALTARS = [
   { id: 'grin', name: 'Grin', icon: G.grin },
   { id: 'visage', name: 'Visage', icon: G.visage },
   { id: 'vessel', name: 'Vessel', icon: G.vessel },
+  { id: 'veil', name: 'Veil', icon: G.veil },
 ];
 
 
