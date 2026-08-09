@@ -25,7 +25,7 @@
     --white: #d9c5e3; 
     --ash: rgba(176, 136, 204, 0.7); 
     --dim: rgba(176, 136, 204, 0.5);
-    --fs:1rem; --ff:'Sacramento', cursive, -apple-system,'Segoe UI',Roboto,sans-serif;
+    --fs:18px; --ff:'Elsie', cursive, -apple-system,'Segoe UI',Roboto,sans-serif;
   }
   *{box-sizing:border-box; font-weight: normal;}
   body{margin:0;background:url('/assets/app_bg.jpg') center/cover fixed;color:var(--plum);font-family:var(--ff);font-size:var(--fs);line-height:1.55;}

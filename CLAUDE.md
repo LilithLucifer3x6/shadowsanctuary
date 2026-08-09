@@ -92,7 +92,7 @@ The user has fibromyalgia, spondyloarthritis, rheumatoid arthritis, and osteoart
 - Text-to-speech is available throughout, not only on documents. Any block of readable content carries a small, unobtrusive speaker control at its right edge: routine steps, weekly wheel entries, calendar days, appointments, altar contents, inventory rows, and Scrying Pool output. Navigation labels and tab titles do not.
 - Text-to-speech is toggleable in settings and off does not degrade anything else.
 - Font size and typeface are user-adjustable in settings. Every screen reflows to accommodate the chosen size; text may wrap but layout must not break, overlap, or clip at any supported size.
-- Sacramento is the deliberately chosen sitewide font, including body and functional text, applied by explicit user decision rather than as an oversight. This trades away some at-a-glance legibility in favor of the intended aesthetic; text-to-speech, already available throughout the application per this section, is the accepted accessibility mitigation for that tradeoff.
+- Elsie is the deliberately chosen sitewide font, including body and functional text, applied by explicit user decision rather than as an oversight. This trades away some at-a-glance legibility in favor of the intended aesthetic; text-to-speech, already available throughout the application per this section, is the accepted accessibility mitigation for that tradeoff.
 
 ## 4. The avatar and the room
 
@@ -328,7 +328,7 @@ Products are added by photo. Optical character recognition extracts label text, 
 ## 28. Visual and voice
 
 Palette: obsidian ground, plum accents throughout, silver and platinum metals. Plum is the dominant, consistent accent color, used for text and interactive elements across the application. Green is excluded. Gold is permitted sparingly.
-- Sacramento is the deliberately chosen sitewide typeface, including body and functional text, per the explicit decision recorded in section 3. This is a chosen tradeoff, not an oversight; legibility at a glance is intentionally traded for the aesthetic, with text-to-speech as the accepted mitigation.
+- Elsie is the deliberately chosen sitewide typeface, including body and functional text, per the explicit decision recorded in section 3. This is a chosen tradeoff, not an oversight; legibility at a glance is intentionally traded for the aesthetic, with text-to-speech as the accepted mitigation.
 - Texture references aged parchment and ink, not wood, leather, or clay.
 - Theme is Virgin Islander and Hoodoo heritage blended with cottagecore goth, handled with respect and never as caricature.
 - Display names are consistent. Every tab and section heading carries the definite article: The Mortal Rites, The Grimoire, The Altars, The Rootwork, The Scrying Pool, The Shadow Tome. Running prose follows ordinary grammar.
