@@ -57,7 +57,7 @@ export async function startBackgroundRoomGeneration(config) {
   (async () => {
     try {
       // 1. Generate Reference Portrait
-      const portraitPrompt = `High-fidelity 2D digital painting portrait of a mystical Keeper. Plus size, full figure body type. Androgynous, dark rich umber skin, and ${config.locStyle || 'long'} microlocs adorned with ${config.hairAccessory || 'nothing'}. Wearing a deep ${config.robeColor || 'black'} gothic cottagecore robe of ${config.robeDesign || 'simple'} design, adorned with ${config.jewelry || 'no'} jewelry. Plain neutral gray background. Magical, ethereal lighting, painterly, hand-illustrated, gothic, muted palette. Soft glowing aura, calm expression.`;
+      const portraitPrompt = `Hand-painted 2D animated dark-fantasy illustration portrait of a mystical Keeper. Plus size, full figure body type. Androgynous, dark rich umber skin, and ${config.locStyle || 'long'} extremely fine, thread-thin microlocs, each strand clearly individually visible, no thicker than embroidery floss adorned with ${config.hairAccessory || 'nothing'}. Wearing a deep ${config.robeColor || 'black'} gothic cottagecore robe of ${config.robeDesign || 'simple'} design, adorned with ${config.jewelry || 'no'} jewelry. Plain neutral gray background. Lush painterly rendering, expressive stylized character design, gothic dark-fantasy video-game aesthetic, moody atmospheric lighting with dramatic shadows. No velvet texture anywhere; prefer flowing silk, brocade, or heavy wool-like fabrics instead. Soft glowing aura, calm expression.`;
       
       const { data: refData, error: refErr } = await invokeImageProxy({
         version: "39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b", // sdxl fallback
@@ -133,23 +133,26 @@ export async function startBackgroundRoomGeneration(config) {
  * @returns {Promise<{ reply: string, extractedData: Object|null }>}
  */
 export async function conductIntake(messageHistory) {
+    const userTurnCount = messageHistory.filter(h => h.role === 'user').length;
+    const mustConclude = userTurnCount >= 8;
   
-
-  const systemPrompt = `You are the keeper of Shadow and Sanctuary, an entity guiding a user through The First Inscription (an onboarding ritual).
-Speak in a respectful, slightly mystical, cottagecore-goth tone ("ritual voice"). Do not be overly verbose. Be direct but atmospheric.
-Do not use gendered language for the user. Do not assume their gender or use pronouns.
-
-Your goal is to gather the following:
-1. Concerns: What weighs on them? (e.g. acne, scarring, dryness, etc.)
-2. Conditions: What must the lounge protect? (e.g. ADHD, chronic pain, arthritis, etc.)
-3. Prescriptions (Master Invocations): Do they have topical prescriptions? Need name, strength, application zone, and frequency.
-4. Oral Medications: Anything that passes through the body that affects skin.
-5. Allergies/Sensitivities: Ingredients to never touch.
-6. Traditions: Preferred approaches to care (K-beauty, Ayurvedic, Hoodoo, Western Clinical, etc.)
-
-Proceed conversationally. Ask one or two questions at a time.
-When you believe you have gathered enough information across these categories (or the user says they have nothing else to add), you must call the 'finalize_intake' tool with the structured data.
-`;
+    const systemPrompt = `You are the keeper of Shadow and Sanctuary, an entity guiding a user through The First Inscription (an onboarding ritual).
+  Speak in a respectful, slightly mystical, cottagecore-goth tone ("ritual voice"). Do not be overly verbose. Be direct but atmospheric.
+  Do not use gendered language for the user. Do not assume their gender or use pronouns.
+  
+  Your goal is to gather the following:
+  1. Concerns: What weighs on them? (e.g. acne, scarring, dryness, etc.)
+  2. Conditions: What must the lounge protect? (e.g. ADHD, chronic pain, arthritis, etc.)
+  3. Prescriptions (Master Invocations): Do they have topical prescriptions? Need name, strength, application zone, and frequency.
+  4. Oral Medications: Anything that passes through the body that affects skin.
+  5. Allergies/Sensitivities: Ingredients to never touch.
+  6. Traditions: Preferred approaches to care (K-beauty, Ayurvedic, Hoodoo, Western Clinical, etc.)
+  
+  RULE 18 (Guardrails): You must ask purposeful questions and follow up meaningfully on the user's actual answers. If the user wanders off-topic, gently redirect them back to these intake topics.
+  
+  Proceed conversationally. Ask one or two questions at a time.
+  ${mustConclude ? `This is your FINAL response, regardless of what has been discussed so far. You MUST call the 'finalize_intake' tool immediately with whatever data you have gathered. Do not ask another question.` : `When you believe you have gathered enough information across these categories (or the user says they have nothing else to add), you must call the 'finalize_intake' tool with the structured data.`}
+  `;
 
   const tools = [
     {
