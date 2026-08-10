@@ -419,7 +419,7 @@ export async function evaluateScryingPool(productInfo, userProfile, inventory, r
 The user seeks your wisdom on a prospective new product or formula (The Echo).
 Perform a strict Safety Check against their known allergies (The Codex), medical conditions, and past Somatic Reactions. 
 If they have banished items or reacted poorly (peeling, redness, burning), deduce the common denominator ingredients and explicitly warn them if the prospective item contains them.
-Perform a Redundancy Guard: compare the prospective item's primary actives against their current inventory. If they already own a formula that serves the exact same purpose or uses the same actives, explicitly warn them to guard against redundant spending. Composite blends in the inventory list are annotated with their individual components in brackets — check redundancy against both the blend as a whole AND its listed components. If the prospective item shares a primary active with a blend's component even though the blend itself serves a different purpose, that's still worth flagging.
+Perform a Redundancy Guard: compare the prospective item's primary actives against their current inventory. If they already own a formula that serves the exact same purpose or uses the same actives, explicitly warn them to guard against redundant spending. For composite blends, check redundancy against both the blend as a whole AND its individual components — if the prospective item shares a primary active with a blend's component even though the blend itself serves a different purpose, that's still worth flagging.
 If you detect a safety conflict or redundancy, you MUST suggest valid alternative replacements. STRICT CONSTRAINT: You must suggest replacements from their *owned* Current Inventory first. Do not suggest new real-world purchases unless they literally own nothing that serves the same purpose.
 Speak in a mystical, cottagecore-goth tone ("ritual voice"). Be concise but insightful.
 Do not use gendered language or pronouns.
@@ -434,15 +434,21 @@ Banished Items (The Crypt of Ashes) [Max 40]:
 ${banishedStr ? banishedStr.substring(0, 4000) + (banishedStr.length > 4000 ? '\n...[TRUNCATED]' : '') : 'None'}
 
 Current Inventory [Max 40 items]:
-${JSON.stringify(inventory.slice(0, 40).map(i => {
-  let base = `${i.name} (${i.category})`;
-  if (i.item_type === 'composite' && i.composite_components && i.composite_components.length > 0) {
-    const components = i.composite_components.map(cc => cc.items?.name).filter(Boolean).join(', ');
-    base += ` [Blend containing: ${components}]`;
-  }
-  return base;
-}), null, 2)}
+${JSON.stringify(inventory.slice(0, 40).map(i => i.name + ' (' + i.category + ')'), null, 2)}
 ${inventory.length > 40 ? '...[TRUNCATED - Showing 40 of ' + inventory.length + ' items]' : ''}
+
+Composite Blends — Component Breakdown (per section 9, composites are evaluated at both levels: the blend as a ritual, AND its components individually):
+${(() => {
+  const composites = inventory.filter(i => Array.isArray(i.composite_components) && i.composite_components.length > 0);
+  if (composites.length === 0) return 'None in current inventory.';
+  return composites.map(c => {
+    const componentNames = c.composite_components
+      .map(cc => cc.items?.name)
+      .filter(Boolean)
+      .join(', ');
+    return `${c.name} (blend) — components: ${componentNames || 'unknown'}`;
+  }).join('\n');
+})()}
 `;
 
   const { data, error } = await invokeAnthropicProxy({
