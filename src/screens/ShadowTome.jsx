@@ -334,13 +334,17 @@ export default function ShadowTome({ pose }) {
     setIsSavingTea(true);
     
     try {
-      await supabase.from('shadowtome_elixirs').insert([{
+      await supabase.from('items').insert([{
         brand: teaForm.brand,
         name: teaForm.name,
+        domain: 'Herbal Elixirs',
+        category: teaForm.category,
         ingredients: JSON.stringify(teaForm.ingredients.split(',').map(s => s.trim()).filter(Boolean)),
-        caffeine_content: teaForm.caffeine_content,
-        steep_time: teaForm.steep_time,
-        circadian_alignment: teaForm.circadian_alignment
+        item_type: 'consumable',
+        lifecycle_state: 'stocked',
+        elixir_caffeine: teaForm.caffeine_content,
+        elixir_steep_time: teaForm.steep_time,
+        elixir_circadian: teaForm.circadian_alignment
       }]);
     } catch (err) {
       console.error("Save failed", err);
@@ -592,12 +596,12 @@ export default function ShadowTome({ pose }) {
               <div className="mt mb-4" style={{ textAlign: 'center' }}>Honey Infusion Batch Tracking</div>
               
               {!activeBatch ? (
-                <button className="btn plum" onClick={startNewBatch}>Begin New Batch</button>
+                <button className="btn plum" onClick={startNewBatch}>Begin the Working</button>
               ) : (
                 <div style={{ textAlign: 'left' }}>
                   {/* Step 1: Raw Flower */}
                   <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. Raw Flower</div>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. The Consecrated Flower</div>
                     <div className="field">
                       <label>Flower Source</label>
                       <select value={activeBatch.raw_flower_item_id || ''} onChange={e => updateBatch({ raw_flower_item_id: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)', padding: '0.4rem', width: '100%' }}>
@@ -622,7 +626,7 @@ export default function ShadowTome({ pose }) {
   
                   {/* Step 2: Decarboxylation */}
                   <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>2. Decarboxylation</div>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>2. The Awakening (Decarboxylation)</div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <div className="field" style={{ flex: 1 }}>
                         <label>Temp (°F)</label>
@@ -641,7 +645,7 @@ export default function ShadowTome({ pose }) {
   
                   {/* Step 3: Oil Infusion */}
                   <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>3. Oil Infusion</div>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>3. The Transmutation (Oil Infusion)</div>
                     <div className="field">
                       <label>Carrier Oil</label>
                       <select value={activeBatch.carrier_oil_item_id || ''} onChange={e => updateBatch({ carrier_oil_item_id: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)', padding: '0.4rem', width: '100%' }}>
@@ -675,7 +679,7 @@ export default function ShadowTome({ pose }) {
   
                   {/* Step 4: Honey Blend */}
                   <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>4. Honey Blend</div>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>4. The Final Binding (Honey Blend)</div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginBottom: '0.5rem' }}>Method: Immersion blender</div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <div className="field" style={{ flex: 1 }}>
@@ -713,12 +717,12 @@ export default function ShadowTome({ pose }) {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center', marginTop: '1rem' }}>
                   {vessels.map(v => (
                     <button key={v.id} className="btn sm" onClick={() => handleLogVessel(v, 1)}>
-                      Log 1x {v.name}
+                      Imbibe 1x {v.name}
                     </button>
                   ))}
                 </div>
                 <button className="btn mt-3" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowVesselModal(true)}>
-                  <Icon name="plus" /> Register New Vessel
+                  <Icon name="plus" /> Consecrate New Vessel
                 </button>
               </div>
               
@@ -834,14 +838,6 @@ export default function ShadowTome({ pose }) {
 
             {teaModalState === 'manual' && (
               <>
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Divine by Visage</label>
-                  <div style={{position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', color: 'var(--plum)', cursor: 'pointer'}}>
-                    <Icon name="ph-camera" /> 
-                    <span style={{marginTop: '0.5rem', textAlign: 'center'}}>{teaStatus}</span>
-                    <input type="file" accept="image/*" capture="environment" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer'}} onChange={handleTeaUpload} />
-                  </div>
-                </div>
 
                                 <div className="field">
                   <label style={{color: 'var(--plum)'}}>Category</label>

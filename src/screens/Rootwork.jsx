@@ -782,124 +782,125 @@ export default function Rootwork({ pose }) {
       </div>
 
       <div className="tome-grid mt-4" style={{ width: '100%' }}>
-        <div className="card mb-4" style={{ marginBottom: 0, alignSelf: 'start', width: '100%' }}>
-          <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-          <h3 style={{ justifyContent: 'center' }}>The Silver Toll <SpeakerButton text="The Silver Toll" /></h3>
-          <div className="mt mb-4" style={{ textAlign: 'center' }}>The material cost of your active rituals, tied to frequency of devotion.</div>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '2.5rem', color: 'var(--plum)' }}>
-              ${(() => {
-                const { amItems, pmItems } = buildBaseRoutines(items, {}, {});
-                const activeIds = new Set([...amItems.map(i=>i.id), ...pmItems.map(i=>i.id)]);
-                const activeItems = items.filter(i => activeIds.has(i.id));
+        <div className="tome-main-col" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <h3 style={{ justifyContent: 'center' }}>The Summoning Scroll <SpeakerButton text="The Summoning Scroll" /></h3>
+            <div className="mt mb-4" style={{ textAlign: 'center' }}>Items needing replenishment. Non-essential items wait for batches of 5.</div>
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {(() => {
+                if (ebbing.length === 0) return <div className="mt" style={{ textAlign: 'center' }}>No active summons.</div>;
                 
-                let totalMonthly = 0;
-                activeItems.forEach(item => {
-                  if (item.price && item.period_after_opening_months) {
-                    const price = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
-                    const months = parseInt(item.period_after_opening_months, 10) || 1;
-                    let usesPerWeek = 7;
-                    try {
-                      if (item.behavior_flags) {
-                        const b = typeof item.behavior_flags === 'string' ? JSON.parse(item.behavior_flags) : item.behavior_flags;
-                        if (typeof b.uses_per_week === 'number') {
-                          usesPerWeek = b.uses_per_week;
-                        } else {
-                           usesPerWeek = item.category?.toLowerCase().includes('mask') ? (item.category?.toLowerCase().includes('rinse') ? 2 : 5) : 7;
-                        }
-                      } else {
-                         usesPerWeek = item.category?.toLowerCase().includes('mask') ? (item.category?.toLowerCase().includes('rinse') ? 2 : 5) : 7;
-                      }
-                    } catch(e) {
-                      usesPerWeek = item.category?.toLowerCase().includes('mask') ? (item.category?.toLowerCase().includes('rinse') ? 2 : 5) : 7;
-                    }
-                    const usageFactor = usesPerWeek / 7;
-                    totalMonthly += (price / months) * usageFactor;
-                  }
-                });
-                return totalMonthly.toFixed(2);
+                const essential = ebbing.filter(i => i.is_essential);
+                const nonEssential = ebbing.filter(i => !i.is_essential);
+                const readyNonEssential = nonEssential.length >= 5 ? nonEssential : [];
+                const pendingCount = nonEssential.length < 5 ? nonEssential.length : 0;
+                
+                const itemsToRender = [...essential, ...readyNonEssential];
+                
+                return (
+                  <>
+                    {itemsToRender.map(renderRow)}
+                    {pendingCount > 0 && (
+                      <div style={{ textAlign: 'center', color: 'var(--dim)', fontSize: '0.9rem', fontStyle: 'italic', marginTop: '1rem', padding: '1rem', borderTop: '1px dashed var(--border)' }}>
+                        {pendingCount} non-essential item{pendingCount > 1 ? 's are' : ' is'} ebbing and silently waiting for a batch of 5.
+                      </div>
+                    )}
+                    {itemsToRender.length === 0 && pendingCount === 0 && (
+                      <div className="mt" style={{ textAlign: 'center' }}>No active summons.</div>
+                    )}
+                  </>
+                );
               })()}
             </div>
           </div>
-        </div>
 
-        <div className="card mb-4" style={{ marginBottom: 0, width: '100%' }}>
-          <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-          <h3 style={{ justifyContent: 'center' }}>The Echo <SpeakerButton text="The Echo" /></h3>
-          <div className="mt mb-4" style={{ textAlign: 'center' }}>Reveal the hidden nature of a formula.</div>
-          
-          <div className="field" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <label>Divine by Visage</label>
-            <div style={{position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.8rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', width: '200px'}}>
-              <Icon name={G.tabPool} /> 
-              <span style={{marginTop: '0.5rem', textAlign: 'center', fontSize: '0.9rem'}}>Offer an image</span>
-              <input type="file" accept="image/*" capture="environment" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer'}} onChange={handleEchoPhotoUpload} />
+          <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <h3 style={{ justifyContent: 'center' }}>The Waning <SpeakerButton text="The Waning" /></h3>
+            <div className="mt mb-4" style={{ textAlign: 'center' }}>Relics nearing the end of their mortal potency.</div>
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {waningItems.length === 0 ? <div className="mt" style={{ textAlign: 'center' }}>All relics remain potent.</div> : waningItems.map(renderRow)}
             </div>
           </div>
 
-          <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-            <div style={{ width: '100%' }}>
-              <VoiceInput 
-                isTextArea={true}
-                placeholder="Or provide the formula's true name..."
-                value={echoInput}
-                onChange={(e) => setEchoInput(e.target.value)}
-                style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--plum)', fontSize: '1.1rem' }}
-              />
+          <div className="card mb-4" style={{ marginBottom: 0, alignSelf: 'start', width: '100%' }}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <h3 style={{ justifyContent: 'center' }}>The Silver Toll <SpeakerButton text="The Silver Toll" /></h3>
+            <div className="mt mb-4" style={{ textAlign: 'center' }}>The material cost of your active rituals, tied to frequency of devotion.</div>
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '2.5rem', color: 'var(--plum)' }}>
+                ${(() => {
+                  const { amItems, pmItems } = buildBaseRoutines(items, {}, {});
+                  const activeIds = new Set([...amItems.map(i=>i.id), ...pmItems.map(i=>i.id)]);
+                  const activeItems = items.filter(i => activeIds.has(i.id));
+                  
+                  let totalMonthly = 0;
+                  activeItems.forEach(item => {
+                    if (item.price && item.period_after_opening_months) {
+                      const price = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
+                      const months = parseInt(item.period_after_opening_months, 10) || 1;
+                      let usesPerWeek = 7;
+                      try {
+                        if (item.behavior_flags) {
+                          const b = typeof item.behavior_flags === 'string' ? JSON.parse(item.behavior_flags) : item.behavior_flags;
+                          if (typeof b.uses_per_week === 'number') {
+                            usesPerWeek = b.uses_per_week;
+                          } else {
+                             usesPerWeek = item.category?.toLowerCase().includes('mask') ? (item.category?.toLowerCase().includes('rinse') ? 2 : 5) : 7;
+                          }
+                        } else {
+                           usesPerWeek = item.category?.toLowerCase().includes('mask') ? (item.category?.toLowerCase().includes('rinse') ? 2 : 5) : 7;
+                        }
+                      } catch(e) {
+                        usesPerWeek = item.category?.toLowerCase().includes('mask') ? (item.category?.toLowerCase().includes('rinse') ? 2 : 5) : 7;
+                      }
+                      const usageFactor = usesPerWeek / 7;
+                      totalMonthly += (price / months) * usageFactor;
+                    }
+                  });
+                  return totalMonthly.toFixed(2);
+                })()}
+              </div>
             </div>
-            <button className="btn plum" onClick={handleEchoScry} style={{ minWidth: '120px' }}>Divine</button>
-          </div>
-          <div style={{ marginTop: '0.5rem', fontSize: '1rem', color: 'var(--plum)', minHeight: '1rem', textAlign: 'center' }}>
-            {echoStatus}
-          </div>
-          <div style={{ marginTop: '1rem', fontSize: '1.1rem', lineHeight: 1.5, color: 'var(--plum)', whiteSpace: 'pre-wrap' }}>
-            {echoResult}
-          </div>
-        </div>
-      </div>
-
-      <div className="rites2 mt-4" style={{ width: '100%' }}>
-        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
-          <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-          <h3 style={{ justifyContent: 'center' }}>The Waning <SpeakerButton text="The Waning" /></h3>
-          <div className="mt mb-4" style={{ textAlign: 'center' }}>Relics nearing the end of their mortal potency.</div>
-          <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {waningItems.length === 0 ? <div className="mt" style={{ textAlign: 'center' }}>All relics remain potent.</div> : waningItems.map(renderRow)}
           </div>
         </div>
 
-        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
-          <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-          <h3 style={{ justifyContent: 'center' }}>The Summoning Scroll <SpeakerButton text="The Summoning Scroll" /></h3>
-          <div className="mt mb-4" style={{ textAlign: 'center' }}>Items needing replenishment. Non-essential items wait for batches of 5.</div>
-          <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {(() => {
-              if (ebbing.length === 0) return <div className="mt" style={{ textAlign: 'center' }}>No active summons.</div>;
-              
-              const essential = ebbing.filter(i => i.is_essential);
-              const nonEssential = ebbing.filter(i => !i.is_essential);
-              const readyNonEssential = nonEssential.length >= 5 ? nonEssential : [];
-              const pendingCount = nonEssential.length < 5 ? nonEssential.length : 0;
-              
-              const itemsToRender = [...essential, ...readyNonEssential];
-              
-              return (
-                <>
-                  {itemsToRender.map(renderRow)}
-                  {pendingCount > 0 && (
-                    <div style={{ textAlign: 'center', color: 'var(--dim)', fontSize: '0.9rem', fontStyle: 'italic', marginTop: '1rem', padding: '1rem', borderTop: '1px dashed var(--border)' }}>
-                      {pendingCount} non-essential item{pendingCount > 1 ? 's are' : ' is'} ebbing and silently waiting for a batch of 5.
-                    </div>
-                  )}
-                  {itemsToRender.length === 0 && pendingCount === 0 && (
-                    <div className="mt" style={{ textAlign: 'center' }}>No active summons.</div>
-                  )}
-                </>
-              );
-            })()}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div className="card mb-4" style={{ marginBottom: 0, width: '100%' }}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <h3 style={{ justifyContent: 'center' }}>The Echo <SpeakerButton text="The Echo" /></h3>
+            <div className="mt mb-4" style={{ textAlign: 'center' }}>Reveal the hidden nature of a formula.</div>
+            
+            <div className="field" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <label>Divine by Visage</label>
+              <div style={{position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.8rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', width: '200px'}}>
+                <Icon name={G.tabPool} /> 
+                <span style={{marginTop: '0.5rem', textAlign: 'center', fontSize: '0.9rem'}}>Offer an image</span>
+                <input type="file" accept="image/*" capture="environment" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer'}} onChange={handleEchoPhotoUpload} />
+              </div>
+            </div>
+
+            <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+              <div style={{ width: '100%' }}>
+                <VoiceInput 
+                  isTextArea={true}
+                  placeholder="Or provide the formula's true name..."
+                  value={echoInput}
+                  onChange={(e) => setEchoInput(e.target.value)}
+                  style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--plum)', fontSize: '1.1rem' }}
+                />
+              </div>
+              <button className="btn plum" onClick={handleEchoScry} style={{ minWidth: '120px' }}>Divine</button>
+            </div>
+            <div style={{ marginTop: '0.5rem', fontSize: '1rem', color: 'var(--plum)', minHeight: '1rem', textAlign: 'center' }}>
+              {echoStatus}
+            </div>
+            <div style={{ marginTop: '1rem', fontSize: '1.1rem', lineHeight: 1.5, color: 'var(--plum)', whiteSpace: 'pre-wrap' }}>
+              {echoResult}
+            </div>
           </div>
         </div>
-
       </div>
 
 

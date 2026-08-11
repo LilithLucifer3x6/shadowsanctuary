@@ -20,7 +20,6 @@ const ALTARS = [
   { id: 'visage', name: 'Visage', icon: G.visage },
   { id: 'vessel', name: 'Vessel', icon: G.vessel },
   { id: 'veil', name: 'Veil', icon: G.veil },
-  { id: 'steeping', name: 'Steeping', icon: G.steeping },
 ];
 
 
@@ -103,7 +102,7 @@ export default function Altars({ pose }) {
     if (dom === 'vessel') return 'body-vessel';
     if (dom === 'visage') return 'visage-face';
     if (dom === 'crown') return 'crown';
-    if (dom === 'steeping' || dom === 'herbal elixirs') return 'leaf';
+    if (dom === 'herbal elixirs') return 'leaf';
     if (dom === 'measure') return 'leaf'; // Using leaf or sparkles as fallback for now
     return 'sparkles'; 
   };

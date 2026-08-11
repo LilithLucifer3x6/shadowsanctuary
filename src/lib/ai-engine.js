@@ -20,7 +20,7 @@ export async function invokeAnthropicProxy(body, retries = 1) {
       // content[0] before the actual text block. Strip non-text blocks so all
       // callers can safely use content[0].text without thinking-awareness.
       if (data.content && Array.isArray(data.content)) {
-        data.content = data.content.filter(b => b.type === 'text');
+        data.content = data.content.filter(b => b.type === 'text' || b.type === 'tool_use');
       }
       return { data, error: null };
     } catch (err) {
