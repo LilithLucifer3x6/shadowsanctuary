@@ -375,7 +375,7 @@ export default function App() {
               let hasAvatar = false;
               try {
                 const conf = JSON.parse(localStorage.getItem('avatar_config'));
-                if (conf && conf.name) hasAvatar = true;
+                if (conf && Object.keys(conf).length > 0) hasAvatar = true;
               } catch(e) {}
               const hasIntake = localStorage.getItem('intake_completed') === 'true';
               if (!hasAvatar) setCurrentScreen('avatar');
