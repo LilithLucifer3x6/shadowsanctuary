@@ -308,8 +308,8 @@ export default function Rites({ pose }) {
       if (cat.includes('serum') || cat.includes('oil')) return 'oil-dropper';
       if (item.isRx) return 'rx-tube';
       if (dom === 'vessel') return 'body-vessel';
-      if (item.domain === 'visage') return 'visage-face';
-    if (dom === 'steeping' || dom === 'herbal elixirs' || dom === 'measure') return 'leaf';
+      if (dom === 'visage') return 'visage-face';
+    if (dom === 'herbal elixirs' || dom === 'measure') return 'leaf';
       return 'sparkles'; 
     };
     
