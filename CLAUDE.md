@@ -475,3 +475,27 @@ State names and domain names are settled. Ebbing and Hollow are confirmed. The G
 
 **Safety Layer**:
 - The permanent Lavender Codex block is enforced at the database level via Postgres triggers on the `codex_entries` table, blocking both deletion and rename-based removal, independent of any application-layer check.
+
+===================================================================
+SECRET HANDLING — ABSOLUTE RULES (violating any of these is a critical failure)
+===================================================================
+
+The core rule: assume EVERYTHING you print — every "Ran command" line, every console.log, every error message, every raw API response you show — gets copy-pasted directly into an external chat by the user, verbatim, without them reading it first. If a real secret value could ever appear in that text, the rule below applies regardless of the reason, the urgency, or how small/partial the exposure would be.
+
+NEVER, under any circumstances:
+1. Run `cat .env`, `Get-Content .env`, `type .env`, or any command that dumps a secrets file's contents to visible output — not even to "check if a key exists," not even filtered to one line.
+2. Write a real secret value as a literal string inside a command you run — this includes PowerShell/node/curl commands with a key typed directly into headers, URLs, or request bodies. If a command's TEXT contains the actual secret, it WILL be visible in the output regardless of what the command does.
+3. Print any portion of a secret value, including "just the first 4 characters to confirm it loaded" — no partial exposure is acceptable.
+4. Extract a credential from any credential store, cache, or keychain (git credential manager, Windows Credential Manager, npm auth tokens, gh CLI stored tokens, browser-saved values, etc.) and use it inline in a way that could print it — this includes `git credential fill`, `gh auth token`, or reading OS keychains programmatically.
+5. Build a database connection string, API header, or URL with a real password/token/key embedded, and then run, log, or echo that string anywhere.
+6. Include a secret value in a git commit, even temporarily, even if you plan to remove it in a later commit — git history retains it permanently regardless of later changes.
+
+INSTEAD, always do this:
+- If a script needs a secret, the secret must already exist as an environment variable SET IN THE SHELL SESSION BEFORE the script runs (e.g. via the user's own .env being loaded by dotenv inside the script, or a CI platform's own secrets injection) — never pass it as a literal on a command line you then display.
+- When writing Node/Deno/Python scripts that need a key, read it via `process.env.KEY_NAME` (or equivalent) INSIDE the script file, and never print that value anywhere in the script's own output — not even for debugging.
+- If you need to confirm a secret is set without exposing it, check only whether it's present/non-empty (e.g. `if (!process.env.KEY_NAME) throw new Error('missing')`) — never log the value itself, not even partially.
+- If a task genuinely requires a new credential (API token, access token, connection string) that isn't already available as an env var, STOP and tell the user exactly what's needed and why, and ask them to add it directly to their local .env file themselves, outside of chat, the same way it's been done tonight. Never ask them to paste a secret value into chat, and never try to programmatically extract one from a credential store as a workaround.
+- Before running any command, silently check it against this test: "does the literal text of this command, or anything it will print, contain a real secret value?" If yes, rewrite the approach before running it — don't run it and hope the output looks fine.
+- For deploy/CLI tools that need auth (supabase CLI, gh CLI, etc.), rely on their own standard environment-variable-based auth (SUPABASE_ACCESS_TOKEN, GH_TOKEN, etc., already set in the shell environment) rather than fetching/printing a token through any other mechanism.
+
+If you ever catch yourself about to run a command that would violate any of the above, stop, explain to the user what you need and why, and let them add it directly — do not find a workaround that technically avoids printing the exact string while still exposing it through some other channel (e.g., writing it to a file you then read and print, which is the same exposure with extra steps).
