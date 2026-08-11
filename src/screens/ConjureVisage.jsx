@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase.js';
 import VoiceInput from '../components/VoiceInput.jsx';
 import Icon from '../components/Icon.jsx';
@@ -275,6 +275,12 @@ export default function ConjureVisage({ onFinish }) {
 
   const isComplete = name && locStyle && hairColor && robeDesign && robeColor && hairAccessory && jewelry && familiar;
 
+  useEffect(() => {
+    // Reset preview image if any core config option changes so the preview button comes back
+    setPreviewImage(null);
+    setGeneratingPreview(false);
+  }, [locStyle, hairColor, robeDesign, robeColor, hairAccessory, jewelry, familiar]);
+
   const buildKeeperDescription = () => {
     const hair    = HAIRSTYLES.find(h => h.id === locStyle);
     const design  = ROBE_DESIGNS.find(d => d.id === robeDesign);
@@ -307,8 +313,8 @@ export default function ConjureVisage({ onFinish }) {
     
     try {
       const { data, error } = await invokeImageProxy({
-        version: "39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b", // sdxl fallback
-        input: { prompt: portraitPrompt, width: 1024, height: 1024 }
+        model: "black-forest-labs/flux-pro",
+        input: { prompt: portraitPrompt, width: 1024, height: 1024, output_format: 'jpg' }
       });
       if (data && data.output && data.output[0]) {
         setPreviewImage(data.output[0]);
