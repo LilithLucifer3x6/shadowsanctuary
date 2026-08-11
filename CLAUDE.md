@@ -501,12 +501,12 @@ INSTEAD, always do this:
 If you ever catch yourself about to run a command that would violate any of the above, stop, explain to the user what you need and why, and let them add it directly â€” do not find a workaround that technically avoids printing the exact string while still exposing it through some other channel (e.g., writing it to a file you then read and print, which is the same exposure with extra steps).
 
 ===================================================================
-NO STUBS, NO MOCKS — ABSOLUTE RULE
+NO STUBS, NO MOCKS ï¿½ ABSOLUTE RULE
 ===================================================================
 
-Every feature that gets built must be the real, working implementation — connected to the real database, the real AI pipeline, the real Replicate/Anthropic calls, real file storage. This applies with no exceptions, regardless of framing:
+Every feature that gets built must be the real, working implementation ï¿½ connected to the real database, the real AI pipeline, the real Replicate/Anthropic calls, real file storage. This applies with no exceptions, regardless of framing:
 - Never write a function that fakes success, returns hardcoded placeholder data, or shows a fake confirmation instead of actually performing the real operation.
-- Never simulate an AI response, an API call, or a calculation result "for now" with the intention of replacing it later — if the real integration can't be completed in this pass, say so explicitly and leave the feature visibly unfinished (e.g., don't render the button at all, or show it disabled with a clear note), rather than wiring up something that LOOKS functional but isn't.
+- Never simulate an AI response, an API call, or a calculation result "for now" with the intention of replacing it later ï¿½ if the real integration can't be completed in this pass, say so explicitly and leave the feature visibly unfinished (e.g., don't render the button at all, or show it disabled with a clear note), rather than wiring up something that LOOKS functional but isn't.
 - This applies to every layer: UI stubs, fake API responses, hardcoded calculation results standing in for real math, placeholder data pretending to be real database rows.
-- If a stub or mock is already present anywhere in the existing codebase, flag it explicitly the moment it's found — don't leave it silently in place assuming someone else will catch it later.
+- If a stub or mock is already present anywhere in the existing codebase, flag it explicitly the moment it's found ï¿½ don't leave it silently in place assuming someone else will catch it later.
 - The test for whether something qualifies: would the user, testing this feature in the live app, reasonably believe it's doing the real thing? If yes, and it isn't, that's a violation regardless of intent.
