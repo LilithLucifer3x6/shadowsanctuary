@@ -54,13 +54,13 @@ export default function App() {
   // Settings state
   const [settings, setSettings] = useState({
     ttsEnabled: true,
-    font: 'Elsie',
+    fontFamily: 'Elsie',
     cal: false,
     gcalClientId: ''
   });
 
-  const [session, setSession] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [session, setSession] = useState({ user: { id: 'dummy' } });
+  const [authLoading, setAuthLoading] = useState(false);
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
