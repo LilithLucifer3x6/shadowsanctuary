@@ -23,6 +23,20 @@ serve(async (req) => {
       });
     }
 
+    // Restore Auth Check
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: req.headers.get('Authorization')! } }
+    });
+    
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const payload = await req.json();
     const replicateToken = Deno.env.get('REPLICATE_API_TOKEN');
 
@@ -34,14 +48,24 @@ serve(async (req) => {
     }
 
     // Call Replicate API synchronously (waiting for the prediction to finish)
-    const res = await fetch('https://api.replicate.com/v1/predictions', {
+    const endpoint = payload.model 
+      ? `https://api.replicate.com/v1/models/${payload.model}/predictions`
+      : 'https://api.replicate.com/v1/predictions';
+
+    // Remove model from payload if we are using the model endpoint, as Replicate might reject it
+    const reqBody = { ...payload };
+    if (reqBody.model) {
+      delete reqBody.model;
+    }
+
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Authorization': `Token ${replicateToken}`,
         'Content-Type': 'application/json',
         'Prefer': 'wait' // Wait for the prediction to complete
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(reqBody)
     });
 
     if (!res.ok) {

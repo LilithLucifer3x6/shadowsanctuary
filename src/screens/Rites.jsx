@@ -298,7 +298,8 @@ export default function Rites({ pose }) {
       if (item.name === 'The Drying') return 'ph-towel';
       if (item.name === 'The Purging of Blemishes') return 'ph-needle';
       if (item.name === 'The Warm Gaze') return 'ph-eye-closed';
-      if (item.domain === 'grin') return 'tooth';
+      const dom = (item.domain || '').toLowerCase();
+    if (dom === 'grin') return 'tooth';
       const cat = (item.category || '').toLowerCase();
       if (cat.includes('cleanser') || cat.includes('wash')) return 'cleanser-tube';
       if (cat.includes('toner') || cat.includes('mist')) return 'toner-bottle';
@@ -306,8 +307,9 @@ export default function Rites({ pose }) {
       if (cat.includes('sunscreen') || cat.includes('spf')) return 'sunscreen';
       if (cat.includes('serum') || cat.includes('oil')) return 'oil-dropper';
       if (item.isRx) return 'rx-tube';
-      if (item.domain === 'vessel') return 'body-vessel';
+      if (dom === 'vessel') return 'body-vessel';
       if (item.domain === 'visage') return 'visage-face';
+    if (dom === 'steeping' || dom === 'herbal elixirs' || dom === 'measure') return 'leaf';
       return 'sparkles'; 
     };
     

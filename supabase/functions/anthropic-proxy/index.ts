@@ -23,6 +23,20 @@ serve(async (req) => {
       });
     }
 
+    // Restore Auth Check
+    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: req.headers.get('Authorization')! } }
+    });
+    
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    
+    if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const payload = await req.json();
 
     const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');

@@ -2,7 +2,7 @@
 -- We must drop and recreate to add 'Herbal Elixirs' and remove 'Steeping'
 ALTER TABLE items DROP CONSTRAINT IF EXISTS items_domain_check;
 ALTER TABLE items ADD CONSTRAINT items_domain_check
-  CHECK (domain IN ('Crown', 'Gaze', 'Grin', 'Visage', 'Vessel', 'Veil', 'Herbal Elixirs'));
+  CHECK (domain IN ('Crown', 'Gaze', 'Grin', 'Visage', 'Vessel', 'Veil', 'Herbal Elixirs', 'Measure'));
 
 -- 2. Add legacy tea fields (discrete columns) to items
 ALTER TABLE items ADD COLUMN IF NOT EXISTS elixir_caffeine TEXT;
@@ -40,5 +40,4 @@ SELECT
   circadian_alignment
 FROM shadowtome_elixirs;
 
--- 5. Cleanup: Drop the legacy table now that data is safely migrated
-DROP TABLE shadowtome_elixirs;
+

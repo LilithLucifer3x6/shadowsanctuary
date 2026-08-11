@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS public.infusion_batches (
   lecithin_volume_ml numeric,
   
   -- The Calculated Result
-  calculated_final_mg_ml numeric NOT NULL,
+  calculated_final_mg_ml numeric,
   
   created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );

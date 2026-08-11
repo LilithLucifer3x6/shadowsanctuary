@@ -92,17 +92,19 @@ export default function Altars({ pose }) {
 
   const getGlyph = (item) => {
     if (item.glyph) return item.glyph;
-    if (item.domain === 'grin') return 'tooth';
+    const dom = (item.domain || '').toLowerCase();
+    if (dom === 'grin') return 'tooth';
     const cat = (item.category || '').toLowerCase();
     if (cat.includes('cleanser') || cat.includes('wash')) return 'cleanser-tube';
     if (cat.includes('toner') || cat.includes('mist')) return 'toner-bottle';
     if (cat.includes('cream') || cat.includes('moisturizer')) return 'cream-jar';
     if (cat.includes('sunscreen') || cat.includes('spf')) return 'sunscreen';
     if (cat.includes('serum') || cat.includes('oil')) return 'oil-dropper';
-    if (item.domain === 'vessel') return 'body-vessel';
-    if (item.domain === 'visage') return 'visage-face';
-    if (item.domain === 'crown') return 'crown';
-    if (item.domain === 'steeping') return 'leaf';
+    if (dom === 'vessel') return 'body-vessel';
+    if (dom === 'visage') return 'visage-face';
+    if (dom === 'crown') return 'crown';
+    if (dom === 'steeping' || dom === 'herbal elixirs') return 'leaf';
+    if (dom === 'measure') return 'leaf'; // Using leaf or sparkles as fallback for now
     return 'sparkles'; 
   };
 
