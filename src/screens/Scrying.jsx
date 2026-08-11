@@ -33,8 +33,13 @@ export default function Scrying({ pose }) {
     'The visage, midway — nose and cheek',
     'The gaze — lid and orbit',
     'The crown — scalp',
+    'The grin — mouth, teeth, gums',
+    'The veil — face (makeup)',
     'The vessel — underarm',
-    'The vessel — chest and back'
+    'The vessel — chest and back',
+    'The vessel — arms and legs',
+    'The vessel — hands and feet',
+    'The vessel — general body'
   ];
   useEffect(() => {
     async function fetchData() {
