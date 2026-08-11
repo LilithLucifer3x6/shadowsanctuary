@@ -15,19 +15,7 @@ jobs:
         id: timestamp
         run: echo "date=$(date +'%Y-%m-%d_%H-%M-%S')" >> $GITHUB_OUTPUT
 
-      - name: Install PostgreSQL 17 Client
-        run: |
-          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-          wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
-          sudo apt-get update
-          sudo apt-get install -y postgresql-client-17
-
-      - name: Check pg_dump Version
-        run: |
-          which pg_dump
-          pg_dump --version
-
-      - name: Run pg_dump
+      - name: Run pg_dump via Docker (Postgres 17)
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
@@ -35,13 +23,7 @@ jobs:
             echo "Error: SUPABASE_DB_URL secret is not set."
             exit 1
           fi
-          
-          # Use pg_dump to dump the entire database schema and data
-          # --clean ensures tables are dropped before creation if restoring
-          # --if-exists prevents errors on dropping non-existent tables
-          # --no-owner prevents role errors when restoring
-          pg_dump "$SUPABASE_DB_URL" --clean --if-exists --no-owner > backup_${{ steps.timestamp.outputs.date }}.sql
-          
+          docker run --rm postgres:17 pg_dump "$SUPABASE_DB_URL" --clean --if-exists --no-owner > backup_${{ steps.timestamp.outputs.date }}.sql
           echo "Dump completed successfully."
 
       - name: Upload Backup Artifact
