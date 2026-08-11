@@ -32,7 +32,7 @@ BEGIN
             MAX(rh.completed_at) as last_use_date,
             MIN(rh.completed_at) as first_use_date
         FROM items i
-        LEFT JOIN routine_history rh ON rh.item_id = i.id AND rh.completed = true
+        LEFT JOIN routine_history rh ON rh.item_id = i.id
         WHERE i.lifecycle_state = 'stocked'
         GROUP BY i.id, i.is_opened, i.opened_date
     )
