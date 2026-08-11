@@ -62,20 +62,14 @@ export default function Rootwork({ pose }) {
   const fetchItems = async () => {
     setLoading(true);
     const { data } = await supabase.from('items').select('*').order('name');
+    const { data: ebbingIds } = await supabase.rpc('get_ebbing_items');
     
     if (data) {
-      const now = new Date();
+      const ebbingIdSet = new Set(ebbingIds?.map(e => e.item_id) || []);
       for (const item of data) {
-        if (item.lifecycle_state === 'stocked' && item.opened_date) {
-          const opened = new Date(item.opened_date);
-          const daysOpen = (now - opened) / (1000 * 60 * 60 * 24);
-          
-          // Ebbing prediction: based on typical usage cadence. 
-          // If no explicit volume tracking exists, we predict ebbing after 14 days of being open.
-          if (daysOpen > 14) {
-            await supabase.from('items').update({ lifecycle_state: 'ebbing' }).eq('id', item.id);
-            item.lifecycle_state = 'ebbing';
-          }
+        if (item.lifecycle_state === 'stocked' && ebbingIdSet.has(item.id)) {
+          await supabase.from('items').update({ lifecycle_state: 'ebbing' }).eq('id', item.id);
+          item.lifecycle_state = 'ebbing';
         }
       }
     }
@@ -352,6 +346,13 @@ export default function Rootwork({ pose }) {
           behavior_flags: bFlagsStr,
           glyph: aiResult.glyph,
           item_type: addForm.item_type || (addForm.is_composite ? 'composite' : 'consumable'),
+          measured_potency_mg_ml: addForm.measured_potency_mg_ml || null,
+          inferred_potency_mg_ml: addForm.inferred_potency_mg_ml || null,
+          potency_source: addForm.potency_source || null,
+          levo_material_qty: addForm.levo_material_qty || null,
+          levo_temperature: addForm.levo_temperature || null,
+          levo_duration: addForm.levo_duration || null,
+          levo_carrier_oil: addForm.levo_carrier_oil || null,
           lifecycle_state: addForm.lifecycle_state || 'stocked',
           is_essential: !!addForm.is_essential,
           period_after_opening_months: addForm.period_after_opening_months ? parseInt(addForm.period_after_opening_months, 10) : null,
@@ -379,6 +380,13 @@ export default function Rootwork({ pose }) {
           behavior_flags: bFlagsStr,
           item_type: addForm.item_type || (addForm.is_composite ? 'composite' : 'consumable'), 
           lifecycle_state: 'stocked',
+          measured_potency_mg_ml: addForm.measured_potency_mg_ml || null,
+          inferred_potency_mg_ml: addForm.inferred_potency_mg_ml || null,
+          potency_source: addForm.potency_source || null,
+          levo_material_qty: addForm.levo_material_qty || null,
+          levo_temperature: addForm.levo_temperature || null,
+          levo_duration: addForm.levo_duration || null,
+          levo_carrier_oil: addForm.levo_carrier_oil || null,
           is_essential: addForm.is_essential || false,
           period_after_opening_months: addForm.period_after_opening_months ? parseInt(addForm.period_after_opening_months, 10) : null,
           unopened_shelf_life_months: addForm.unopened_shelf_life_months ? parseInt(addForm.unopened_shelf_life_months, 10) : null,
@@ -444,6 +452,13 @@ export default function Rootwork({ pose }) {
           is_prescription: !!addForm.is_prescription,
           prescription_details: addForm.prescription_details || null,
           is_essential: addForm.is_essential || false,
+          measured_potency_mg_ml: addForm.measured_potency_mg_ml || null,
+          inferred_potency_mg_ml: addForm.inferred_potency_mg_ml || null,
+          potency_source: addForm.potency_source || null,
+          levo_material_qty: addForm.levo_material_qty || null,
+          levo_temperature: addForm.levo_temperature || null,
+          levo_duration: addForm.levo_duration || null,
+          levo_carrier_oil: addForm.levo_carrier_oil || null,
           period_after_opening_months: addForm.period_after_opening_months ? parseInt(addForm.period_after_opening_months, 10) : null,
           unopened_shelf_life_months: addForm.unopened_shelf_life_months ? parseInt(addForm.unopened_shelf_life_months, 10) : null,
           price: addForm.price ? parseFloat(addForm.price) : null,
@@ -470,7 +485,7 @@ export default function Rootwork({ pose }) {
     
     setIsSaving(false);
     setShowAddModal(false);
-    setAddForm({ brand: '', name: '', domain: 'Crown', category: '', ingredients: '', weight: '5', period_after_opening_months: '', price: '', is_composite: false, is_opened: false, opened_date: '', application_zones: [], is_prescription: false, prescription_details: '', selectedComponents: [] });
+    setAddForm({ brand: '', name: '', domain: 'Crown', category: '', ingredients: '', weight: '5', period_after_opening_months: '', price: '', is_composite: false, is_opened: false, opened_date: '', application_zones: [], is_prescription: false, prescription_details: '', selectedComponents: [], measured_potency_mg_ml: '', inferred_potency_mg_ml: '', potency_source: '', levo_material_qty: '', levo_temperature: '', levo_duration: '', levo_carrier_oil: '' });
     setIsAutoWeight(true);
     setPhotoStatus('Offer or Scry Photo');
     setModalState('photo');
@@ -614,6 +629,13 @@ export default function Rootwork({ pose }) {
       period_after_opening_months: p.period_after_opening_months ? parseInt(p.period_after_opening_months, 10) : null,
       unopened_shelf_life_months: p.unopened_shelf_life_months ? parseInt(p.unopened_shelf_life_months, 10) : null,
       manufacture_date: p.manufacture_date || null,
+      measured_potency_mg_ml: p.measured_potency_mg_ml || '',
+      inferred_potency_mg_ml: p.inferred_potency_mg_ml || '',
+      potency_source: p.potency_source || '',
+      levo_material_qty: p.levo_material_qty || '',
+      levo_temperature: p.levo_temperature || '',
+      levo_duration: p.levo_duration || '',
+      levo_carrier_oil: p.levo_carrier_oil || '',
       purchase_date: p.purchase_date || null,
       is_prescription: !!p.is_prescription,
       prescription_details: p.prescription_details || null,
@@ -680,7 +702,14 @@ export default function Rootwork({ pose }) {
       period_after_opening_months: item.period_after_opening_months ? String(item.period_after_opening_months) : '',
       application_zones: item.application_zones || [],
       is_prescription: !!item.is_prescription,
-      prescription_details: item.prescription_details || ''
+      prescription_details: item.prescription_details || '',
+      measured_potency_mg_ml: item.measured_potency_mg_ml || '',
+      inferred_potency_mg_ml: item.inferred_potency_mg_ml || '',
+      potency_source: item.potency_source || '',
+      levo_material_qty: item.levo_material_qty || '',
+      levo_temperature: item.levo_temperature || '',
+      levo_duration: item.levo_duration || '',
+      levo_carrier_oil: item.levo_carrier_oil || ''
     });
     setIsAutoWeight(isAuto);
     setModalState('manual');
@@ -730,7 +759,7 @@ export default function Rootwork({ pose }) {
           <h3 style={{ margin: 0 }}>The Apothecary <SpeakerButton text="The Apothecary" /></h3>
           <div style={{ position: 'absolute', right: 0, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <button className="btn plum"  onClick={() => {
-              setAddForm({ brand: '', name: '', domain: 'Crown', category: '', ingredients: '', weight: '5', period_after_opening_months: '', unopened_shelf_life_months: '', manufacture_date: '', purchase_date: '', price: '', is_essential: false, is_composite: false, item_type: 'consumable', is_opened: false, opened_date: '', application_zones: [], is_prescription: false, prescription_details: '', selectedComponents: [] });
+              setAddForm({ brand: '', name: '', domain: 'Crown', category: '', ingredients: '', weight: '5', period_after_opening_months: '', unopened_shelf_life_months: '', manufacture_date: '', purchase_date: '', price: '', is_essential: false, is_composite: false, item_type: 'consumable', is_opened: false, opened_date: '', application_zones: [], is_prescription: false, prescription_details: '', selectedComponents: [], measured_potency_mg_ml: '', inferred_potency_mg_ml: '', potency_source: '', levo_material_qty: '', levo_temperature: '', levo_duration: '', levo_carrier_oil: '' });
               setPhotoStatus('Offer or Scry Photo');
               setModalState('photo');
               setShowAddModal(true);
@@ -985,13 +1014,16 @@ export default function Rootwork({ pose }) {
                     <option value="Grin">Grin (Mouth & Teeth)</option>
                     <option value="Vessel">Vessel (Body)</option>
                     <option value="Veil">Veil (Makeup & Color Cosmetics)</option>
+                    <option value="Steeping">Steeping (Infusion & Decarb)</option>
                   </select>
                 </div>
 
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Application Zones (Required)</label>
-                  <VoiceInput placeholder="e.g. oral, visage, entire body" value={(addForm.application_zones || []).join(', ')} onChange={e => setAddForm({...addForm, application_zones: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} />
-                </div>
+                {addForm.domain !== 'Steeping' && (
+                  <div className="field">
+                    <label style={{color: 'var(--plum)'}}>Application Zones (Required)</label>
+                    <VoiceInput placeholder="e.g. oral, visage, entire body" value={(addForm.application_zones || []).join(', ')} onChange={e => setAddForm({...addForm, application_zones: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} />
+                  </div>
+                )}
 
                 <div className="field" style={{background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)'}}>
                   <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer', marginBottom: addForm.is_prescription ? '1rem' : '0'}}>
@@ -1003,6 +1035,45 @@ export default function Rootwork({ pose }) {
                   )}
                 </div>
 
+                {addForm.domain === 'Steeping' && (
+                  <>
+                    <div className="field">
+                      <label style={{color: 'var(--plum)'}}>Measured Potency (mg/ml, tCheck)</label>
+                      <input type="number" step="0.01" value={addForm.measured_potency_mg_ml} onChange={e => setAddForm({...addForm, measured_potency_mg_ml: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                    </div>
+                    <div className="field">
+                      <label style={{color: 'var(--plum)'}}>Inferred Potency (mg/ml, Calculated)</label>
+                      <input type="number" step="0.01" value={addForm.inferred_potency_mg_ml} onChange={e => setAddForm({...addForm, inferred_potency_mg_ml: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                    </div>
+                    <div className="field">
+                      <label style={{color: 'var(--plum)'}}>Potency Source</label>
+                      <select value={addForm.potency_source} onChange={e => setAddForm({...addForm, potency_source: e.target.value})} style={{color: 'var(--plum)'}}>
+                        <option value="">None</option>
+                        <option value="measured">Measured</option>
+                        <option value="inferred">Inferred</option>
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label style={{color: 'var(--plum)'}}>LEVO Material (g)</label>
+                        <input type="number" step="0.1" value={addForm.levo_material_qty} onChange={e => setAddForm({...addForm, levo_material_qty: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label style={{color: 'var(--plum)'}}>LEVO Temp (°F)</label>
+                        <input type="number" step="1" value={addForm.levo_temperature} onChange={e => setAddForm({...addForm, levo_temperature: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label style={{color: 'var(--plum)'}}>LEVO Duration (m)</label>
+                        <input type="number" step="1" value={addForm.levo_duration} onChange={e => setAddForm({...addForm, levo_duration: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                      </div>
+                    </div>
+                    <div className="field">
+                      <label style={{color: 'var(--plum)'}}>LEVO Carrier Oil</label>
+                      <input type="text" placeholder="e.g. MCT, Olive, Ghee" value={addForm.levo_carrier_oil} onChange={e => setAddForm({...addForm, levo_carrier_oil: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                    </div>
+                  </>
+                )}
+                
                 <div className="field">
                   <label style={{color: 'var(--plum)'}}>Elixir Classification</label>
                   <VoiceInput placeholder="e.g. Purifier, Tincture, Veil" value={addForm.category} onChange={e => setAddForm({...addForm, category: e.target.value})} />
@@ -1095,13 +1166,15 @@ export default function Rootwork({ pose }) {
                   </div>
                 )}
 
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Aetheric Density (1=Fleeting, 10=Anchoring) - Override</label>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--plum)'}}>
-                    <input type="range" min="1" max="10" step="1" style={{flex: 1}} value={addForm.weight} onChange={e => { setAddForm({...addForm, weight: e.target.value}); setIsAutoWeight(false); }} />
-                    <span style={{width: '20px', textAlign: 'center'}}>{isAutoWeight ? 'Auto' : addForm.weight}</span>
+                {addForm.domain !== 'Steeping' && (
+                  <div className="field">
+                    <label style={{color: 'var(--plum)'}}>Aetheric Density (1=Fleeting, 10=Anchoring) - Override</label>
+                    <div style={{display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--plum)'}}>
+                      <input type="range" min="1" max="10" step="1" style={{flex: 1}} value={addForm.weight} onChange={e => { setAddForm({...addForm, weight: e.target.value}); setIsAutoWeight(false); }} />
+                      <span style={{width: '20px', textAlign: 'center'}}>{isAutoWeight ? 'Auto' : addForm.weight}</span>
+                    </div>
                   </div>
-                </div>
+                )}
                 
                 <div style={{display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem'}}>
                   <button className="btn" onClick={() => setShowAddModal(false)}>Abandon</button>

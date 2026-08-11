@@ -9,7 +9,7 @@ export const G = {
   maskSheet:'sheet-mask', maskRinse:'mask-jar', patch:'spot-patch', water:'water-glass', ride:'person-simple-bike',
   rope:'jump-rope', crown:'crown', gaze:'eyes', grin:'tooth', visage:'visage-face', vessel:'body-vessel', veil:'hand-mirror',
   rootWeave:'locs', talon:'talon', soak:'bathtub', depilate:'depilatory', shave:'razor', scroll:'scroll',
-  apothecary:'flask', arsenal:'toolbox', waning:'hourglass', revair: 'hair-dryer', steamer: 'steamer', warmer: 'fire'
+  apothecary:'flask', arsenal:'toolbox', waning:'hourglass', revair: 'hair-dryer', steamer: 'steamer', warmer: 'fire', steeping: 'leaf'
 };
 
 export function verifyGlyphs() {

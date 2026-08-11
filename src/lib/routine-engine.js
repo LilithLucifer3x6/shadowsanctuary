@@ -203,11 +203,14 @@ export function buildBaseRoutines(items, userProfile = {}, wearables = {}) {
     }
   }
 
-  const getWeight = (item) => {
-    // 1. Explicit user overrides
-    if (item.behavior_flags && item.behavior_flags.layering_weight) {
-      return item.behavior_flags.layering_weight;
-    }
+    const getWeight = (item) => {
+      // 0. Exclude Steeping from layering weight
+      if (item.domain === 'steeping' || item.domain === 'Steeping') return 0;
+
+      // 1. Explicit user overrides
+      if (item.behavior_flags && item.behavior_flags.layering_weight) {
+        return item.behavior_flags.layering_weight;
+      }
     
     const cat = (item.category || '').toLowerCase();
     
@@ -358,8 +361,11 @@ export async function buildRoutines(items, userProfile = {}, wearables = {}) {
   return { amItems, pmItems, getWeight };
 }
 
-export function checkConflicts(items, userProfile = {}) {
+export function checkConflicts(rawItemsList, userProfile = {}) {
   const conflicts = [];
+  
+  // Exclude Steeping domain from all skincare conflict evaluations
+  const items = rawItemsList.filter(i => (i.domain || '').toLowerCase() !== 'steeping');
   
   const intake = userProfile.intake_answers || {};
   const oralsList = intake.oralList || [];

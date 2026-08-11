@@ -20,6 +20,7 @@ const ALTARS = [
   { id: 'visage', name: 'Visage', icon: G.visage },
   { id: 'vessel', name: 'Vessel', icon: G.vessel },
   { id: 'veil', name: 'Veil', icon: G.veil },
+  { id: 'steeping', name: 'Steeping', icon: G.steeping },
 ];
 
 
@@ -101,6 +102,7 @@ export default function Altars({ pose }) {
     if (item.domain === 'vessel') return 'body-vessel';
     if (item.domain === 'visage') return 'visage-face';
     if (item.domain === 'crown') return 'crown';
+    if (item.domain === 'steeping') return 'leaf';
     return 'sparkles'; 
   };
 
