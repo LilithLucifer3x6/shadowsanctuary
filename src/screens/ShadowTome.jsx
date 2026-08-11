@@ -536,40 +536,10 @@ export default function ShadowTome({ pose }) {
         </div>
 
         {/* Right Column: Widgets */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
-          <div className="card" style={{ padding: '1.5rem', textAlign: 'center', order: 1 }}>
-            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <div>
-                <h3 style={{ fontSize: '1.2rem', margin: 0, justifyContent: 'center' }}>The Ethereal Breath <SpeakerButton text="The Ethereal Breath" /></h3>
-                <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginTop: '0.5rem', marginBottom: '1rem', textAlign: 'center' }}>
-                  {isBreathing ? breathInst : (readiness === 'low' ? '4-4-4-4 Box Breathing' : '4-7-8 Spirit Calming')}
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {isBreathing && (
-                  <button 
-                    className="btn" 
-                    onClick={cancelMeditation} 
-                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}
-                  >
-                    Cease
-                  </button>
-                )}
-                <button 
-                  className="btn plum" 
-                  onClick={startMeditation} 
-                  disabled={isBreathing}
-                  style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', opacity: isBreathing ? 0.5 : 1 }}
-                >
-                  {isBreathing ? 'Inhaling...' : 'Begin'}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="card" style={{ padding: '1.5rem', textAlign: 'center', order: 3 }}>
+          {/* Row 1: Herbal Elixirs */}
+<div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" /></h3>
             
@@ -584,7 +554,8 @@ export default function ShadowTome({ pose }) {
             </div>
           </div>
 
-          <div className="card" style={{ padding: '1.5rem', textAlign: 'center', order: 4 }}>
+          {/* Row 2: Botanical Trove */}
+<div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Botanical Trove <SpeakerButton text="The Botanical Trove" /></h3>
             
@@ -613,149 +584,177 @@ export default function ShadowTome({ pose }) {
             </div>
           </div>
 
-                    <div className="card" style={{ padding: '1.5rem', textAlign: 'center', order: 2 }}>
-            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>Ethereal Vapors <SpeakerButton text="Ethereal Vapors" /></h3>
-            <div className="mt mb-4" style={{ textAlign: 'center' }}>Honey Infusion Batch Tracking</div>
-            
-            {!activeBatch ? (
-              <button className="btn plum" onClick={startNewBatch}>Begin New Batch</button>
-            ) : (
-              <div style={{ textAlign: 'left' }}>
-                {/* Step 1: Raw Flower */}
-                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                  <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. Raw Flower</div>
-                  <div className="field">
-                    <label>Flower Source</label>
-                    <select value={activeBatch.raw_flower_item_id || ''} onChange={e => updateBatch({ raw_flower_item_id: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)', padding: '0.4rem', width: '100%' }}>
-                      <option value="">Select Flower...</option>
-                      {pantry.filter(i => i.category === 'Flower').map(f => (
-                        <option key={f.id} value={f.id}>{f.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>Weight (g)</label>
-                      <input type="number" value={activeBatch.flower_weight_g || ''} onChange={e => updateBatch({ flower_weight_g: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+          {/* Row 3: Ethereal Vapors and Breath (Side by Side) */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+  <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+              <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>Ethereal Vapors <SpeakerButton text="Ethereal Vapors" /></h3>
+              <div className="mt mb-4" style={{ textAlign: 'center' }}>Honey Infusion Batch Tracking</div>
+              
+              {!activeBatch ? (
+                <button className="btn plum" onClick={startNewBatch}>Begin New Batch</button>
+              ) : (
+                <div style={{ textAlign: 'left' }}>
+                  {/* Step 1: Raw Flower */}
+                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. Raw Flower</div>
+                    <div className="field">
+                      <label>Flower Source</label>
+                      <select value={activeBatch.raw_flower_item_id || ''} onChange={e => updateBatch({ raw_flower_item_id: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)', padding: '0.4rem', width: '100%' }}>
+                        <option value="">Select Flower...</option>
+                        {pantry.filter(i => i.category === 'Flower').map(f => (
+                          <option key={f.id} value={f.id}>{f.name}</option>
+                        ))}
+                      </select>
                     </div>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>tCheck Reading 1</label>
-                      <input type="number" value={activeBatch.flower_tcheck_1 || ''} onChange={e => updateBatch({ flower_tcheck_1: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Weight (g)</label>
+                        <input type="number" value={activeBatch.flower_weight_g || ''} onChange={e => updateBatch({ flower_weight_g: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>tCheck Reading 1</label>
+                        <input type="number" value={activeBatch.flower_tcheck_1 || ''} onChange={e => updateBatch({ flower_tcheck_1: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginTop: '0.5rem' }}>Note: Requires Flower & Concentrate Expansion Kit</div>
+                  </div>
+  
+                  {/* Step 2: Decarboxylation */}
+                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>2. Decarboxylation</div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Temp (°F)</label>
+                        <input type="number" value={activeBatch.decarb_temp_f || ''} onChange={e => updateBatch({ decarb_temp_f: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Duration (m)</label>
+                        <input type="number" value={activeBatch.decarb_duration_m || ''} onChange={e => updateBatch({ decarb_duration_m: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                    </div>
+                    <div className="field" style={{ marginTop: '0.5rem' }}>
+                      <label>tCheck Reading 2</label>
+                      <input type="number" value={activeBatch.flower_tcheck_2 || ''} onChange={e => updateBatch({ flower_tcheck_2: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
                     </div>
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginTop: '0.5rem' }}>Note: Requires Flower & Concentrate Expansion Kit</div>
+  
+                  {/* Step 3: Oil Infusion */}
+                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>3. Oil Infusion</div>
+                    <div className="field">
+                      <label>Carrier Oil</label>
+                      <select value={activeBatch.carrier_oil_item_id || ''} onChange={e => updateBatch({ carrier_oil_item_id: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)', padding: '0.4rem', width: '100%' }}>
+                        <option value="">Select Oil...</option>
+                        {pantry.filter(i => i.category === 'Carrier Oil').map(f => (
+                          <option key={f.id} value={f.id}>{f.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Temp (°F)</label>
+                        <input type="number" value={activeBatch.infusion_temp_f || ''} onChange={e => updateBatch({ infusion_temp_f: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Duration (m)</label>
+                        <input type="number" value={activeBatch.infusion_duration_m || ''} onChange={e => updateBatch({ infusion_duration_m: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Anchor tCheck</label>
+                        <input type="number" value={activeBatch.oil_tcheck_anchor || ''} onChange={e => updateBatch({ oil_tcheck_anchor: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Dilution Factor</label>
+                        <input type="number" placeholder="1" value={activeBatch.dilution_factor || ''} onChange={e => updateBatch({ dilution_factor: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                    </div>
+                  </div>
+  
+                  {/* Step 4: Honey Blend */}
+                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>4. Honey Blend</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginBottom: '0.5rem' }}>Method: Immersion blender</div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Oil (ml)</label>
+                        <input type="number" value={activeBatch.oil_volume_ml || ''} onChange={e => updateBatch({ oil_volume_ml: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Honey (ml)</label>
+                        <input type="number" value={activeBatch.honey_volume_ml || ''} onChange={e => updateBatch({ honey_volume_ml: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Lecithin (ml)</label>
+                        <input type="number" value={activeBatch.lecithin_volume_ml || ''} onChange={e => updateBatch({ lecithin_volume_ml: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                    </div>
+                  </div>
+  
+                  {/* Step 5: Result */}
+                  <div style={{ textAlign: 'center' }}>
+                    {activeBatch.calculated_final_mg_ml ? (
+                      <>
+                        <div style={{ fontSize: '2rem', color: 'var(--plum)' }}>{Number(activeBatch.calculated_final_mg_ml).toFixed(2)} mg/ml</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginTop: '0.2rem' }}>Calculated from a measured oil reading</div>
+                      </>
+                    ) : (
+                      <button className="btn plum" onClick={calculateBatch}>Calculate Final Strength</button>
+                    )}
+                  </div>
                 </div>
-
-                {/* Step 2: Decarboxylation */}
-                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                  <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>2. Decarboxylation</div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>Temp (°F)</label>
-                      <input type="number" value={activeBatch.decarb_temp_f || ''} onChange={e => updateBatch({ decarb_temp_f: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                    </div>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>Duration (m)</label>
-                      <input type="number" value={activeBatch.decarb_duration_m || ''} onChange={e => updateBatch({ decarb_duration_m: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                    </div>
-                  </div>
-                  <div className="field" style={{ marginTop: '0.5rem' }}>
-                    <label>tCheck Reading 2</label>
-                    <input type="number" value={activeBatch.flower_tcheck_2 || ''} onChange={e => updateBatch({ flower_tcheck_2: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                  </div>
+              )}
+              
+              {/* Measuring Vessels section */}
+              <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
+                <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Alchemist's Scale</h3>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center', marginTop: '1rem' }}>
+                  {vessels.map(v => (
+                    <button key={v.id} className="btn sm" onClick={() => handleLogVessel(v, 1)}>
+                      Log 1x {v.name}
+                    </button>
+                  ))}
                 </div>
-
-                {/* Step 3: Oil Infusion */}
-                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                  <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>3. Oil Infusion</div>
-                  <div className="field">
-                    <label>Carrier Oil</label>
-                    <select value={activeBatch.carrier_oil_item_id || ''} onChange={e => updateBatch({ carrier_oil_item_id: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)', padding: '0.4rem', width: '100%' }}>
-                      <option value="">Select Oil...</option>
-                      {pantry.filter(i => i.category === 'Carrier Oil').map(f => (
-                        <option key={f.id} value={f.id}>{f.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>Temp (°F)</label>
-                      <input type="number" value={activeBatch.infusion_temp_f || ''} onChange={e => updateBatch({ infusion_temp_f: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                    </div>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>Duration (m)</label>
-                      <input type="number" value={activeBatch.infusion_duration_m || ''} onChange={e => updateBatch({ infusion_duration_m: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>Anchor tCheck</label>
-                      <input type="number" value={activeBatch.oil_tcheck_anchor || ''} onChange={e => updateBatch({ oil_tcheck_anchor: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                    </div>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>Dilution Factor</label>
-                      <input type="number" placeholder="1" value={activeBatch.dilution_factor || ''} onChange={e => updateBatch({ dilution_factor: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 4: Honey Blend */}
-                <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                  <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>4. Honey Blend</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginBottom: '0.5rem' }}>Method: Immersion blender</div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>Oil (ml)</label>
-                      <input type="number" value={activeBatch.oil_volume_ml || ''} onChange={e => updateBatch({ oil_volume_ml: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                    </div>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>Honey (ml)</label>
-                      <input type="number" value={activeBatch.honey_volume_ml || ''} onChange={e => updateBatch({ honey_volume_ml: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                    </div>
-                    <div className="field" style={{ flex: 1 }}>
-                      <label>Lecithin (ml)</label>
-                      <input type="number" value={activeBatch.lecithin_volume_ml || ''} onChange={e => updateBatch({ lecithin_volume_ml: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 5: Result */}
-                <div style={{ textAlign: 'center' }}>
-                  {activeBatch.calculated_final_mg_ml ? (
-                    <>
-                      <div style={{ fontSize: '2rem', color: 'var(--plum)' }}>{Number(activeBatch.calculated_final_mg_ml).toFixed(2)} mg/ml</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginTop: '0.2rem' }}>Calculated from a measured oil reading</div>
-                    </>
-                  ) : (
-                    <button className="btn plum" onClick={calculateBatch}>Calculate Final Strength</button>
-                  )}
-                </div>
+                <button className="btn mt-3" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowVesselModal(true)}>
+                  <Icon name="plus" /> Register New Vessel
+                </button>
               </div>
-            )}
-            
-            {/* Measuring Vessels section */}
-            <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Alchemist's Scale</h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center', marginTop: '1rem' }}>
-                {vessels.map(v => (
-                  <button key={v.id} className="btn sm" onClick={() => handleLogVessel(v, 1)}>
-                    Log 1x {v.name}
-                  </button>
-                ))}
-              </div>
-              <button className="btn mt-3" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowVesselModal(true)}>
-                <Icon name="plus" /> Register New Vessel
-              </button>
+              
             </div>
-            
+
+  <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.2rem', margin: 0, justifyContent: 'center' }}>The Ethereal Breath <SpeakerButton text="The Ethereal Breath" /></h3>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginTop: '0.5rem', marginBottom: '1rem', textAlign: 'center' }}>
+                    {isBreathing ? breathInst : (readiness === 'low' ? '4-4-4-4 Box Breathing' : '4-7-8 Spirit Calming')}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  {isBreathing && (
+                    <button 
+                      className="btn" 
+                      onClick={cancelMeditation} 
+                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}
+                    >
+                      Cease
+                    </button>
+                  )}
+                  <button 
+                    className="btn plum" 
+                    onClick={startMeditation} 
+                    disabled={isBreathing}
+                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', opacity: isBreathing ? 0.5 : 1 }}
+                  >
+                    {isBreathing ? 'Inhaling...' : 'Begin'}
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-
-
-
-
-
-          {/* Breathwork moved above */}
 
         </div>
 
