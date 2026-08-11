@@ -703,3 +703,56 @@ export async function searchOpenBeautyFacts(query) {
 }
 
 
+
+
+/**
+ * Parses a tCheck measurement image using Claude Vision and extracts the reading.
+ * @param {Array<{base64: string, mediaType: string}>} images
+ * @returns {Promise<Object>}
+ */
+export async function parseTCheckImage(images) {
+  const tools = [
+    {
+      name: 'extract_tcheck_reading',
+      description: 'Extract the numeric potency reading and unit from a tCheck device screen',
+      input_schema: {
+        type: 'object',
+        properties: {
+          reading_raw: { type: 'number', description: 'The numeric potency value displayed on the screen (e.g. 15.2)' },
+          reading_unit: { type: 'string', enum: ['mg/mL', 'mg/tsp', 'mg/Tbsp', 'mg/cup'], description: 'The unit displayed on the screen' }
+        },
+        required: ['reading_raw', 'reading_unit']
+      }
+    }
+  ];
+
+  const contentBlocks = images.map(img => ({
+    type: 'image',
+    source: {
+      type: 'base64',
+      media_type: img.mediaType,
+      data: img.base64
+    }
+  }));
+
+  contentBlocks.push({
+    type: 'text',
+    text: 'You are looking at a photo of a tCheck device screen. Extract the numeric potency reading and the exact unit displayed.'
+  });
+
+  const { data, error } = await invokeAnthropicProxy({
+      max_tokens: 500,
+      messages: [{ role: 'user', content: contentBlocks }],
+      tools: tools,
+      tool_choice: { type: 'tool', name: 'extract_tcheck_reading' }
+  });
+  if (error) throw error;
+
+  for (const block of data.content) {
+    if (block.type === 'tool_use' && block.name === 'extract_tcheck_reading') {
+      return block.input;
+    }
+  }
+
+  throw new Error("Failed to extract tCheck reading from image");
+}

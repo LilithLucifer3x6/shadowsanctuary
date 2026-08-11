@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase.js';
 import { ic, G } from '../lib/icons.jsx';
 import { attachVoice } from '../lib/voice.js';
 import * as AI from '../lib/ai-service.js';
-import { parseTeaImage } from '../lib/ai-engine.js';
+import { parseTeaImage, parseTCheckImage } from '../lib/ai-engine.js';
 import SpeakerButton from '../components/SpeakerButton.jsx';
 import Icon from '../components/Icon.jsx';
 import VoiceInput from '../components/VoiceInput.jsx';
@@ -40,10 +40,14 @@ export default function ShadowTome({ pose }) {
   const [teaStatus, setTeaStatus] = useState('Offer or Divine Vision');
   const [teaImages, setTeaImages] = useState([]);
   const [isSavingTea, setIsSavingTea] = useState(false);
-  const [vessels, setVessels] = useState([]);
-  const [showVesselModal, setShowVesselModal] = useState(false);
-  const [vesselForm, setVesselForm] = useState({ name: '', vessel_volume_ml: '' });
-  const [activeBatch, setActiveBatch] = useState(null);
+    const [drams, setDrams] = useState([]);
+  const [showDramModal, setShowDramModal] = useState(false);
+  const [dramForm, setDramForm] = useState({ name: '', vessel_volume_ml: '' });
+  const [alchemies, setAlchemies] = useState([]);
+  const [alchemyForm, setAlchemyForm] = useState(null);
+  const [stagedDoses, setStagedDoses] = useState({});
+  const [isRollingDram, setIsRollingDram] = useState(false);
+
 
   const [teaForm, setTeaForm] = useState({
     brand: '', name: '', ingredients: '', caffeine_content: '', steep_time: '', circadian_alignment: ''
@@ -52,14 +56,16 @@ export default function ShadowTome({ pose }) {
   const breathTimeout1Ref = useRef(null);
   const breathTimeout2Ref = useRef(null);
   const breathCycleRef = useRef(null);
+  const tcheckInputRef = useRef(null);
+  const [isScanningTCheck, setIsScanningTCheck] = useState(false);
 
   useEffect(() => {
     AI.generateMoods().then(list => setMoodsList(list || [])).catch(console.error);
     loadHistory();
     loadPantry();
     loadHealthData();
-    loadVessels();
-    loadActiveBatch();
+    loadDrams();
+    loadAlchemies();
     
     return () => {
       clearBreathTimers();
@@ -88,67 +94,117 @@ export default function ShadowTome({ pose }) {
     }
   };
 
-  const loadVessels = async () => {
+    const loadDrams = async () => {
     try {
-      const { data } = await supabase.from('items').select('*').eq('domain', 'Measure').eq('lifecycle_state', 'stocked').order('name');
-      if (data) setVessels(data);
-    } catch (e) { console.error(e); }
-  };
-
-  const loadActiveBatch = async () => {
-    try {
-      const { data } = await supabase.from('infusion_batches').select('*').order('created_at', { ascending: false }).limit(1);
-      if (data && data.length > 0 && data[0].calculated_final_mg_ml === null) {
-        setActiveBatch(data[0]);
-      } else {
-        setActiveBatch(null);
-      }
+      const { data } = await supabase.from('items').select('*').eq('domain', 'Measure').eq('lifecycle_state', 'stocked').order('created_at', { ascending: false });
+      if (data) setDrams(data);
     } catch(e) { console.error(e); }
   };
 
-  const startNewBatch = async () => {
-    const { data: insertedItem } = await supabase.from('items').insert([{
-      name: `Infused Honey - ${new Date().toLocaleDateString()}`,
-      domain: 'Herbal Elixirs',
-      category: 'Infusion',
-      item_type: 'consumable',
+  const loadAlchemies = async () => {
+    try {
+      const { data } = await supabase.from('alchemy_batches').select('*').in('lifecycle_state', ['stocked', 'ebbing', 'hollow']).order('created_at', { ascending: false });
+      if (data) setAlchemies(data);
+    } catch(e) { console.error(e); }
+  };
+
+  const startNewAlchemy = () => {
+    setAlchemyForm({
+      name: '',
+      oil_reading_raw: '',
+      oil_reading_unit: 'mg/mL',
+      oil_volume_ml: '',
+      honey_volume_ml: '',
+      lecithin_volume_ml: ''
+    });
+  };
+
+  const cancelAlchemy = () => setAlchemyForm(null);
+
+  const handleSaveAlchemy = async () => {
+    if (!alchemyForm.name || !alchemyForm.oil_reading_raw || !alchemyForm.oil_volume_ml || !alchemyForm.honey_volume_ml || !alchemyForm.lecithin_volume_ml) return;
+    
+    let rawReading = Number(alchemyForm.oil_reading_raw);
+    let canonical_mg_per_ml = rawReading;
+    if (alchemyForm.oil_reading_unit === 'mg/tsp') canonical_mg_per_ml = rawReading / 4.92892;
+    else if (alchemyForm.oil_reading_unit === 'mg/Tbsp') canonical_mg_per_ml = rawReading / 14.7868;
+    else if (alchemyForm.oil_reading_unit === 'mg/cup') canonical_mg_per_ml = rawReading / 236.588;
+
+    const oilVol = Number(alchemyForm.oil_volume_ml);
+    const honeyVol = Number(alchemyForm.honey_volume_ml);
+    const lecVol = Number(alchemyForm.lecithin_volume_ml);
+    const initialVol = oilVol + honeyVol + lecVol;
+    const totalMg = canonical_mg_per_ml * oilVol;
+    const finalMgMl = totalMg / initialVol;
+
+    await supabase.from('alchemy_batches').insert([{
+      name: alchemyForm.name,
+      oil_reading_raw: rawReading,
+      oil_reading_unit: alchemyForm.oil_reading_unit,
+      canonical_mg_per_ml: canonical_mg_per_ml,
+      oil_volume_ml: oilVol,
+      honey_volume_ml: honeyVol,
+      lecithin_volume_ml: lecVol,
+      calculated_total_mg: totalMg,
+      calculated_final_mg_ml: finalMgMl,
+      initial_volume_ml: initialVol,
+      remaining_volume_ml: initialVol,
       lifecycle_state: 'stocked'
-    }]).select().single();
+    }]);
     
-    if (insertedItem) {
-      const { data: newBatch } = await supabase.from('infusion_batches').insert([{
-        final_honey_item_id: insertedItem.id
-      }]).select().single();
-      if (newBatch) setActiveBatch(newBatch);
+    setAlchemyForm(null);
+    loadAlchemies();
+  };
+
+  const handleReplenishAlchemy = () => {
+    startNewAlchemy();
+  };
+
+  const handleReleaseAlchemy = async (id) => {
+    if (await confirm("Release this Alchemy? This action cannot be undone.")) {
+      await supabase.from('alchemy_batches').delete().eq('id', id);
+      loadAlchemies();
     }
   };
 
-  const updateBatch = async (updates) => {
-    if (!activeBatch) return;
-    const { data } = await supabase.from('infusion_batches').update(updates).eq('id', activeBatch.id).select().single();
-    if (data) setActiveBatch(data);
+  const handleStageDram = (alchemyId, dram) => {
+    setStagedDoses(prev => {
+      const currentAlch = prev[alchemyId] || {};
+      const currentCount = currentAlch[dram.id]?.count || 0;
+      return { 
+        ...prev, 
+        [alchemyId]: { ...currentAlch, [dram.id]: { dram, count: currentCount + 1 } }
+      };
+    });
   };
 
-  const calculateBatch = async () => {
-    if (!activeBatch) return;
-    const { oil_tcheck_anchor, dilution_factor, oil_volume_ml, honey_volume_ml, lecithin_volume_ml } = activeBatch;
-    if (oil_tcheck_anchor && oil_volume_ml && honey_volume_ml) {
-      const oilVol = Number(oil_volume_ml) || 0;
-      const honeyVol = Number(honey_volume_ml) || 0;
-      const lecVol = Number(lecithin_volume_ml) || 0;
-      const anchor = Number(oil_tcheck_anchor) || 0;
-      const df = Number(dilution_factor) || 1;
-      
-      const calc = (anchor * df * oilVol) / (honeyVol + oilVol + lecVol);
-      await updateBatch({ calculated_final_mg_ml: calc });
-    }
+  const clearStagedDrams = (alchemyId) => {
+    setStagedDoses(prev => {
+      const next = { ...prev };
+      delete next[alchemyId];
+      return next;
+    });
   };
-  
-  const handleLogVessel = async (vessel, count) => {
-    const vol = vessel.vessel_volume_ml * count;
-    const note = `✨ Imbibed: ${count}x ${vessel.name} (${vol}ml)`;
-    
-    // Log directly to journal entries
+
+  const handleAnointElixir = async (alchemyId) => {
+    const activeAlch = alchemies.find(a => a.id === alchemyId);
+    if (!activeAlch) return;
+
+    let totalMlConsumed = 0;
+    const parts = [];
+    const alchDoses = stagedDoses[alchemyId] || {};
+    Object.values(alchDoses).forEach(({ dram, count }) => {
+      if (count > 0) {
+        totalMlConsumed += (dram.vessel_volume_ml * count);
+        parts.push(`${count}x ${dram.name}`);
+      }
+    });
+
+    if (totalMlConsumed === 0) return;
+
+    const mgConsumed = (activeAlch.calculated_final_mg_ml * totalMlConsumed).toFixed(2);
+    const note = `✨ Imbibed: ${parts.join(', ')} (${totalMlConsumed}ml) of ${activeAlch.name} (${mgConsumed}mg THC).`;
+
     const optimisticEntry = {
       id: Date.now(),
       created_at: new Date().toISOString(),
@@ -163,22 +219,81 @@ export default function ShadowTome({ pose }) {
       moon_phase: 'Unknown',
       photos: []
     }]);
+
+    const newVol = activeAlch.remaining_volume_ml - totalMlConsumed;
+    const ratio = newVol / activeAlch.initial_volume_ml;
+    let newState = activeAlch.lifecycle_state;
+    if (newVol <= 0) newState = 'hollow';
+    else if (ratio < 0.2) newState = 'ebbing';
+
+    await supabase.from('alchemy_batches').update({
+      remaining_volume_ml: Math.max(0, newVol),
+      lifecycle_state: newState
+    }).eq('id', activeAlch.id);
+
+    clearStagedDrams(alchemyId);
     loadHistory();
+    loadAlchemies();
   };
-  
-  const handleSaveVessel = async () => {
-    if (!vesselForm.name || !vesselForm.vessel_volume_ml) return;
+
+  const handleSaveDram = async () => {
+    if (!dramForm.name || !dramForm.vessel_volume_ml) return;
     await supabase.from('items').insert([{
-      name: vesselForm.name,
-      vessel_volume_ml: parseFloat(vesselForm.vessel_volume_ml),
+      name: dramForm.name,
+      vessel_volume_ml: parseFloat(dramForm.vessel_volume_ml),
       domain: 'Measure',
       item_type: 'tool',
       lifecycle_state: 'stocked'
     }]);
-    setShowVesselModal(false);
-    setVesselForm({ name: '', vessel_volume_ml: '' });
-    loadVessels();
+    setShowDramModal(false);
+    setDramForm({ name: '', vessel_volume_ml: '' });
+    loadDrams();
   };
+
+  const handleConjureDramName = async () => {
+    setIsRollingDram(true);
+    try {
+      const { data } = await supabase.functions.invoke('anthropic-proxy', {
+        body: {
+          messages: [{ role: 'user', content: 'Generate a single short poetic and whimsical name for a small measuring spoon/dram used for dosing honey (e.g., "The Silver Toll", "Waning Moon Spoon"). Return only the name, no quotes.' }],
+          temperature: 0.9
+        }
+      });
+      if (data && data.content && data.content[0]) {
+        setDramForm(prev => ({ ...prev, name: data.content[0].text.trim() }));
+      }
+    } catch(e) { console.error(e); }
+    setIsRollingDram(false);
+  };
+
+  const handleScanTCheck = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setIsScanningTCheck(true);
+    try {
+      const newImages = [];
+      for (const file of files) {
+        const reader = new FileReader();
+        const base64 = await new Promise((resolve) => {
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.readAsDataURL(file);
+        });
+        newImages.push({ base64, mediaType: file.type });
+      }
+      const details = await parseTCheckImage(newImages);
+      setAlchemyForm(prev => ({
+        ...prev,
+        oil_reading_raw: details.reading_raw,
+        oil_reading_unit: details.reading_unit
+      }));
+      alert(`Vision extracted: ${details.reading_raw} ${details.reading_unit}`);
+    } catch(err) {
+      console.error(err);
+      alert('Failed to divine reading: ' + err.message);
+    }
+    setIsScanningTCheck(false);
+  };
+
 
   const loadHealthData = async () => {
     try {
@@ -561,7 +676,7 @@ export default function ShadowTome({ pose }) {
           {/* Row 2: Botanical Trove */}
 <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Botanical Trove <SpeakerButton text="The Botanical Trove" /></h3>
+            <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Herbarium <SpeakerButton text="The Herbarium" /></h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {pantry.length > 0 ? pantry.map(tea => (
@@ -583,7 +698,7 @@ export default function ShadowTome({ pose }) {
                   </div>
                 </div>
               )) : (
-                <div className="empty">The botanical trove is bare.</div>
+                <div className="empty">The herbarium is bare.</div>
               )}
             </div>
           </div>
@@ -592,139 +707,119 @@ export default function ShadowTome({ pose }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
   <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
               <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-              <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>Ethereal Vapors <SpeakerButton text="Ethereal Vapors" /></h3>
-              <div className="mt mb-4" style={{ textAlign: 'center' }}>Honey Infusion Batch Tracking</div>
+              <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Alchemies <SpeakerButton text="The Alchemies" /></h3>
               
-              {!activeBatch ? (
-                <button className="btn plum" onClick={startNewBatch}>Begin the Working</button>
-              ) : (
-                <div style={{ textAlign: 'left' }}>
-                  {/* Step 1: Raw Flower */}
+              {alchemyForm ? (
+                <div style={{ textAlign: 'left', marginTop: '1rem' }}>
                   <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. The Consecrated Flower</div>
-                    <div className="field">
-                      <label>Flower Source</label>
-                      <select value={activeBatch.raw_flower_item_id || ''} onChange={e => updateBatch({ raw_flower_item_id: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)', padding: '0.4rem', width: '100%' }}>
-                        <option value="">Select Flower...</option>
-                        {pantry.filter(i => i.category === 'Flower').map(f => (
-                          <option key={f.id} value={f.id}>{f.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>Weight (g)</label>
-                        <input type="number" value={activeBatch.flower_weight_g || ''} onChange={e => updateBatch({ flower_weight_g: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                      </div>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>tCheck Reading 1</label>
-                        <input type="number" value={activeBatch.flower_tcheck_1 || ''} onChange={e => updateBatch({ flower_tcheck_1: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                      </div>
-                    </div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginTop: '0.5rem' }}>Note: Requires Flower & Concentrate Expansion Kit</div>
-                  </div>
-  
-                  {/* Step 2: Decarboxylation */}
-                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>2. The Awakening (Decarboxylation)</div>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. The Transmutation (Oil Infusion)</div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <div className="field" style={{ flex: 1 }}>
-                        <label>Temp (°F)</label>
-                        <input type="number" value={activeBatch.decarb_temp_f || ''} onChange={e => updateBatch({ decarb_temp_f: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                        <label>Potency</label>
+                        <input type="number" value={alchemyForm.oil_reading_raw} onChange={e => setAlchemyForm({...alchemyForm, oil_reading_raw: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
                       </div>
                       <div className="field" style={{ flex: 1 }}>
-                        <label>Duration (m)</label>
-                        <input type="number" value={activeBatch.decarb_duration_m || ''} onChange={e => updateBatch({ decarb_duration_m: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                        <label>Unit</label>
+                        <select value={alchemyForm.oil_reading_unit} onChange={e => setAlchemyForm({...alchemyForm, oil_reading_unit: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', width: '100%', padding: '0.4rem' }}>
+                          <option value="mg/mL">mg/mL</option>
+                          <option value="mg/tsp">mg/tsp</option>
+                          <option value="mg/Tbsp">mg/Tbsp</option>
+                          <option value="mg/cup">mg/cup</option>
+                        </select>
                       </div>
                     </div>
-                    <div className="field" style={{ marginTop: '0.5rem' }}>
-                      <label>tCheck Reading 2</label>
-                      <input type="number" value={activeBatch.flower_tcheck_2 || ''} onChange={e => updateBatch({ flower_tcheck_2: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                    </div>
+                    <button className="btn sm mt-2" onClick={() => tcheckInputRef.current?.click()} disabled={isScanningTCheck}>
+                      <Icon name="ph-camera" /> {isScanningTCheck ? 'Divining...' : 'Divine Reading (tCheck)'}
+                    </button>
+                    <input type="file" accept="image/*" capture="environment" ref={tcheckInputRef} style={{ display: 'none' }} onChange={handleScanTCheck} />
                   </div>
-  
-                  {/* Step 3: Oil Infusion */}
+
                   <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>3. The Transmutation (Oil Infusion)</div>
-                    <div className="field">
-                      <label>Carrier Oil</label>
-                      <select value={activeBatch.carrier_oil_item_id || ''} onChange={e => updateBatch({ carrier_oil_item_id: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)', padding: '0.4rem', width: '100%' }}>
-                        <option value="">Select Oil...</option>
-                        {pantry.filter(i => i.category === 'Carrier Oil').map(f => (
-                          <option key={f.id} value={f.id}>{f.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>Temp (°F)</label>
-                        <input type="number" value={activeBatch.infusion_temp_f || ''} onChange={e => updateBatch({ infusion_temp_f: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                      </div>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>Duration (m)</label>
-                        <input type="number" value={activeBatch.infusion_duration_m || ''} onChange={e => updateBatch({ infusion_duration_m: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>Anchor tCheck</label>
-                        <input type="number" value={activeBatch.oil_tcheck_anchor || ''} onChange={e => updateBatch({ oil_tcheck_anchor: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                      </div>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>Dilution Factor</label>
-                        <input type="number" placeholder="1" value={activeBatch.dilution_factor || ''} onChange={e => updateBatch({ dilution_factor: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                      </div>
-                    </div>
-                  </div>
-  
-                  {/* Step 4: Honey Blend */}
-                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>4. The Final Binding (Honey Blend)</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginBottom: '0.5rem' }}>Method: Immersion blender</div>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>2. The Final Binding</div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <div className="field" style={{ flex: 1 }}>
                         <label>Oil (ml)</label>
-                        <input type="number" value={activeBatch.oil_volume_ml || ''} onChange={e => updateBatch({ oil_volume_ml: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                        <input type="number" value={alchemyForm.oil_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, oil_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
                       </div>
                       <div className="field" style={{ flex: 1 }}>
                         <label>Honey (ml)</label>
-                        <input type="number" value={activeBatch.honey_volume_ml || ''} onChange={e => updateBatch({ honey_volume_ml: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                        <input type="number" value={alchemyForm.honey_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, honey_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
                       </div>
                       <div className="field" style={{ flex: 1 }}>
                         <label>Lecithin (ml)</label>
-                        <input type="number" value={activeBatch.lecithin_volume_ml || ''} onChange={e => updateBatch({ lecithin_volume_ml: e.target.value })} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                        <input type="number" value={alchemyForm.lecithin_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, lecithin_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
                       </div>
                     </div>
                   </div>
-  
-                  {/* Step 5: Result */}
-                  <div style={{ textAlign: 'center' }}>
-                    {activeBatch.calculated_final_mg_ml ? (
-                      <>
-                        <div style={{ fontSize: '2rem', color: 'var(--plum)' }}>{Number(activeBatch.calculated_final_mg_ml).toFixed(2)} mg/ml</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginTop: '0.2rem' }}>Calculated from a measured oil reading</div>
-                      </>
-                    ) : (
-                      <button className="btn plum" onClick={calculateBatch}>Calculate Final Strength</button>
-                    )}
+
+                  <div className="field" style={{ marginBottom: '1.5rem' }}>
+                    <label>Name the Alchemy</label>
+                    <input type="text" value={alchemyForm.name} onChange={e => setAlchemyForm({...alchemyForm, name: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', width: '100%', padding: '0.4rem' }} />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <button className="btn" onClick={cancelAlchemy}>Abandon</button>
+                    <button className="btn plum" onClick={handleSaveAlchemy}>Ignite the Alchemy</button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {alchemies.map(alch => (
+                    <div key={alch.id} style={{ background: 'var(--card2)', padding: '1rem', borderRadius: '8px', border: '1px dashed var(--border)', textAlign: 'left' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ color: 'var(--plum)', fontWeight: 'bold', fontSize: '1.1rem' }}>{alch.name}</div>
+                        <div style={{ fontSize: '0.8rem', color: alch.lifecycle_state === 'ebbing' ? 'var(--orange)' : (alch.lifecycle_state === 'hollow' ? 'var(--red)' : 'var(--green)') }}>
+                          {alch.lifecycle_state === 'stocked' ? 'Endowed' : alch.lifecycle_state}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: 'var(--dim)', margin: '0.5rem 0' }}>
+                        Strength: {Number(alch.calculated_final_mg_ml).toFixed(2)} mg/ml <br/>
+                        Remaining: {Number(alch.remaining_volume_ml).toFixed(1)} / {Number(alch.initial_volume_ml).toFixed(1)} ml
+                      </div>
+
+                      {alch.lifecycle_state === 'hollow' ? (
+                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                          <button className="btn sm" style={{ flex: 1 }} onClick={handleReplenishAlchemy}>Replenish</button>
+                          <button className="btn sm g" style={{ flex: 1 }} onClick={() => handleReleaseAlchemy(alch.id)}>Release the Alchemy</button>
+                        </div>
+                      ) : (
+                        <div style={{ marginTop: '1rem' }}>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--plum)', marginBottom: '0.5rem' }}>Anoint with a Dram:</div>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            {drams.map(d => (
+                              <button key={d.id} className="btn sm" onClick={() => handleStageDram(alch.id, d)}>
+                                Imbibe 1x {d.name}
+                              </button>
+                            ))}
+                          </div>
+                          {stagedDoses[alch.id] && Object.keys(stagedDoses[alch.id]).length > 0 && (
+                            <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+                              <div style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                                Staged: {Object.values(stagedDoses[alch.id]).filter(sd => sd.count > 0).map(sd => `${sd.count}x ${sd.dram.name}`).join(', ')}
+                              </div>
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button className="btn sm" onClick={() => clearStagedDrams(alch.id)}>Clear</button>
+                                <button className="btn sm plum" style={{ flex: 1 }} onClick={() => handleAnointElixir(alch.id)}>Anoint the Elixir</button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                    <button className="btn plum" onClick={startNewAlchemy}>Ignite New Alchemy</button>
                   </div>
                 </div>
               )}
-              
-              {/* Measuring Vessels section */}
+
               <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
                 <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Alchemist's Scale</h3>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center', marginTop: '1rem' }}>
-                  {vessels.map(v => (
-                    <button key={v.id} className="btn sm" onClick={() => handleLogVessel(v, 1)}>
-                      Imbibe 1x {v.name}
-                    </button>
-                  ))}
-                </div>
-                <button className="btn mt-3" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowVesselModal(true)}>
-                  <Icon name="plus" /> Consecrate New Vessel
+                <button className="btn mt-3" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowDramModal(true)}>
+                  <Icon name="plus" /> Consecrate New Dram
                 </button>
               </div>
+
               
             </div>
 
@@ -901,30 +996,36 @@ export default function ShadowTome({ pose }) {
         </div>
       )}
           {/* Vessel Scanner Modal */}
-      {showVesselModal && (
+      {showDramModal && (
         <div className="modal" style={{display: 'block'}}>
           <div className="modal-content card" style={{maxWidth: '400px'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             
-            <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Register Vessel</h3>
-            <div className="mt mb-4" style={{color: 'var(--plum)', textAlign: 'center'}}>Name the vessel and declare its true volume (ml).</div>
+            <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Register a Dram</h3>
+            <div className="mt mb-4" style={{color: 'var(--plum)', textAlign: 'center'}}>Name the dram and declare its true volume (ml).</div>
             
             <div className="field">
-              <label>Name (e.g. The Honey Spoon)</label>
-              <input type="text" value={vesselForm.name} onChange={e => setVesselForm({...vesselForm, name: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', width: '100%', padding: '0.5rem' }} />
+              <label>Name</label>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input type="text" value={dramForm.name} onChange={e => setDramForm({...dramForm, name: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', flex: 1, padding: '0.5rem' }} />
+                <button className="btn sm" onClick={handleConjureDramName} disabled={isRollingDram}>
+                  {isRollingDram ? '...' : <><Icon name="ph-sparkle" /> Conjure Form</>}
+                </button>
+              </div>
             </div>
             
             <div className="field mt-3">
               <label>Volume Capacity (ml)</label>
-              <input type="number" step="0.1" value={vesselForm.vessel_volume_ml} onChange={e => setVesselForm({...vesselForm, vessel_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', width: '100%', padding: '0.5rem' }} />
+              <input type="number" step="0.1" value={dramForm.vessel_volume_ml} onChange={e => setDramForm({...dramForm, vessel_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', width: '100%', padding: '0.5rem' }} />
             </div>
             
             <div style={{display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem'}}>
-              <button className="btn" onClick={() => setShowVesselModal(false)}>Abandon</button>
-              <button className="btn plum" onClick={handleSaveVessel} disabled={!vesselForm.name || !vesselForm.vessel_volume_ml}>
-                Register Vessel
+              <button className="btn" onClick={() => setShowDramModal(false)}>Abandon</button>
+              <button className="btn plum" onClick={handleSaveDram} disabled={!dramForm.name || !dramForm.vessel_volume_ml}>
+                Register Dram
               </button>
             </div>
+
           </div>
         </div>
       )}</div>
