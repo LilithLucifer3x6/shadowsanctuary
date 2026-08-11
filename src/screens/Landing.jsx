@@ -18,11 +18,13 @@ export default function Landing({ onProceed, onOpenAvatar }) {
     const isCompletedLocally = localStorage.getItem('intake_completed') === 'true';
     if (isCompletedLocally) {
       setHasProfile(true);
+      onProceed(true);
     } else {
       supabase.from('user_profile').select('intake_completed').maybeSingle().then(({ data }) => {
         if (data && data.intake_completed) {
           localStorage.setItem('intake_completed', 'true');
           setHasProfile(true);
+          onProceed(true);
         } else {
           setHasProfile(false);
         }

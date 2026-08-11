@@ -369,7 +369,7 @@ export default function App() {
       )}
 
       {currentScreen === 'landing' && (
-        <div id="s-land" className="land">
+        <div id="s-land">
           <Landing 
             onProceed={(skipIntake) => {
               let hasAvatar = false;
