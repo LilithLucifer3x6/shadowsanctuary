@@ -3,15 +3,6 @@
 INSERT INTO codex_entries (ingredient, reason, is_permanent, source)
 VALUES ('lavender', 'Known sensitivity — permanent entry', true, 'system');
 
-INSERT INTO storage_locations (name)
-VALUES 
-  ('Mini fridge'),
-  ('Bathroom shelf'),
-  ('Vanity'),
-  ('Basket'),
-  ('Cabinet'),
-  ('Shower caddy');
-
 INSERT INTO appointments (name, cadence_weeks, glyph, is_optional)
 VALUES
   ('The Root Weaving', 8, 'locs', false),
