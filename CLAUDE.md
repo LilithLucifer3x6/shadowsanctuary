@@ -510,3 +510,8 @@ Every feature that gets built must be the real, working implementation - connect
 - This applies to every layer: UI stubs, fake API responses, hardcoded calculation results standing in for real math, placeholder data pretending to be real database rows.
 - If a stub or mock is already present anywhere in the existing codebase, flag it explicitly the moment it's found - don't leave it silently in place assuming someone else will catch it later.
 - The test for whether something qualifies: would the user, testing this feature in the live app, reasonably believe it's doing the real thing? If yes, and it isn't, that's a violation regardless of intent.
+
+===================================================================
+HAIR LANGUAGE - ABSOLUTE RULE
+===================================================================
+Never describe locs, locked hair, or any Black hairstyle using "matted," "matting," or any variation of that word, in any prompt, any code comment, any UI text, anywhere in this project, regardless of framing (even as a "neutral technical description" of how locs form). This language carries a real history of being used to demean and dismiss Black hairstyles as unkempt or unhygienic, and it is never acceptable here. Use respectful, accurate terms instead: "locked," "loc'd," "interlocked," "coiled," "sectioned," "palm-rolled," "grown and maintained." If you are ever unsure whether a word describing hair could carry this kind of weight, do not use it - ask first.
