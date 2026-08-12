@@ -244,6 +244,7 @@ export default function Altars({ pose }) {
             key={altar.id}
             className={`btn ${activeAltarId === altar.id ? 'active' : ''}`}
             onClick={() => handleTabClick(altar.id, altar.name)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}
           >
             <Icon name={altar.icon} /> {`The ${altar.name}`}
           </button>

@@ -671,6 +671,201 @@ export async function parseTeaImage(images) {
   }
 
   throw new Error("Failed to extract tea details from image");
+Analyze their active inventory, banished products, somatic reactions, and intake goals.
+Output a comprehensive report formatted in Markdown that covers the following areas:
+
+### Ingredient Patterns
+Deduce exactly what common denominator ingredients are causing their reactions across banished products and the Ledger of Afflictions. Name the suspected offending ingredients directly. Composite blends are annotated with a blend_components field listing their individual components — when two different blends share a component and reactions follow the shared component rather than either blend as a whole, that is a strong attribution signal worth naming explicitly.
+
+### Goal Trajectory
+Assess if their current routine is actively moving them toward their stated intake goals. Highlight any counterproductive habits.
+
+### Routine Optimization
+Recommend removing steps or products they do not actually need (e.g. "you are using too many acids", or "you have overlapping moisturizers"). Identify any redundant steps.
+
+### Replacement & Synergy Mapping
+When a product is banished or ebbing, you MUST suggest replacements first from their *owned* Active Inventory. STRICT CONSTRAINT: Do not suggest new outside products to buy unless their owned inventory is completely devoid of a viable alternative. Only suggest unowned product categories if it solves a critical routine gap.
+
+### Correlations
+Point out behavioral or systemic correlations (e.g., reacting to something due to applying it too frequently, or overlapping conflicts).
+
+Speak in a mystical, cottagecore-goth tone ("ritual voice"). Be insightful, highly analytical, and direct.
+Do not use gendered language or pronouns.`;
+
+  const userContent = `Here is the current state of my ecosystem:
+
+Intake Profile (Goals & Allergies):
+${JSON.stringify(intakeAnswers, null, 2)}
+
+Active Inventory (Truncated to Top 50):
+${JSON.stringify(inventory.slice(0, 50).map(i => {
+  const ret = { name: i.name, category: i.category, ingredients: i.ingredients, state: i.lifecycle_state };
+  if (i.item_type === 'composite' && i.composite_components && i.composite_components.length > 0) {
+    ret.blend_components = i.composite_components.map(cc => cc.items?.name).filter(Boolean);
+  }
+  return ret;
+}), null, 2)}
+${inventory.length > 50 ? '...[TRUNCATED - Showing 50 of ' + inventory.length + ' items]' : ''}
+
+Banished Items (Crypt of Ashes, Truncated to Top 30):
+${JSON.stringify(banishedItems.slice(0, 30).map(i => {
+  const isCostOrAvail = i.banish_reason?.includes('Material Toll') || i.banish_reason?.includes('Elusive');
+  const ret = { 
+    name: i.name, 
+    ingredients: isCostOrAvail ? '[EXCLUDED FROM ANALYSIS DUE TO COST/AVAILABILITY]' : i.ingredients, 
+    reason: i.banish_reason 
+  };
+  if (i.item_type === 'composite' && i.composite_components && i.composite_components.length > 0 && !isCostOrAvail) {
+    ret.blend_components = i.composite_components.map(cc => cc.items?.name).filter(Boolean);
+  }
+  return ret;
+}), null, 2)}
+${banishedItems.length > 30 ? '...[TRUNCATED - Showing 30 of ' + banishedItems.length + ' banished items]' : ''}
+
+Ledger of Afflictions (Reactions):
+${JSON.stringify(ledgerEntries, null, 2)}
+Please divine the truth in the water.`;
+
+  const { data, error } = await invokeAnthropicProxy({
+      max_tokens: 2000,
+      system: systemPrompt,
+      messages: [
+        { role: 'user', content: userContent }
+      ]
+  });
+  if (error) throw error;
+  const response = data;
+  return response.content[0].text;
+}
+
+/**
+ * Analyzes a product and determines its glyph and flags.
+ * @param {string} name 
+ * @param {string} category 
+ * @param {Array<string>} ingredients 
+ */
+export async function analyzeProduct(name, category, ingredients) {
+  
+
+  const tools = [{
+    name: 'save_product_analysis',
+    description: 'Save the analyzed details of the product.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        glyph: { type: 'string', description: 'Phosphor icon name without the ph- prefix (e.g. flask, test-tube, spray-bottle, drop). MUST BE a valid Phosphor icon name that best represents the physical nature of the object.' },
+        risk_flags: {
+          type: 'object',
+          properties: {
+            acid: { type: 'boolean' },
+            retinoid: { type: 'boolean' },
+            vitamin_c: { type: 'boolean' },
+            exfoliant: { type: 'boolean' }
+          }
+        },
+        behavior_flags: {
+          type: 'object',
+          properties: {
+            requires_rinse: { type: 'boolean' },
+            layering_weight: { type: 'integer', description: '1 (watery) to 10 (heavy balm/oil)' },
+            uses_per_week: { type: 'number', description: 'Recommended frequency of use per week. Default to 7 for daily items, 1-3 for masks/exfoliants.' }
+          }
+        }
+      },
+      required: ['glyph', 'risk_flags', 'behavior_flags']
+    }
+  }];
+
+  const { data, error } = await invokeAnthropicProxy({
+      max_tokens: 500,
+      tools: tools,
+      tool_choice: { type: 'tool', name: 'save_product_analysis' },
+      messages: [
+        { role: 'user', content: `Analyze this cosmetic product:
+Name: ${name}
+Category: ${category}
+Ingredients: ${ingredients.join(', ')}` }
+      ]
+  });
+  if (error) throw error;
+  const response = data;
+
+  for (const block of response.content) {
+    if (block.type === 'tool_use' && block.name === 'save_product_analysis') {
+      return block.input;
+    }
+  }
+  
+  throw new Error("Failed to extract product analysis.");
+}
+
+/**
+ * Parses a tea image (loose leaf or box) using Claude Vision and extracts details.
+ * @param {string} base64Image - The base64 string of the image
+ * @param {string} mediaType - e.g. "image/jpeg"
+ * @returns {Promise<Object>}
+/**
+ * Parses one or more tea images (loose leaf or box) using Claude Vision and extracts details.
+ * @param {Array<{base64: string, mediaType: string}>} images
+ * @returns {Promise<Object>}
+ */
+export async function parseTeaImage(images) {
+  
+
+  const tools = [
+    {
+      name: 'extract_tea_details',
+      description: 'Extract herbal elixir/tea details from the image(s)',
+      input_schema: {
+        type: 'object',
+        properties: {
+          brand: { type: 'string', description: 'Brand or maker (if identifiable)' },
+          name: { type: 'string', description: 'Name of the blend' },
+          ingredients: { type: 'array', items: { type: 'string' }, description: 'List of herbs/ingredients identified from shapes/colors or read from the box label' },
+          caffeine_content: { type: 'string', enum: ['High', 'Medium', 'Low', 'None'], description: 'Estimated caffeine content based on ingredients' },
+          steep_time: { type: 'string', description: 'Recommended steeping time and temperature (e.g. "5 mins at 212°F")' },
+          circadian_alignment: { type: 'string', enum: ['Daytime', 'Nighttime', 'Anytime'], description: 'Best time of day to consume based on ingredients' }
+        },
+        required: ['name', 'ingredients', 'caffeine_content', 'steep_time', 'circadian_alignment']
+      }
+    }
+  ];
+
+  const contentBlocks = images.map(img => ({
+    type: 'image',
+    source: {
+      type: 'base64',
+      media_type: img.mediaType,
+      data: img.base64
+    }
+  }));
+
+  contentBlocks.push({
+    type: 'text',
+    text: 'You are analyzing images of a tea or herbal elixir. It might be photos of loose leaf herbs, or photos of the front and back of a tea box/label. If it is loose leaf, analyze the shapes, sizes, and colors of the leaves, flowers, and bits to divine the ingredients. If it is a box, read the label (e.g. use the front for the name and the back for the ingredients). Extract the brand, blend name, ingredients list, estimated caffeine content, recommended steeping parameters, and circadian alignment (daytime vs nighttime use).'
+  });
+
+  const { data, error } = await invokeAnthropicProxy({
+      max_tokens: 1024,
+      messages: [
+        {
+          role: 'user',
+          content: contentBlocks
+        }
+      ],
+      tools: tools,
+      tool_choice: { type: 'tool', name: 'extract_tea_details' }
+  });
+  if (error) throw error;
+  const response = data;
+
+  for (const block of response.content) {
+    if (block.type === 'tool_use' && block.name === 'extract_tea_details') {
+      return block.input;
+    }
+  }
+
+  throw new Error("Failed to extract tea details from image");
 }
 
 /**
@@ -702,7 +897,155 @@ export async function searchOpenBeautyFacts(query) {
   }
 }
 
+// Domain → OBF category tag mapping (biases OBF search query without overriding user-selected domain)
+const DOMAIN_OBF_TAG = {
+  'Crown':    'en:hair-care',
+  'Visage':   'en:face-care',
+  'Gaze':     'en:eye-make-up',
+  'Grin':     'en:oral-hygiene',
+  'Vessel':   'en:body-care',
+  'Veil':     'en:make-up',
+  'Steeping': 'en:hair-care', // infused oils are typically hair/body — no tea products in Rootwork
+};
 
+/**
+ * Two-phase product lookup for the Summon by Hand AI-autocomplete wizard.
+ *
+ * Phase 1: Open Beauty Facts — domain-biased search (domain tag filters irrelevant categories)
+ * Phase 2: Claude fallback — if OBF returns 0 results, Claude generates a best-guess autofill
+ *
+ * The user-selected `domain` is ALWAYS authoritative and is never overridden by OBF or Claude.
+ * OBF's own category tags only influence the search query, not the returned domain value.
+ *
+ * @param {string} brand
+ * @param {string} name
+ * @param {string} domain - User-selected domain (e.g. 'Crown', 'Visage', 'Vessel')
+ * @returns {Promise<Array>} Normalized candidate array
+ */
+export async function lookupProductDetails(brand, name, domain) {
+  const domainTag = DOMAIN_OBF_TAG[domain] || '';
+  const searchQuery = [brand, name].filter(Boolean).join(' ');
+
+  // ── Phase 1: Open Beauty Facts ────────────────────────────────────────────
+  let candidates = [];
+  try {
+    // Build URL — include category tag filter when we have a mapping
+    let url = `https://world.openbeautyfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(searchQuery)}&action=process&json=1&page_size=5&fields=product_name,brands,brand_owner,ingredients_text,categories,image_url,_id`;
+    if (domainTag) {
+      url += `&tagtype_0=categories&tag_0=${encodeURIComponent(domainTag)}`;
+    }
+
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.products && data.products.length > 0) {
+        candidates = data.products
+          .filter(p => p.product_name) // discard nameless entries
+          .slice(0, 5)
+          .map(p => ({
+            id: p._id || crypto.randomUUID(),
+            source: 'obf',
+            brand: p.brands || p.brand_owner || brand || '',
+            name: p.product_name || name,
+            ingredients: p.ingredients_text || '',
+            // category → Elixir Classification text only, never used for domain
+            category: p.categories ? p.categories.split(',')[0].trim() : '',
+            image: p.image_url || null,
+            // Domain is always the user's selection — never derived from OBF
+            domain: domain,
+            application_zones: [],
+            period_after_opening_months: null,
+            unopened_shelf_life_months: null,
+            item_type: 'consumable',
+          }));
+      }
+    }
+  } catch (err) {
+    console.warn('OBF lookup failed, proceeding to Claude fallback:', err.message);
+  }
+
+  // ── Phase 2: Claude fallback ──────────────────────────────────────────────
+  // Runs when OBF has 0 results. Also runs as supplement when OBF has results
+  // but no ingredients (common for niche/handmade products).
+  const needsClaudeFallback = candidates.length === 0;
+  const needsIngredientEnrich = candidates.length > 0 && candidates.every(c => !c.ingredients);
+
+  if (needsClaudeFallback || needsIngredientEnrich) {
+    try {
+      const claudeTools = [{
+        name: 'fill_product_details',
+        description: 'Return your best-known data for this personal care or cosmetic product. If the product is handmade or generic (e.g. "DIY bath soak", "rosemary oil"), return reasonable ingredient defaults and typical shelf-life values.',
+        input_schema: {
+          type: 'object',
+          properties: {
+            brand:                       { type: 'string' },
+            name:                        { type: 'string' },
+            ingredients:                 { type: 'string', description: 'Comma-separated ingredient list' },
+            category:                    { type: 'string', description: 'Human-readable product category, e.g. "Hair Oil", "Body Scrub", "Eye Serum"' },
+            application_zones:           { type: 'array', items: { type: 'string' }, description: 'Body areas this product is applied to, e.g. ["scalp", "hair", "face"]' },
+            period_after_opening_months: { type: 'number', description: 'Typical months until expiry after opening (PAO). Null if unknown.' },
+            unopened_shelf_life_months:  { type: 'number', description: 'Typical unopened shelf life in months. Null if unknown.' },
+            item_type:                   { type: 'string', enum: ['consumable', 'arsenal', 'composite'], description: '"consumable" for products, "arsenal" for tools/devices, "composite" for handmade mixes' },
+          },
+          required: ['brand', 'name', 'ingredients', 'category', 'application_zones', 'item_type'],
+        }
+      }];
+
+      const { data: claudeData, error: claudeErr } = await invokeAnthropicProxy({
+        max_tokens: 800,
+        tools: claudeTools,
+        tool_choice: { type: 'tool', name: 'fill_product_details' },
+        messages: [{
+          role: 'user',
+          content: `You are a cosmetic product database. A user is adding this product to their personal care tracker.
+
+Brand: ${brand || '(not specified)'}
+Product name: ${name}
+Product domain: ${domain} (Crown=hair/scalp, Visage=face, Gaze=eyes, Grin=oral, Vessel=body, Veil=makeup, Steeping=infused oils)
+
+Return your best known data for this product. If it's a well-known commercial product, use real ingredient data. If it's handmade or generic, provide sensible defaults.`
+        }]
+      });
+
+      if (!claudeErr && claudeData?.content) {
+        const toolBlock = claudeData.content.find(b => b.type === 'tool_use' && b.name === 'fill_product_details');
+        if (toolBlock?.input) {
+          const ai = toolBlock.input;
+          if (needsClaudeFallback) {
+            // Add as sole candidate from Claude
+            candidates.push({
+              id: 'ai-generated',
+              source: 'ai',
+              brand: ai.brand || brand || '',
+              name: ai.name || name,
+              ingredients: ai.ingredients || '',
+              category: ai.category || '',
+              image: null,
+              domain: domain, // always user's selection
+              application_zones: ai.application_zones || [],
+              period_after_opening_months: ai.period_after_opening_months || null,
+              unopened_shelf_life_months: ai.unopened_shelf_life_months || null,
+              item_type: ai.item_type || 'consumable',
+            });
+          } else if (needsIngredientEnrich) {
+            // Enrich existing OBF candidates that had no ingredients
+            candidates = candidates.map(c => ({
+              ...c,
+              ingredients: c.ingredients || ai.ingredients || '',
+              application_zones: c.application_zones.length ? c.application_zones : (ai.application_zones || []),
+              period_after_opening_months: c.period_after_opening_months ?? ai.period_after_opening_months ?? null,
+              unopened_shelf_life_months: c.unopened_shelf_life_months ?? ai.unopened_shelf_life_months ?? null,
+            }));
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Claude product lookup fallback failed:', err.message);
+    }
+  }
+
+  return candidates;
+}
 
 
 /**
@@ -755,4 +1098,33 @@ export async function parseTCheckImage(images) {
   }
 
   throw new Error("Failed to extract tCheck reading from image");
+}
+
+
+export function compressImage(file, maxWidth = 1024, quality = 0.8) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = event => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round(height * maxWidth / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = error => reject(error);
+    };
+    reader.onerror = error => reject(error);
+  });
 }

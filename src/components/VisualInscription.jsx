@@ -109,9 +109,9 @@ export default function VisualInscription({ onComplete, onSkip, inline = false }
       {!aiObservation && !loading && (
         <div>
           <Icon name="ph-camera" style={{ fontSize: '3rem', color: 'var(--plum)', marginBottom: '1rem' }} />
-          <h2 style={{ marginBottom: '1rem', color: 'var(--plum)' }}>The Flesh Scrying</h2>
+          <h2 style={{ marginBottom: '1rem', color: 'var(--plum)' }}>The Aura Scrying</h2>
           <p style={{ color: 'var(--dim)', marginBottom: '2rem' }}>
-            Offer a visage of your current state. The Keeper will observe but will not name it.
+            Present your current form to the scrying pool. The Keeper will observe the physical signs, but will not diagnose them.
           </p>
           
           <input 
@@ -124,12 +124,12 @@ export default function VisualInscription({ onComplete, onSkip, inline = false }
           />
           
           <button className="btn plum" style={{ width: '100%', marginBottom: '1rem', padding: '1rem', fontSize: '1.2rem' }} onClick={() => fileInputRef.current?.click()}>
-            Capture Visage
+            Reveal to the Keeper
           </button>
           
           {onSkip && (
             <button className="btn" onClick={onSkip} style={{ width: '100%', background: 'var(--card2)', color: 'var(--dim)', borderColor: 'var(--border)' }}>
-              Skip / Pass in Silence
+              Pass in Silence
             </button>
           )}
         </div>

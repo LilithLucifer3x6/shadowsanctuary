@@ -92,7 +92,7 @@ function DroppableGroup({ product, onUpdateField, imagesData }) {
               type="number" 
               value={product.price || ''} 
               onChange={e => onUpdateField(product.id, 'price', e.target.value ? parseFloat(e.target.value) : null)} 
-              placeholder="Price (Optional)"
+              placeholder="Price"
               style={{ flex: 1, padding: '0.5rem' }}
             />
           </div>

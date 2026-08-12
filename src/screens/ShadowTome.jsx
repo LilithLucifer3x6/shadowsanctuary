@@ -271,13 +271,11 @@ export default function ShadowTome({ pose }) {
     if (!files.length) return;
     setIsScanningTCheck(true);
     try {
+      const { compressImage } = await import('../lib/ai-engine.js');
       const newImages = [];
       for (const file of files) {
-        const reader = new FileReader();
-        const base64 = await new Promise((resolve) => {
-          reader.onload = () => resolve(reader.result.split(',')[1]);
-          reader.readAsDataURL(file);
-        });
+        const dataUrl = await compressImage(file, 1024, 0.8);
+        const base64 = dataUrl.split(',')[1];
         newImages.push({ base64, mediaType: file.type });
       }
       const details = await parseTCheckImage(newImages);
@@ -399,15 +397,18 @@ export default function ShadowTome({ pose }) {
     setTeaModalState('photo');
     
     const newImages = [];
-    for (const file of files) {
-      const dataUrl = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => resolve(ev.target.result);
-        reader.readAsDataURL(file);
-      });
-      const base64 = dataUrl.split(',')[1];
-      const mime = dataUrl.split(';')[0].split(':')[1];
-      newImages.push({ base64, mediaType: mime, dataUrl });
+    try {
+      const { compressImage } = await import('../lib/ai-engine.js');
+      for (const file of files) {
+        const dataUrl = await compressImage(file, 1024, 0.8);
+        const base64 = dataUrl.split(',')[1];
+        const mime = dataUrl.split(';')[0].split(':')[1];
+        newImages.push({ base64, mediaType: mime, dataUrl });
+      }
+    } catch(err) {
+      console.error(err);
+      setTeaStatus('Failed to read image.');
+      return;
     }
     
     setTeaImages(prev => [...prev, ...newImages]);
@@ -709,61 +710,7 @@ export default function ShadowTome({ pose }) {
               <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
               <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Alchemies <SpeakerButton text="The Alchemies" /></h3>
               
-              {alchemyForm ? (
-                <div style={{ textAlign: 'left', marginTop: '1rem' }}>
-                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. The Transmutation (Oil Infusion)</div>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>Potency</label>
-                        <input type="number" value={alchemyForm.oil_reading_raw} onChange={e => setAlchemyForm({...alchemyForm, oil_reading_raw: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                      </div>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>Unit</label>
-                        <select value={alchemyForm.oil_reading_unit} onChange={e => setAlchemyForm({...alchemyForm, oil_reading_unit: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', width: '100%', padding: '0.4rem' }}>
-                          <option value="mg/mL">mg/mL</option>
-                          <option value="mg/tsp">mg/tsp</option>
-                          <option value="mg/Tbsp">mg/Tbsp</option>
-                          <option value="mg/cup">mg/cup</option>
-                        </select>
-                      </div>
-                    </div>
-                    <button className="btn sm mt-2" onClick={() => tcheckInputRef.current?.click()} disabled={isScanningTCheck}>
-                      <Icon name="ph-camera" /> {isScanningTCheck ? 'Divining...' : 'Divine Reading (tCheck)'}
-                    </button>
-                    <input type="file" accept="image/*" capture="environment" ref={tcheckInputRef} style={{ display: 'none' }} onChange={handleScanTCheck} />
-                  </div>
-
-                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>2. The Final Binding</div>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>Oil (ml)</label>
-                        <input type="number" value={alchemyForm.oil_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, oil_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                      </div>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>Honey (ml)</label>
-                        <input type="number" value={alchemyForm.honey_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, honey_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                      </div>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label>Lecithin (ml)</label>
-                        <input type="number" value={alchemyForm.lecithin_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, lecithin_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="field" style={{ marginBottom: '1.5rem' }}>
-                    <label>Name the Alchemy</label>
-                    <input type="text" value={alchemyForm.name} onChange={e => setAlchemyForm({...alchemyForm, name: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', width: '100%', padding: '0.4rem' }} />
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                    <button className="btn" onClick={cancelAlchemy}>Abandon</button>
-                    <button className="btn plum" onClick={handleSaveAlchemy}>Ignite the Alchemy</button>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                              <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {alchemies.map(alch => (
                     <div key={alch.id} style={{ background: 'var(--card2)', padding: '1rem', borderRadius: '8px', border: '1px dashed var(--border)', textAlign: 'left' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -934,14 +881,7 @@ export default function ShadowTome({ pose }) {
             {teaModalState === 'manual' && (
               <>
 
-                                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Category</label>
-                  <select value={teaForm.category} onChange={e => setTeaForm({...teaForm, category: e.target.value})} style={{color: 'var(--plum)', background: 'var(--card2)', padding: '0.5rem', width: '100%', marginBottom: '0.5rem'}}>
-                    <option value="Tea">Tea</option>
-                    <option value="Flower">Flower</option>
-                    <option value="Carrier Oil">Carrier Oil</option>
-                  </select>
-                </div>
+
                 
                 <div className="field">
                   <label style={{color: 'var(--plum)'}}>Lineage or House</label>
@@ -996,6 +936,68 @@ export default function ShadowTome({ pose }) {
         </div>
       )}
           {/* Vessel Scanner Modal */}
+      
+      {alchemyForm && (
+        <div className="modal" style={{display: 'block'}}>
+          <div className="modal-content card" style={{maxWidth: '400px'}}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Ignite New Alchemy</h3>
+            <div style={{ textAlign: 'left', marginTop: '1rem' }}>
+                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. The Transmutation (Oil Infusion)</div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Potency</label>
+                        <input type="number" value={alchemyForm.oil_reading_raw} onChange={e => setAlchemyForm({...alchemyForm, oil_reading_raw: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Unit</label>
+                        <select value={alchemyForm.oil_reading_unit} onChange={e => setAlchemyForm({...alchemyForm, oil_reading_unit: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', width: '100%', padding: '0.4rem' }}>
+                          <option value="mg/mL">mg/mL</option>
+                          <option value="mg/tsp">mg/tsp</option>
+                          <option value="mg/Tbsp">mg/Tbsp</option>
+                          <option value="mg/cup">mg/cup</option>
+                        </select>
+                      </div>
+                    </div>
+                    <button className="btn sm mt-2" onClick={() => tcheckInputRef.current?.click()} disabled={isScanningTCheck}>
+                      <Icon name="ph-camera" /> {isScanningTCheck ? 'Divining...' : 'Divine Reading (tCheck)'}
+                    </button>
+                    <input type="file" accept="image/*" capture="environment" ref={tcheckInputRef} style={{ display: 'none' }} onChange={handleScanTCheck} />
+                  </div>
+
+                  <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>2. The Final Binding</div>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Oil (ml)</label>
+                        <input type="number" value={alchemyForm.oil_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, oil_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Honey (ml)</label>
+                        <input type="number" value={alchemyForm.honey_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, honey_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label>Lecithin (ml)</label>
+                        <input type="number" value={alchemyForm.lecithin_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, lecithin_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="field" style={{ marginBottom: '1.5rem' }}>
+                    <label>Name the Alchemy</label>
+                    <input type="text" value={alchemyForm.name} onChange={e => setAlchemyForm({...alchemyForm, name: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', width: '100%', padding: '0.4rem' }} />
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <button className="btn" onClick={cancelAlchemy}>Abandon</button>
+                    <button className="btn plum" onClick={handleSaveAlchemy}>Ignite the Alchemy</button>
+                  </div>
+                </div>
+          </div>
+        </div>
+      )}
+
       {showDramModal && (
         <div className="modal" style={{display: 'block'}}>
           <div className="modal-content card" style={{maxWidth: '400px'}}>

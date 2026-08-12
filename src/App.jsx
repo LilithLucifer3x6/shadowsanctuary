@@ -512,8 +512,8 @@ export default function App() {
 
                 <div className="field" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1rem', width: '100%', maxWidth: '300px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <input type="checkbox" checked={settings.tts} 
+                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <input type="checkbox" style={{ marginTop: '0.2rem' }} checked={settings.tts} 
                            onChange={e => {
                              setSettings({...settings, tts: e.target.checked});
                              setTtsEnabled(e.target.checked);
@@ -555,8 +555,8 @@ export default function App() {
                       </div>
                     )}
 
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <input type="checkbox" checked={settings.health} onChange={async (e) => {
+                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <input type="checkbox" style={{ marginTop: '0.2rem' }} checked={settings.health} onChange={async (e) => {
                         const checked = e.target.checked;
                         if (checked) {
                           const { requestHealthPermissions, syncWearableSnapshot } = await import('./lib/health-connect.js');
@@ -571,8 +571,8 @@ export default function App() {
                       }} /> Corporeal Sensors (RingConn, Renpho, Samsung)
                     </label>
                     
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--crimson)' }}>
-                      <input type="checkbox" checked={settings.cal}
+                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--crimson)' }}>
+                      <input type="checkbox" style={{ marginTop: '0.2rem' }} checked={settings.cal}
                              onChange={e => setSettings({...settings, cal: e.target.checked})} /> Solar Almanac (Google Calendar)
                     </label>
                     {settings.cal && (
@@ -590,7 +590,9 @@ export default function App() {
                     )}
                   </div>
                 </div>
+                
                 <div>
+                  <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem', textAlign: 'center' }}>Sanctuary Gate</h3>
                   <button onClick={() => {
                     setShowSettings(false);
                     setCurrentScreen('avatar');

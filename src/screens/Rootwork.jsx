@@ -34,29 +34,61 @@ export default function Rootwork({ pose }) {
   const [photoStatus, setPhotoStatus] = useState('Offer or Scry Photo');
   const [modalState, setModalState] = useState('photo');
   const [banishState, setBanishState] = useState(null);
-  const [isSearchingOBF, setIsSearchingOBF] = useState(false);
-  const [obfResults, setObfResults] = useState([]);
-  
+  // Phase 4 wizard state
+  const [manualStep, setManualStep] = useState('seed'); // 'seed' | 'searching' | 'candidates' | 'confirm'
+  const [aiCandidates, setAiCandidates] = useState([]);
+  const [seedForm, setSeedForm] = useState({ brand: '', name: '', domain: 'Crown' });
+  const [showAIReview, setShowAIReview] = useState(false);
+
   const [profile, setProfile] = useState(null);
   const [echoInput, setEchoInput] = useState('');
   const [echoStatus, setEchoStatus] = useState('');
   const [echoResult, setEchoResult] = useState('');
 
-  const handleSearchOBF = async () => {
-    if (!addForm.name) return;
-    setIsSearchingOBF(true);
-    setObfResults([]);
+  const handleAILookup = async () => {
+    if (!seedForm.name.trim()) return;
+    setManualStep('searching');
     try {
-      const { searchOpenBeautyFacts } = await import('../lib/ai-engine.js');
-      const results = await searchOpenBeautyFacts(addForm.name);
-      setObfResults(results);
-      if (results.length === 0) {
-        await alert("No relics found by that name in the global index.");
+      const { lookupProductDetails } = await import('../lib/ai-engine.js');
+      const candidates = await lookupProductDetails(seedForm.brand, seedForm.name, seedForm.domain);
+      setAiCandidates(candidates);
+      if (candidates.length > 0) {
+        setManualStep('candidates');
+      } else {
+        // No results at all (both OBF and Claude failed) — drop to manual confirm
+        setAddForm(prev => ({ ...prev, brand: seedForm.brand, name: seedForm.name, domain: seedForm.domain }));
+        setManualStep('confirm');
       }
     } catch (err) {
-      console.error(err);
+      console.error('AI lookup failed:', err);
+      setAddForm(prev => ({ ...prev, brand: seedForm.brand, name: seedForm.name, domain: seedForm.domain }));
+      setManualStep('confirm');
     }
-    setIsSearchingOBF(false);
+  };
+
+  const handleCandidateSelect = (candidate) => {
+    setAddForm(prev => ({
+      ...prev,
+      brand: candidate.brand || seedForm.brand,
+      name: candidate.name || seedForm.name,
+      domain: candidate.domain || seedForm.domain, // always user's selection
+      category: candidate.category || '',
+      ingredients: candidate.ingredients || '',
+      application_zones: candidate.application_zones || [],
+      period_after_opening_months: candidate.period_after_opening_months ? String(candidate.period_after_opening_months) : '',
+      unopened_shelf_life_months: candidate.unopened_shelf_life_months ? String(candidate.unopened_shelf_life_months) : '',
+      item_type: candidate.item_type || 'consumable',
+      is_composite: candidate.item_type === 'composite',
+    }));
+    setManualStep('confirm');
+    setShowAIReview(false);
+  };
+
+  const resetManualWizard = () => {
+    setManualStep('seed');
+    setAiCandidates([]);
+    setSeedForm({ brand: '', name: '', domain: 'Crown' });
+    setShowAIReview(false);
   };
 
   const fetchItems = async () => {
@@ -132,15 +164,13 @@ export default function Rootwork({ pose }) {
     
     setPhotoStatus('Divining image...');
     
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target.result;
+    try {
+      const { parseProductImage, compressImage } = await import('../lib/ai-engine.js');
+      const dataUrl = await compressImage(file, 1024, 0.8);
       const base64 = dataUrl.split(',')[1];
       const mime = dataUrl.split(';')[0].split(':')[1];
       
-      try {
-                const { parseProductImage } = await import('../lib/ai-engine.js');
-        const details = await parseProductImage(base64, mime);
+      const details = await parseProductImage(base64, mime);
         
         setAddForm(prev => ({
           ...prev,
@@ -167,8 +197,6 @@ export default function Rootwork({ pose }) {
         console.error(err);
         setPhotoStatus('The vision was clouded. Offer image anew.');
       }
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleEchoScry = async (inputStr = echoInput) => {
@@ -215,15 +243,13 @@ export default function Rootwork({ pose }) {
     
     setEchoStatus('Divining image...');
     
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-      const dataUrl = ev.target.result;
+    try {
+      const { parseProductImage, compressImage } = await import('../lib/ai-engine.js');
+      const dataUrl = await compressImage(file, 1024, 0.8);
       const base64 = dataUrl.split(',')[1];
       const mime = dataUrl.split(';')[0].split(':')[1];
       
-      try {
-        const { parseProductImage } = await import('../lib/ai-engine.js');
-        const details = await parseProductImage(base64, mime);
+      const details = await parseProductImage(base64, mime);
         const formulaStr = `${details.brand || ''} ${details.name || ''} ${details.category || ''}`;
         setEchoInput(formulaStr.trim());
         setEchoStatus('Vision extracted. Divining...');
@@ -232,8 +258,6 @@ export default function Rootwork({ pose }) {
         console.error(err);
         setEchoStatus('The vision was clouded. Offer image anew.');
       }
-    };
-    reader.readAsDataURL(file);
   };
 
 
@@ -560,25 +584,21 @@ export default function Rootwork({ pose }) {
     setPendingImports([]);
     
     try {
-      // Read all files as base64
-      const imagePromises = files.map(file => new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          const dataUrl = ev.target.result;
-          resolve({
-            name: file.name,
-            dataUrl: dataUrl,
-            base64: dataUrl.split(',')[1],
-            mediaType: dataUrl.split(';')[0].split(':')[1]
-          });
+      const { parseBatchProductImages, compressImage } = await import('../lib/ai-engine.js');
+      
+      // Read all files as base64 using compressImage
+      const imagePromises = files.map(async file => {
+        const dataUrl = await compressImage(file, 1024, 0.8);
+        return {
+          name: file.name,
+          dataUrl: dataUrl,
+          base64: dataUrl.split(',')[1],
+          mediaType: dataUrl.split(';')[0].split(':')[1]
         };
-        reader.readAsDataURL(file);
-      }));
+      });
       
       const loadedImages = await Promise.all(imagePromises);
       setUploadedImages(loadedImages);
-      
-      const { parseBatchProductImages } = await import('../lib/ai-engine.js');
       
       // Pass to Claude Vision
       const aiProducts = await parseBatchProductImages(loadedImages.map(img => ({
@@ -870,7 +890,7 @@ export default function Rootwork({ pose }) {
           <div className="card mb-4" style={{ marginBottom: 0, width: '100%' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ justifyContent: 'center' }}>The Echo <SpeakerButton text="The Echo" /></h3>
-            <div className="mt mb-4" style={{ textAlign: 'center' }}>Reveal the hidden nature of a formula.</div>
+            <div className="mt mb-4" style={{ textAlign: 'center' }}>Unveil the hidden resonance of the relic.</div>
             
             <div className="field" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <label>Divine by Visage</label>
@@ -885,7 +905,7 @@ export default function Rootwork({ pose }) {
               <div style={{ width: '100%' }}>
                 <VoiceInput 
                   isTextArea={true}
-                  placeholder="Or provide the formula's true name..."
+                  placeholder="Speak the relic's true name..."
                   value={echoInput}
                   onChange={(e) => setEchoInput(e.target.value)}
                   style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--plum)', fontSize: '1.1rem' }}
@@ -960,231 +980,420 @@ export default function Rootwork({ pose }) {
 
             {modalState === 'manual' && (
               <>
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Divine by Visage (Optional)</label>
-                  <div style={{position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', color: 'var(--plum)', cursor: 'pointer'}}>
-                    <Icon name={G.tabPool} /> 
-                    <span style={{marginTop: '0.5rem', textAlign: 'center'}}>{photoStatus}</span>
-                    <input type="file" accept="image/*" capture="environment" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer'}} onChange={handlePhotoUpload} />
-                  </div>
-                </div>
-
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Lineage or House (Optional)</label>
-                  <VoiceInput value={addForm.brand} onChange={e => setAddForm({...addForm, brand: e.target.value})} />
-                </div>
-                
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Name of the Relic</label>
-                  <VoiceInput value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} />
-                </div>
-
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Item Type</label>
-                  <select value={addForm.item_type || (addForm.is_composite ? 'composite' : 'consumable')} onChange={e => setAddForm({...addForm, item_type: e.target.value, is_composite: e.target.value === 'composite'})} style={{color: 'var(--plum)'}}>
-                    <option value="consumable">Consumable (Product)</option>
-                    <option value="arsenal">Arsenal (Tool/Device)</option>
-                    <option value="composite">Composite (Custom Mix)</option>
-                  </select>
-                </div>
-
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Period After Opening (Months)</label>
-                  <input type="number" min="1" placeholder="e.g. 12" value={addForm.period_after_opening_months} onChange={e => setAddForm({...addForm, period_after_opening_months: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
-                </div>
-                
-                <div className="field">
-                  <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer'}}>
-                    <input type="checkbox" checked={addForm.is_opened} onChange={e => setAddForm({...addForm, is_opened: e.target.checked})} style={{accentColor: 'var(--plum)'}} />
-                    Break the Seal (Item is Opened)
-                  </label>
-                  {addForm.is_opened && (
-                    <div style={{ marginTop: '0.5rem' }}>
-                      <label style={{color: 'var(--dim)', fontSize: '0.9rem'}}>Date Opened (Backdatable)</label>
-                      <input type="date" value={addForm.opened_date} onChange={e => setAddForm({...addForm, opened_date: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px', marginTop: '0.3rem' }} />
-                    </div>
-                  )}
-                </div>
-
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Anatomical Realm</label>
-                  <select value={addForm.domain} onChange={e => setAddForm({...addForm, domain: e.target.value})} style={{color: 'var(--plum)'}}>
-                    <option value="Crown">Crown (Hair & Scalp)</option>
-                    <option value="Visage">Visage (Face)</option>
-                    <option value="Gaze">Gaze (Eyes)</option>
-                    <option value="Grin">Grin (Mouth & Teeth)</option>
-                    <option value="Vessel">Vessel (Body)</option>
-                    <option value="Veil">Veil (Makeup & Color Cosmetics)</option>
-                    <option value="Steeping">Steeping (Infusion & Decarb)</option>
-                  </select>
-                </div>
-
-                {addForm.domain !== 'Steeping' && (
-                  <div className="field">
-                    <label style={{color: 'var(--plum)'}}>Application Zones (Required)</label>
-                    <VoiceInput placeholder="e.g. oral, visage, entire body" value={(addForm.application_zones || []).join(', ')} onChange={e => setAddForm({...addForm, application_zones: e.target.value.split(',').map(s=>s.trim()).filter(Boolean)})} />
-                  </div>
-                )}
-
-                <div className="field" style={{background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)'}}>
-                  <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer', marginBottom: addForm.is_prescription ? '1rem' : '0'}}>
-                    <input type="checkbox" checked={addForm.is_prescription} onChange={e => setAddForm({...addForm, is_prescription: e.target.checked})} style={{accentColor: 'var(--plum)'}} />
-                    Pharmacy Prescription (Rx)
-                  </label>
-                  {addForm.is_prescription && (
-                    <VoiceInput isTextArea={true} placeholder="Prescription details, strength, and instructions..." value={addForm.prescription_details} onChange={e => setAddForm({...addForm, prescription_details: e.target.value})} />
-                  )}
-                </div>
-
-                {addForm.domain === 'Steeping' && (
+                {/* ── STEP 1: Seed ──────────────────────────────────────────── */}
+                {manualStep === 'seed' && (
                   <>
-                    <div className="field">
-                      <label style={{color: 'var(--plum)'}}>Measured Potency (mg/ml, tCheck)</label>
-                      <input type="number" step="0.01" value={addForm.measured_potency_mg_ml} onChange={e => setAddForm({...addForm, measured_potency_mg_ml: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                    <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--dim)', marginTop: '-0.5rem' }}>
+                        Name your relic and the Codex will divine the rest.
+                      </div>
                     </div>
+
                     <div className="field">
-                      <label style={{color: 'var(--plum)'}}>Inferred Potency (mg/ml, Calculated)</label>
-                      <input type="number" step="0.01" value={addForm.inferred_potency_mg_ml} onChange={e => setAddForm({...addForm, inferred_potency_mg_ml: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
-                    </div>
-                    <div className="field">
-                      <label style={{color: 'var(--plum)'}}>Potency Source</label>
-                      <select value={addForm.potency_source} onChange={e => setAddForm({...addForm, potency_source: e.target.value})} style={{color: 'var(--plum)'}}>
-                        <option value="">None</option>
-                        <option value="measured">Measured</option>
-                        <option value="inferred">Inferred</option>
+                      <label style={{color: 'var(--plum)'}}>Sacred Domain</label>
+                      <select
+                        value={seedForm.domain}
+                        onChange={e => setSeedForm({...seedForm, domain: e.target.value})}
+                        style={{color: 'var(--plum)'}}
+                      >
+                        <option value="Crown">Crown (Hair &amp; Scalp)</option>
+                        <option value="Visage">Visage (Face)</option>
+                        <option value="Gaze">Gaze (Eyes)</option>
+                        <option value="Grin">Grin (Mouth &amp; Teeth)</option>
+                        <option value="Vessel">Vessel (Body)</option>
+                        <option value="Veil">Veil (Makeup &amp; Color Cosmetics)</option>
+                        <option value="Steeping">Steeping (Infusion &amp; Decarb Oils)</option>
                       </select>
                     </div>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label style={{color: 'var(--plum)'}}>LEVO Material (g)</label>
-                        <input type="number" step="0.1" value={addForm.levo_material_qty} onChange={e => setAddForm({...addForm, levo_material_qty: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
-                      </div>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label style={{color: 'var(--plum)'}}>LEVO Temp (°F)</label>
-                        <input type="number" step="1" value={addForm.levo_temperature} onChange={e => setAddForm({...addForm, levo_temperature: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
-                      </div>
-                      <div className="field" style={{ flex: 1 }}>
-                        <label style={{color: 'var(--plum)'}}>LEVO Duration (m)</label>
-                        <input type="number" step="1" value={addForm.levo_duration} onChange={e => setAddForm({...addForm, levo_duration: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
-                      </div>
-                    </div>
+
                     <div className="field">
-                      <label style={{color: 'var(--plum)'}}>LEVO Carrier Oil</label>
-                      <input type="text" placeholder="e.g. MCT, Olive, Ghee" value={addForm.levo_carrier_oil} onChange={e => setAddForm({...addForm, levo_carrier_oil: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                      <label style={{color: 'var(--plum)'}}>Lineage or House (Brand)</label>
+                      <VoiceInput
+                        placeholder="e.g. Mielle Organics, The Ordinary…"
+                        value={seedForm.brand}
+                        onChange={e => setSeedForm({...seedForm, brand: e.target.value})}
+                      />
+                    </div>
+
+                    <div className="field">
+                      <label style={{color: 'var(--plum)'}}>Name of the Relic</label>
+                      <VoiceInput
+                        placeholder="e.g. Rosemary Mint Scalp Oil…"
+                        value={seedForm.name}
+                        onChange={e => setSeedForm({...seedForm, name: e.target.value})}
+                      />
+                    </div>
+
+                    <div style={{display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem'}}>
+                      <button className="btn" onClick={() => { setShowAddModal(false); resetManualWizard(); }}>Abandon</button>
+                      <button
+                        className="btn plum"
+                        onClick={handleAILookup}
+                        disabled={!seedForm.name.trim()}
+                      >
+                        <Icon name="ph-sparkle" /> Seek in the Codex
+                      </button>
                     </div>
                   </>
                 )}
-                
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Elixir Classification</label>
-                  <VoiceInput placeholder="e.g. Purifier, Tincture, Veil" value={addForm.category} onChange={e => setAddForm({...addForm, category: e.target.value})} />
-                </div>
 
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Botanical Components & Herbs</label>
-                  <VoiceInput isTextArea={true} placeholder="Transcribe the sacred components..." value={addForm.ingredients} onChange={e => setAddForm({...addForm, ingredients: e.target.value})} />
-                </div>
-
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Material Offering (For The Silver Toll)</label>
-                  <input type="number" step="0.01" placeholder="0.00" value={addForm.price} onChange={e => setAddForm({...addForm, price: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <div className="field" style={{ flex: 1 }}>
-                    <label style={{color: 'var(--plum)'}}>Manufacture Date</label>
-                    <input type="date" value={addForm.manufacture_date} onChange={e => setAddForm({...addForm, manufacture_date: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                {/* ── SEARCHING spinner ─────────────────────────────────────── */}
+                {manualStep === 'searching' && (
+                  <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--plum)' }}>
+                    <div style={{ fontSize: '2rem', marginBottom: '1rem', animation: 'spin 1.5s linear infinite', display: 'inline-block' }}>✦</div>
+                    <div>Consulting the Codex…</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginTop: '0.5rem' }}>Searching Open Beauty Facts and divining with Claude</div>
                   </div>
-                  <div className="field" style={{ flex: 1 }}>
-                    <label style={{color: 'var(--plum)'}}>Purchase Date</label>
-                    <input type="date" value={addForm.purchase_date} onChange={e => setAddForm({...addForm, purchase_date: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
-                  </div>
-                </div>
+                )}
 
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Unopened Shelf Life (Months)</label>
-                  <input type="number" placeholder="e.g. 36" value={addForm.unopened_shelf_life_months} onChange={e => setAddForm({...addForm, unopened_shelf_life_months: e.target.value})} style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
-                </div>
+                {/* ── STEP 2: Candidates ────────────────────────────────────── */}
+                {manualStep === 'candidates' && (
+                  <>
+                    <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--dim)' }}>
+                        The Codex found {aiCandidates.length} match{aiCandidates.length !== 1 ? 'es' : ''} — select the true relic.
+                      </div>
+                    </div>
 
-                <div className="field">
-                  <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer'}}>
-                    <input type="checkbox" checked={addForm.is_essential} onChange={e => setAddForm({...addForm, is_essential: e.target.checked})} style={{accentColor: 'var(--plum)'}} />
-                    Mark as Essential (Alert immediately when ebbing)
-                  </label>
-                </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxHeight: '420px', overflowY: 'auto', paddingRight: '0.3rem' }}>
+                      {aiCandidates.map((candidate, idx) => (
+                        <div key={candidate.id || idx} style={{
+                          background: 'rgba(0,0,0,0.25)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '10px',
+                          padding: '0.9rem',
+                          display: 'flex',
+                          gap: '0.8rem',
+                          alignItems: 'flex-start'
+                        }}>
+                          {/* Thumbnail */}
+                          {candidate.image ? (
+                            <img
+                              src={candidate.image}
+                              alt={candidate.name}
+                              style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0, background: 'rgba(0,0,0,0.3)' }}
+                              onError={e => { e.target.style.display = 'none'; }}
+                            />
+                          ) : (
+                            <div style={{ width: '56px', height: '56px', borderRadius: '6px', background: 'rgba(176,136,204,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <Icon name="ph-flask" />
+                            </div>
+                          )}
 
-                <div className="field">
-                  <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer'}}>
-                    <input type="checkbox" checked={addForm.is_composite} onChange={e => setAddForm({...addForm, is_composite: e.target.checked})} style={{accentColor: 'var(--plum)'}} />
-                    This is a Composite Brew / Handmade Alchemy
-                  </label>
-                </div>
-
-                {addForm.is_composite && (
-                  <div className="field">
-                    <label style={{color: 'var(--plum)'}}>Base Elements & Proportions</label>
-                    <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border)', padding: '0.5rem', borderRadius: '4px', display: 'flex', flexDirection: 'column', gap: '0.4rem', background: 'rgba(0,0,0,0.2)' }}>
-                      {items.filter(i => i.id !== addForm.id && i.item_type !== 'tool').map(i => {
-                        const isChecked = addForm.selectedComponents?.some(c => c.id === i.id);
-                        const compData = addForm.selectedComponents?.find(c => c.id === i.id) || { id: i.id, proportion: '' };
-                        return (
-                          <div key={i.id} style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-                            <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer', flex: 1}}>
-                              <input 
-                                type="checkbox" 
-                                style={{accentColor: 'var(--plum)'}}
-                                checked={isChecked}
-                                onChange={(e) => {
-                                   let newComps = [...(addForm.selectedComponents || [])];
-                                   if (e.target.checked) {
-                                     newComps.push({ id: i.id, proportion: '' });
-                                   } else {
-                                     newComps = newComps.filter(c => c.id !== i.id);
-                                   }
-                                   setAddForm({...addForm, selectedComponents: newComps});
-                                }}
-                              />
-                              {i.name}
-                            </label>
-                            {isChecked && (
-                              <input 
-                                type="text" 
-                                placeholder="e.g. 2 parts, 50%, 10ml" 
-                                value={compData.proportion}
-                                onChange={(e) => {
-                                  const newComps = addForm.selectedComponents.map(c => 
-                                    c.id === i.id ? { ...c, proportion: e.target.value } : c
-                                  );
-                                  setAddForm({...addForm, selectedComponents: newComps});
-                                }}
-                                style={{ width: '120px', padding: '0.2rem 0.5rem', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px', fontSize: '0.8rem' }}
-                              />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.3rem' }}>
+                              <span style={{ fontWeight: 600, color: 'var(--plum)' }}>{candidate.name}</span>
+                              <span style={{
+                                fontSize: '0.7rem',
+                                padding: '0.1rem 0.4rem',
+                                borderRadius: '4px',
+                                background: candidate.source === 'ai' ? 'rgba(176,136,204,0.2)' : 'rgba(100,200,150,0.15)',
+                                color: candidate.source === 'ai' ? 'var(--plum)' : '#7ec8a0',
+                                border: `1px solid ${candidate.source === 'ai' ? 'var(--plum)' : '#7ec8a0'}`,
+                                flexShrink: 0
+                              }}>
+                                {candidate.source === 'ai' ? '✦ AI' : 'OBF'}
+                              </span>
+                            </div>
+                            {candidate.brand && (
+                              <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginBottom: '0.3rem' }}>{candidate.brand}</div>
+                            )}
+                            {candidate.ingredients && (
+                              <div style={{ fontSize: '0.75rem', color: 'var(--dim)', lineHeight: 1.4 }}>
+                                {candidate.ingredients.substring(0, 100)}{candidate.ingredients.length > 100 ? '…' : ''}
+                              </div>
                             )}
                           </div>
-                        );
-                      })}
+
+                          <button
+                            className="btn plum"
+                            style={{ flexShrink: 0, padding: '0.4rem 0.7rem', fontSize: '0.8rem' }}
+                            onClick={() => handleCandidateSelect(candidate)}
+                          >
+                            Select
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.8rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                      <button className="btn" onClick={() => setManualStep('seed')}>← Back</button>
+                      <button
+                        className="btn"
+                        style={{ fontSize: '0.8rem', borderColor: 'var(--dim)', color: 'var(--dim)' }}
+                        onClick={() => {
+                          setAddForm(prev => ({ ...prev, brand: seedForm.brand, name: seedForm.name, domain: seedForm.domain }));
+                          setManualStep('confirm');
+                          setShowAIReview(false);
+                        }}
+                      >
+                        None match — fill manually
+                      </button>
+                    </div>
+                  </>
                 )}
 
-                {addForm.domain !== 'Steeping' && (
-                  <div className="field">
-                    <label style={{color: 'var(--plum)'}}>Aetheric Density (1=Fleeting, 10=Anchoring) - Override</label>
-                    <div style={{display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--plum)'}}>
-                      <input type="range" min="1" max="10" step="1" style={{flex: 1}} value={addForm.weight} onChange={e => { setAddForm({...addForm, weight: e.target.value}); setIsAutoWeight(false); }} />
-                      <span style={{width: '20px', textAlign: 'center'}}>{isAutoWeight ? 'Auto' : addForm.weight}</span>
+                {/* ── STEP 3: Confirm ───────────────────────────────────────── */}
+                {manualStep === 'confirm' && (
+                  <>
+                    {/* USER-ONLY FIELDS — always visible */}
+                    <div style={{ marginBottom: '1rem' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--dim)', textAlign: 'center', marginBottom: '1rem' }}>
+                        The Codex has filled what it knows. Complete the rest, then summon.
+                      </div>
                     </div>
-                  </div>
+
+                    <div className="field">
+                      <label style={{color: 'var(--plum)'}}>Material Offering (Price)</label>
+                      <input type="number" step="0.01" placeholder="0.00" value={addForm.price}
+                        onChange={e => setAddForm({...addForm, price: e.target.value})}
+                        style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label style={{color: 'var(--plum)'}}>Purchase Date</label>
+                        <input type="date" value={addForm.purchase_date}
+                          onChange={e => setAddForm({...addForm, purchase_date: e.target.value})}
+                          style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                      </div>
+                      <div className="field" style={{ flex: 1 }}>
+                        <label style={{color: 'var(--plum)'}}>Manufacture Date</label>
+                        <input type="date" value={addForm.manufacture_date}
+                          onChange={e => setAddForm({...addForm, manufacture_date: e.target.value})}
+                          style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                      </div>
+                    </div>
+
+                    <div className="field">
+                      <label style={{color: 'var(--plum)'}}>Period After Opening (Months)</label>
+                      <input type="number" min="1"
+                        placeholder={addForm.period_after_opening_months ? `AI suggests: ${addForm.period_after_opening_months}` : 'e.g. 12'}
+                        value={addForm.period_after_opening_months}
+                        onChange={e => setAddForm({...addForm, period_after_opening_months: e.target.value})}
+                        style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                    </div>
+
+                    <div className="field">
+                      <label style={{color: 'var(--plum)'}}>Unopened Shelf Life (Months)</label>
+                      <input type="number"
+                        placeholder={addForm.unopened_shelf_life_months ? `AI suggests: ${addForm.unopened_shelf_life_months}` : 'e.g. 36'}
+                        value={addForm.unopened_shelf_life_months}
+                        onChange={e => setAddForm({...addForm, unopened_shelf_life_months: e.target.value})}
+                        style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                    </div>
+
+                    <div className="field">
+                      <label style={{display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer'}}>
+                        <input type="checkbox" checked={addForm.is_opened} style={{ marginTop: '0.2rem', accentColor: 'var(--plum)' }}
+                          onChange={e => setAddForm({...addForm, is_opened: e.target.checked})} />
+                        <span>Break the Seal (Item is Opened)</span>
+                      </label>
+                      {addForm.is_opened && (
+                        <div style={{ marginTop: '0.5rem' }}>
+                          <input type="date" value={addForm.opened_date}
+                            onChange={e => setAddForm({...addForm, opened_date: e.target.value})}
+                            style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px', marginTop: '0.3rem' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="field">
+                      <label style={{display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer'}}>
+                        <input type="checkbox" checked={addForm.is_essential} style={{ marginTop: '0.2rem', accentColor: 'var(--plum)' }}
+                          onChange={e => setAddForm({...addForm, is_essential: e.target.checked})} />
+                        <span>Mark as Essential (Alert immediately when ebbing)</span>
+                      </label>
+                    </div>
+
+                    <div className="field">
+                      <label style={{display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer'}}>
+                        <input type="checkbox" checked={addForm.is_composite} style={{ marginTop: '0.2rem', accentColor: 'var(--plum)' }}
+                          onChange={e => setAddForm({...addForm, is_composite: e.target.checked, item_type: e.target.checked ? 'composite' : 'consumable'})} />
+                        <span>This is a Composite Brew / Handmade Alchemy</span>
+                      </label>
+                    </div>
+
+                    {addForm.is_composite && (
+                      <div className="field">
+                        <label style={{color: 'var(--plum)'}}>Base Elements &amp; Proportions</label>
+                        <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border)', padding: '0.5rem', borderRadius: '4px', display: 'flex', flexDirection: 'column', gap: '0.4rem', background: 'rgba(0,0,0,0.2)' }}>
+                          {items.filter(i => i.id !== addForm.id && i.item_type !== 'tool').map(i => {
+                            const isChecked = addForm.selectedComponents?.some(c => c.id === i.id);
+                            const compData = addForm.selectedComponents?.find(c => c.id === i.id) || { id: i.id, proportion: '' };
+                            return (
+                              <div key={i.id} style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                                <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer', flex: 1}}>
+                                  <input type="checkbox" style={{accentColor: 'var(--plum)'}} checked={isChecked}
+                                    onChange={(e) => {
+                                      let newComps = [...(addForm.selectedComponents || [])];
+                                      if (e.target.checked) { newComps.push({ id: i.id, proportion: '' }); }
+                                      else { newComps = newComps.filter(c => c.id !== i.id); }
+                                      setAddForm({...addForm, selectedComponents: newComps});
+                                    }}
+                                  />
+                                  {i.name}
+                                </label>
+                                {isChecked && (
+                                  <input type="text" placeholder="e.g. 2 parts, 50%" value={compData.proportion}
+                                    onChange={(e) => {
+                                      const newComps = addForm.selectedComponents.map(c => c.id === i.id ? { ...c, proportion: e.target.value } : c);
+                                      setAddForm({...addForm, selectedComponents: newComps});
+                                    }}
+                                    style={{ width: '120px', padding: '0.2rem 0.5rem', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px', fontSize: '0.8rem' }}
+                                  />
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Steeping-specific LEVO fields */}
+                    {addForm.domain === 'Steeping' && (
+                      <>
+                        <div className="field">
+                          <label style={{color: 'var(--plum)'}}>Measured Potency (mg/ml, tCheck)</label>
+                          <input type="number" step="0.01" value={addForm.measured_potency_mg_ml}
+                            onChange={e => setAddForm({...addForm, measured_potency_mg_ml: e.target.value})}
+                            style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <div className="field" style={{ flex: 1 }}>
+                            <label style={{color: 'var(--plum)'}}>LEVO Material (g)</label>
+                            <input type="number" step="0.1" value={addForm.levo_material_qty}
+                              onChange={e => setAddForm({...addForm, levo_material_qty: e.target.value})}
+                              style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                          </div>
+                          <div className="field" style={{ flex: 1 }}>
+                            <label style={{color: 'var(--plum)'}}>LEVO Temp (°F)</label>
+                            <input type="number" step="1" value={addForm.levo_temperature}
+                              onChange={e => setAddForm({...addForm, levo_temperature: e.target.value})}
+                              style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                          </div>
+                          <div className="field" style={{ flex: 1 }}>
+                            <label style={{color: 'var(--plum)'}}>LEVO Duration (m)</label>
+                            <input type="number" step="1" value={addForm.levo_duration}
+                              onChange={e => setAddForm({...addForm, levo_duration: e.target.value})}
+                              style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                          </div>
+                        </div>
+                        <div className="field">
+                          <label style={{color: 'var(--plum)'}}>LEVO Carrier Oil</label>
+                          <input type="text" placeholder="e.g. MCT, Olive, Ghee" value={addForm.levo_carrier_oil}
+                            onChange={e => setAddForm({...addForm, levo_carrier_oil: e.target.value})}
+                            style={{ width: '100%', padding: '0.8rem', background: 'rgba(0,0,0,0.2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} />
+                        </div>
+                      </>
+                    )}
+
+                    <div className="field" style={{ background: 'rgba(0,0,0,0.2)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      <label style={{display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer', marginBottom: addForm.is_prescription ? '1rem' : '0'}}>
+                        <input type="checkbox" checked={addForm.is_prescription} style={{ marginTop: '0.2rem', accentColor: 'var(--plum)' }}
+                          onChange={e => setAddForm({...addForm, is_prescription: e.target.checked})} />
+                        <span>Pharmacy Prescription (Rx)</span>
+                      </label>
+                      {addForm.is_prescription && (
+                        <VoiceInput isTextArea={true} placeholder="Prescription details, strength, and instructions..."
+                          value={addForm.prescription_details}
+                          onChange={e => setAddForm({...addForm, prescription_details: e.target.value})} />
+                      )}
+                    </div>
+
+                    {/* COLLAPSIBLE: Review AI-filled fields */}
+                    <div style={{ marginTop: '1.5rem', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
+                      <button
+                        className="btn"
+                        style={{ width: '100%', borderRadius: '0', border: 'none', background: 'rgba(176,136,204,0.08)', justifyContent: 'space-between', padding: '0.8rem 1rem' }}
+                        onClick={() => setShowAIReview(v => !v)}
+                      >
+                        <span>✦ Review the Codex's Fills</span>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--dim)' }}>{showAIReview ? '▲ collapse' : '▼ expand'}</span>
+                      </button>
+
+                      {showAIReview && (
+                        <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                          <div className="field" style={{ margin: 0 }}>
+                            <label style={{color: 'var(--plum)'}}>Lineage or House (Brand)</label>
+                            <VoiceInput value={addForm.brand} onChange={e => setAddForm({...addForm, brand: e.target.value})} />
+                          </div>
+                          <div className="field" style={{ margin: 0 }}>
+                            <label style={{color: 'var(--plum)'}}>Name of the Relic</label>
+                            <VoiceInput value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} />
+                          </div>
+                          <div className="field" style={{ margin: 0 }}>
+                            <label style={{color: 'var(--plum)'}}>Sacred Domain</label>
+                            <select value={addForm.domain} onChange={e => setAddForm({...addForm, domain: e.target.value})} style={{color: 'var(--plum)'}}>
+                              <option value="Crown">Crown (Hair &amp; Scalp)</option>
+                              <option value="Visage">Visage (Face)</option>
+                              <option value="Gaze">Gaze (Eyes)</option>
+                              <option value="Grin">Grin (Mouth &amp; Teeth)</option>
+                              <option value="Vessel">Vessel (Body)</option>
+                              <option value="Veil">Veil (Makeup &amp; Color Cosmetics)</option>
+                              <option value="Steeping">Steeping (Infusion &amp; Decarb Oils)</option>
+                            </select>
+                          </div>
+                          <div className="field" style={{ margin: 0 }}>
+                            <label style={{color: 'var(--plum)'}}>Item Type</label>
+                            <select value={addForm.item_type || 'consumable'} onChange={e => setAddForm({...addForm, item_type: e.target.value, is_composite: e.target.value === 'composite'})} style={{color: 'var(--plum)'}}>
+                              <option value="consumable">Consumable (Product)</option>
+                              <option value="arsenal">Arsenal (Tool/Device)</option>
+                              <option value="composite">Composite (Custom Mix)</option>
+                            </select>
+                          </div>
+                          <div className="field" style={{ margin: 0 }}>
+                            <label style={{color: 'var(--plum)'}}>Elixir Classification</label>
+                            <VoiceInput placeholder="e.g. Purifier, Tincture, Hair Oil" value={addForm.category}
+                              onChange={e => setAddForm({...addForm, category: e.target.value})} />
+                          </div>
+                          <div className="field" style={{ margin: 0 }}>
+                            <label style={{color: 'var(--plum)'}}>Application Zones</label>
+                            <VoiceInput placeholder="e.g. scalp, hair, face"
+                              value={(addForm.application_zones || []).join(', ')}
+                              onChange={e => setAddForm({...addForm, application_zones: e.target.value.split(',').map(s => s.trim()).filter(Boolean)})} />
+                          </div>
+                          {/* Sacred Constituents — scoped: hidden for Steeping or arsenal */}
+                          {addForm.domain !== 'Steeping' && addForm.item_type !== 'arsenal' && (
+                            <div className="field" style={{ margin: 0 }}>
+                              <label style={{color: 'var(--plum)'}}>Sacred Constituents</label>
+                              <VoiceInput isTextArea={true}
+                                placeholder="e.g. rosemary, peppermint, jojoba, lavender…"
+                                value={addForm.ingredients}
+                                onChange={e => setAddForm({...addForm, ingredients: e.target.value})} />
+                            </div>
+                          )}
+                          {addForm.domain !== 'Steeping' && (
+                            <div className="field" style={{ margin: 0 }}>
+                              <label style={{color: 'var(--plum)'}}>Aetheric Density (1=Fleeting, 10=Anchoring) — Override</label>
+                              <div style={{display: 'flex', alignItems: 'center', gap: '1rem', color: 'var(--plum)'}}>
+                                <input type="range" min="1" max="10" step="1" style={{flex: 1}} value={addForm.weight}
+                                  onChange={e => { setAddForm({...addForm, weight: e.target.value}); setIsAutoWeight(false); }} />
+                                <span style={{width: '20px', textAlign: 'center'}}>{isAutoWeight ? 'Auto' : addForm.weight}</span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{display: 'flex', justifyContent: 'space-between', gap: '0.8rem', marginTop: '2rem', flexWrap: 'wrap'}}>
+                      <button className="btn" onClick={() => setManualStep(aiCandidates.length > 0 ? 'candidates' : 'seed')}>
+                        ← {aiCandidates.length > 0 ? 'Back to Matches' : 'Back'}
+                      </button>
+                      <div style={{ display: 'flex', gap: '0.8rem' }}>
+                        <button className="btn" onClick={() => { setShowAddModal(false); resetManualWizard(); }}>Abandon</button>
+                        <button className="btn plum" onClick={handleSave} disabled={isSaving || !addForm.name}>
+                          {isSaving ? 'Summoning…' : 'Summon'}
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 )}
-                
-                <div style={{display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem'}}>
-                  <button className="btn" onClick={() => setShowAddModal(false)}>Abandon</button>
-                  <button className="btn plum" onClick={handleSave} disabled={isSaving || !addForm.name}>
-                    {isSaving ? 'Summoning...' : 'Summon'}
-                  </button>
-                </div>
               </>
             )}
+
+
           </div>
         </div>
       )}

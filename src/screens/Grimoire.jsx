@@ -404,7 +404,7 @@ export default function Grimoire({ pose }) {
                 <div>
                   <div className="nm">The Root Weaving <Icon name="ph-scissors" /></div>
                   <div className="mt">
-                    Every 8 weeks.{retieAppt?.date ? ` Scheduled for ${new Date(retieAppt.date).toLocaleDateString()}.` : ''}
+                    Every 8 cycles.{retieAppt?.date ? ` Scheduled for ${new Date(retieAppt.date).toLocaleDateString()}.` : ''}
                   </div>
                 </div>
               </div>
@@ -427,7 +427,7 @@ export default function Grimoire({ pose }) {
                 <div>
                   <div className="nm">The Gilded Hand <Icon name="ph-hand-palm" /></div>
                   <div className="mt">
-                    Every 2 weeks.{nailsAppt?.date ? ` Scheduled for ${new Date(nailsAppt.date).toLocaleDateString()}.` : ''}
+                    Every 2 cycles.{nailsAppt?.date ? ` Scheduled for ${new Date(nailsAppt.date).toLocaleDateString()}.` : ''}
                   </div>
                 </div>
               </div>
@@ -467,7 +467,7 @@ export default function Grimoire({ pose }) {
                   onClick={() => setShowScrying(true)}
                   style={{ background: 'var(--card2)', color: 'var(--plum)', borderColor: 'var(--plum)' }}
                 >
-                  Offer a Visage (The Flesh Scrying)
+                  Offer a Visage
                 </button>
               </div>
             </div>
@@ -483,7 +483,7 @@ export default function Grimoire({ pose }) {
             The Weekly Wheel{' '}
             <SpeakerButton text='The Weekly Wheel' />
           </h3>
-          <div className="mt mb-4">Rhythms and cycles.</div>
+          <div className="mb-2" style={{ marginTop: '-0.2rem', textAlign: 'center' }}>Rhythms and cycles.</div>
           
           <div className="wheel-container">
             <div className="wheel">
@@ -528,7 +528,7 @@ export default function Grimoire({ pose }) {
           The Ephemeris{' '}
           <SpeakerButton text='The Ephemeris' />
         </h3>
-        <div className="mt mb-4">The long count.</div>
+        <div className="mb-2" style={{ marginTop: '-0.2rem', textAlign: 'center' }}>The long count.</div>
         
         <h2 style={{ fontSize: '2.5rem', color: 'var(--plum)', textAlign: 'center', margin: '1rem 0' }}>
           {new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' })}
@@ -580,7 +580,7 @@ export default function Grimoire({ pose }) {
                   await supabase.from('journal_entries').insert([{
                     entry_date: todayStr,
                     moon_phase: 'waxing',
-                    body_text: 'Flesh Scrying: ' + data
+                    body_text: 'Visage Divination: ' + data
                   }]);
                 }
                 setShowScrying(false);
@@ -641,7 +641,7 @@ export default function Grimoire({ pose }) {
                     style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--plum)', fontSize: '1rem', minHeight: '60px' }}
                   />
                 </div>
-                <button className="btn plum" onClick={handleSendReading} disabled={readingState.isTyping || !readingState.input.trim()}>Reply</button>
+                <button className="btn plum" onClick={handleSendReading} disabled={readingState.isTyping || !readingState.input.trim()} style={{ width: 'fit-content', whiteSpace: 'nowrap', padding: '0.6rem 1.2rem' }}>Deliver unto the Keeper.</button>
               </div>
             ) : (
               <div style={{ textAlign: 'center', marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
