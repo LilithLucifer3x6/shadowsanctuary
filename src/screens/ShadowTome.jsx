@@ -388,61 +388,50 @@ export default function ShadowTome({ pose }) {
     }
   };
 
-  const handleTeaUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-    
-    setTeaStatus('Staging photos...');
-    setShowTeaModal(true);
-    setTeaModalState('photo');
-    
-    const newImages = [];
+  const handleTeaLookup = async () => {
+    if (!teaForm.brand || !teaForm.name) return;
+    setIsDiviningTea(true);
     try {
-      const { compressImage } = await import('../lib/ai-engine.js');
-      for (const file of files) {
-        const dataUrl = await compressImage(file, 1024, 0.8);
-        const base64 = dataUrl.split(',')[1];
-        const mime = dataUrl.split(';')[0].split(':')[1];
-        newImages.push({ base64, mediaType: mime, dataUrl });
-      }
+      const { searchOpenFoodFacts } = await import('../lib/ai-engine.js');
+      const results = await searchOpenFoodFacts(teaForm.brand + ' ' + teaForm.name);
+      setTeaCandidates(results);
+      setTeaModalState('candidates');
     } catch(err) {
       console.error(err);
-      setTeaStatus('Failed to read image.');
-      return;
+      alert('Failed to lookup tea.');
+    } finally {
+      setIsDiviningTea(false);
     }
-    
-    setTeaImages(prev => [...prev, ...newImages]);
-    setTeaStatus('Offer more visions, or Cast the Scrying.');
   };
 
-  const handleCastVision = async () => {
-    if (teaImages.length === 0) return;
-    setTeaStatus('Divining the leaves...');
+  const handleTeaCandidateSelect = async (candidate) => {
+    setIsDiviningTea(true);
     try {
-      const details = await parseTeaImage(teaImages);
+      const { fallbackTeaAnalysis } = await import('../lib/ai-engine.js');
+      const analysis = await fallbackTeaAnalysis(candidate.brand || teaForm.brand, candidate.name || teaForm.name, candidate.ingredients);
       setTeaForm(prev => ({
         ...prev,
-        brand: details.brand || prev.brand,
-        name: details.name || prev.name,
-        ingredients: Array.isArray(details.ingredients) ? details.ingredients.join(', ') : details.ingredients,
-        caffeine_content: details.caffeine_content || prev.caffeine_content,
-        steep_time: details.steep_time || prev.steep_time,
-        circadian_alignment: details.circadian_alignment || prev.circadian_alignment
+        brand: candidate.brand || prev.brand,
+        name: candidate.name || prev.name,
+        ingredients: candidate.ingredients || analysis.botanicals || '',
+        caffeine_content: analysis.caffeine || '',
+        circadian_alignment: analysis.circadian || '',
+        category: analysis.character || prev.category
       }));
-      setTeaStatus('Vision extracted.');
       setTeaModalState('confirm');
-    } catch (err) {
+    } catch(err) {
       console.error(err);
-      setTeaStatus('Failed to divine image. ' + err.message);
+      alert('Failed to analyze tea properties.');
+    } finally {
+      setIsDiviningTea(false);
     }
   };
 
   const closeTeaModal = () => {
     setShowTeaModal(false);
-    setTeaImages([]);
+    setTeaCandidates([]);
     setTeaForm({ brand: '', name: '', category: 'Tea', ingredients: '', caffeine_content: '', steep_time: '', circadian_alignment: '' });
-    setTeaStatus('Offer or Divine Vision');
-    setTeaModalState('photo');
+    setTeaModalState('seed');
   };
 
   const handleSaveTea = async () => {
@@ -670,7 +659,7 @@ export default function ShadowTome({ pose }) {
             </div>
             
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-              <button className="btn" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => { setShowTeaModal(true); setTeaModalState('manual'); }}>Summon by Hand</button>
+              <button className="btn" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => { setShowTeaModal(true); setTeaModalState('seed'); }}>Summon Tea Blends</button>
             </div>
           </div>
 
@@ -816,125 +805,89 @@ export default function ShadowTome({ pose }) {
                 <h3 style={{color: 'var(--plum)', textAlign: 'center', justifyContent: 'center'}}>The Herbal Elixir Inscription</h3>
                 <div className="mt mb-4" style={{color: 'var(--plum)', textAlign: 'center'}}>Add a new tea blend to your botanical trove.</div>
               </div>
-              {teaModalState !== 'manual' && (
-                <button className="btn sm" style={{background: 'transparent', padding: '0.4rem', color: 'var(--plum)'}} onClick={() => setTeaModalState('manual')} title="Manual Inscription">
-                  <Icon name="ph-dots-three" />
-                </button>
-              )}
             </div>
 
-            {teaModalState === 'photo' && (
+            {teaModalState === 'seed' && (
               <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                <div style={{position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '3rem 1rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px'}}>
-                  <Icon name="ph-camera" /> 
-                  <span style={{marginTop: '1rem', textAlign: 'center', fontSize: '1.2rem'}}>{teaImages.length > 0 ? 'Summon another vision' : 'Offer visage of the blend or leaves'}</span>
-                  <input type="file" accept="image/*" capture="environment" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer'}} onChange={handleTeaUpload} />
-                </div>
+                <input type="text" placeholder="Brand / Lineage (e.g. Celestial Seasonings)" value={teaForm.brand} onChange={e => setTeaForm({...teaForm, brand: e.target.value})} />
+                <input type="text" placeholder="Product Name (e.g. Sleepytime)" value={teaForm.name} onChange={e => setTeaForm({...teaForm, name: e.target.value})} />
+                <input type="text" placeholder="Steeping Instructions (e.g. 5 mins at 212F)" value={teaForm.steep_time} onChange={e => setTeaForm({...teaForm, steep_time: e.target.value})} />
                 
-                <div style={{position: 'relative', overflow: 'hidden', background: 'var(--bg)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px'}}>
-                  <Icon name="ph-images" />
-                  <span style={{marginTop: '0.5rem', textAlign: 'center'}}>Summon multiple visions from the archive</span>
-                  <input type="file" accept="image/*" multiple style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer'}} onChange={handleTeaUpload} />
-                </div>
+                <button className="btn plum" onClick={handleTeaLookup} disabled={isDiviningTea || !teaForm.brand || !teaForm.name}>
+                  {isDiviningTea ? 'Divining...' : 'Lookup Blend'}
+                </button>
+              </div>
+            )}
 
-                {teaImages.length > 0 && (
-                  <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', padding: '0.5rem 0' }}>
-                    {teaImages.map((img, i) => (
-                      <img key={i} src={img.dataUrl} alt={`Staged ${i}`} style={{ height: '60px', width: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border)' }} />
+            {teaModalState === 'candidates' && (
+              <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                <div style={{color: 'var(--plum)'}}>Visions from the collective memory (Open Food Facts):</div>
+                {teaCandidates.length === 0 ? (
+                  <div style={{color: 'var(--dim)', textAlign: 'center'}}>No matching visions found.</div>
+                ) : (
+                  <div style={{maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem'}}>
+                    {teaCandidates.map(c => (
+                      <div key={c.id} className="card" style={{padding: '0.5rem', cursor: 'pointer', background: 'var(--bg)'}} onClick={() => handleTeaCandidateSelect(c)}>
+                        <strong>{c.brand}</strong> &bull; {c.name}<br/>
+                        <small style={{color: 'var(--dim)'}}>{c.ingredients.substring(0, 50)}...</small>
+                      </div>
                     ))}
                   </div>
                 )}
                 
-                {teaImages.length > 0 && <div style={{textAlign: 'center', color: 'var(--plum)', }}>{teaStatus}</div>}
-
-                <div style={{display: 'flex', justifyContent: 'space-between', marginTop: '1rem'}}>
-                  <button className="btn" onClick={closeTeaModal}>Abandon</button>
-                  <button className="btn plum" disabled={teaImages.length === 0 || teaStatus === 'Divining the leaves...'} onClick={handleCastVision}>
-                    {teaStatus === 'Divining the leaves...' ? 'Divining...' : 'Cast Vision'}
-                  </button>
-                </div>
+                <button className="btn plum" onClick={() => handleTeaCandidateSelect({ brand: teaForm.brand, name: teaForm.name, ingredients: '' })} disabled={isDiviningTea}>
+                  {isDiviningTea ? 'Divining...' : 'No Match - Proceed with AI Fallback'}
+                </button>
               </div>
             )}
 
             {teaModalState === 'confirm' && (
-              <div style={{textAlign: 'center', padding: '1rem'}}>
-                <div style={{color: 'var(--plum)', marginBottom: '1rem'}}>I divined:</div>
-                <h2 style={{color: 'var(--plum)', marginBottom: '0.5rem'}}>
-                  {teaForm.brand ? `${teaForm.brand} ` : ''}{teaForm.name}
-                </h2>
-                <div style={{color: 'var(--dim)', marginBottom: '1rem'}}>
-                  The Steeping: {teaForm.steep_time || 'Unknown'} <br/>
-                  Circadian Alignment: {teaForm.circadian_alignment || 'Unknown'} <br/>
-                  Stimulating Vigor: {teaForm.caffeine_content || 'Unknown'}
-                </div>
+              <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                <div style={{color: 'var(--plum)', fontSize: '0.9rem'}}>Review the derived essence before inscription.</div>
                 
-                <div style={{display: 'flex', justifyContent: 'center', gap: '1rem'}}>
-                  <button className="btn" onClick={() => setTeaModalState('photo')}>Reject Vision</button>
-                  <button className="btn plum" onClick={handleSaveTea} disabled={isSavingTea}>
-                    {isSavingTea ? 'Inscribing...' : 'Stow in the Trove'}
-                  </button>
+                <label style={{fontSize:'0.8rem', color:'var(--dim)'}}>Brand</label>
+                <input type="text" value={teaForm.brand} onChange={e => setTeaForm({...teaForm, brand: e.target.value})} />
+                
+                <label style={{fontSize:'0.8rem', color:'var(--dim)'}}>Name</label>
+                <input type="text" value={teaForm.name} onChange={e => setTeaForm({...teaForm, name: e.target.value})} />
+                
+                <label style={{fontSize:'0.8rem', color:'var(--dim)'}}>Botanicals / Ingredients</label>
+                <textarea rows="2" value={teaForm.ingredients} onChange={e => setTeaForm({...teaForm, ingredients: e.target.value})}></textarea>
+                
+                <div style={{display: 'flex', gap: '1rem'}}>
+                  <div style={{flex: 1}}>
+                    <label style={{fontSize:'0.8rem', color:'var(--dim)'}}>Caffeine</label>
+                    <input type="text" value={teaForm.caffeine_content} onChange={e => setTeaForm({...teaForm, caffeine_content: e.target.value})} />
+                  </div>
+                  <div style={{flex: 1}}>
+                    <label style={{fontSize:'0.8rem', color:'var(--dim)'}}>Circadian</label>
+                    <input type="text" value={teaForm.circadian_alignment} onChange={e => setTeaForm({...teaForm, circadian_alignment: e.target.value})} />
+                  </div>
                 </div>
+
+                <div style={{display: 'flex', gap: '1rem'}}>
+                  <div style={{flex: 1}}>
+                    <label style={{fontSize:'0.8rem', color:'var(--dim)'}}>Character</label>
+                    <input type="text" value={teaForm.category} onChange={e => setTeaForm({...teaForm, category: e.target.value})} />
+                  </div>
+                  <div style={{flex: 1}}>
+                    <label style={{fontSize:'0.8rem', color:'var(--dim)'}}>Steep Time</label>
+                    <input type="text" value={teaForm.steep_time} onChange={e => setTeaForm({...teaForm, steep_time: e.target.value})} />
+                  </div>
+                </div>
+
+                <button className="btn plum" onClick={handleSaveTea} disabled={isSavingTea}>
+                  {isSavingTea ? 'Inscribing...' : 'Save to Herbarium'}
+                </button>
               </div>
             )}
 
-            {teaModalState === 'manual' && (
-              <>
-
-
-                
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Lineage or House</label>
-                  <VoiceInput value={teaForm.brand} onChange={e => setTeaForm({...teaForm, brand: e.target.value})} />
-                </div>
-                
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Name of the Brew</label>
-                  <VoiceInput value={teaForm.name} onChange={e => setTeaForm({...teaForm, name: e.target.value})} />
-                </div>
-
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>The Steeping</label>
-                  <VoiceInput value={teaForm.steep_time} onChange={e => setTeaForm({...teaForm, steep_time: e.target.value})} />
-                </div>
-                
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Circadian Alignment</label>
-                  <select value={teaForm.circadian_alignment} onChange={e => setTeaForm({...teaForm, circadian_alignment: e.target.value})} style={{color: 'var(--plum)'}}>
-                    <option value="">Select...</option>
-                    <option value="Daytime">Daytime</option>
-                    <option value="Nighttime">Nighttime</option>
-                    <option value="Anytime">Anytime</option>
-                  </select>
-                </div>
-                
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Stimulating Vigor</label>
-                  <select value={teaForm.caffeine_content} onChange={e => setTeaForm({...teaForm, caffeine_content: e.target.value})} style={{color: 'var(--plum)'}}>
-                    <option value="">Select...</option>
-                    <option value="High">High</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Low">Low</option>
-                    <option value="None">None</option>
-                  </select>
-                </div>
-
-                <div className="field">
-                  <label style={{color: 'var(--plum)'}}>Botanical Components</label>
-                  <VoiceInput isTextArea={true} placeholder="Transcribe the sacred components..." value={teaForm.ingredients} onChange={e => setTeaForm({...teaForm, ingredients: e.target.value})} />
-                </div>
-                
-                <div style={{display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem'}}>
-                  <button className="btn" onClick={closeTeaModal}>Abandon</button>
-                  <button className="btn plum" onClick={handleSaveTea} disabled={isSavingTea || !teaForm.name}>
-                    {isSavingTea ? 'Inscribing...' : 'Stow in the Trove'}
-                  </button>
-                </div>
-              </>
-            )}
+            <button className="btn" style={{marginTop: '1rem', width: '100%'}} onClick={closeTeaModal}>Close</button>
           </div>
         </div>
       )}
-          {/* Vessel Scanner Modal */}
+
+      {/* Vessel Scanner Modal */}
       
       {alchemyForm && (
         <div className="modal" style={{display: 'block'}}>

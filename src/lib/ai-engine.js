@@ -697,6 +697,78 @@ export async function searchOpenBeautyFacts(query) {
   }
 }
 
+export async function searchOpenFoodFacts(query) {
+  if (!query) return [];
+  try {
+    const res = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1`);
+    if (!res.ok) throw new Error("Failed to fetch from Open Food Facts");
+    const data = await res.json();
+    
+    if (data.products && data.products.length > 0) {
+      return data.products.slice(0, 10).map(p => ({
+        id: p._id,
+        brand: p.brands || p.brand_owner || 'Unknown Brand',
+        name: p.product_name || 'Unknown Product',
+        ingredients: p.ingredients_text ? p.ingredients_text : '',
+        category: p.categories ? p.categories.split(',')[0] : '',
+        image: p.image_url || ''
+      }));
+    }
+    return [];
+  } catch (err) {
+    console.error("Open Food Facts search error:", err);
+    return [];
+  }
+}
+
+export async function fallbackTeaAnalysis(brand, name, ingredients) {
+  const tools = [
+    {
+      name: "extract_tea_details",
+      description: "Extract the inferred details of a tea/steeping item from its name and ingredients.",
+      input_schema: {
+        type: "object",
+        properties: {
+          caffeine: { type: "string", description: "Caffeine level, e.g. 'None', 'Low', 'High'" },
+          circadian: { type: "string", description: "Circadian alignment: 'Morning', 'Afternoon', or 'Evening'" },
+          character: { type: "string", description: "Character of the tea: 'Stimulating' or 'Calming'" },
+          botanicals: { type: "string", description: "Comma separated list of primary botanical components." }
+        },
+        required: ["caffeine", "circadian", "character", "botanicals"]
+      }
+    }
+  ];
+
+  const payload = {
+    messages: [
+      {
+        role: "user",
+        content: `Analyze the following tea product:
+Brand: ${brand}
+Name: ${name}
+Ingredients: ${ingredients || "Not provided. Infer based on name."}
+
+Please extract the caffeine level, circadian alignment, character, and botanicals.`
+      }
+    ],
+    tools: tools,
+    tool_choice: { type: "tool", name: "extract_tea_details" },
+    max_tokens: 300,
+    system: "You are an expert herbalist and tea blender. Given a tea product, derive its properties accurately."
+  };
+
+  const { data, error } = await invokeAnthropicProxy(payload);
+  if (error) throw error;
+
+  for (const block of data.content) {
+    if (block.type === 'tool_use' && block.name === 'extract_tea_details') {
+      return block.input;
+    }
+  }
+
+  throw new Error("Failed to infer tea details");
+}
+
 // Domain → OBF category tag mapping (biases OBF search query without overriding user-selected domain)
 const DOMAIN_OBF_TAG = {
   'Crown':    'en:hair-care',
