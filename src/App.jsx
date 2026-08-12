@@ -478,6 +478,10 @@ export default function App() {
                   </select>
                 </div>
 
+                  <button onClick={() => {
+                    alert('Glossary:\nAppSpeak Translation Guide\n\nCrown = Hair\nGaze = Eyes\nGrin = Mouth/Teeth\nVisage = Face\nVessel = Body\nSanctuary = App\nReliquary = Tools/Devices\nApothecary = Consumables', 'Glossary');
+                  }} className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--card2)', borderColor: 'var(--plum)', color: 'var(--plum)' }}>Glossary of AppSpeak</button>
+
                 <div style={{ 
                   padding: '1rem', 
                   border: '1px dashed var(--border)', 
@@ -546,7 +550,7 @@ export default function App() {
                 </div>
                 
                 <div className="field" style={{ marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '0.5rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '0.5rem', alignItems: 'center' }}>
                     <label className="settings-toggle">
                       <input type="checkbox" checked={settings.health} onChange={async (e) => {
                         const checked = e.target.checked;
@@ -585,9 +589,6 @@ export default function App() {
                 <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem', color: 'var(--crimson)', textAlign: 'center' }}>Danger Zone</h3>
 
                 <div>
-                  <button onClick={() => {
-                    alert('Glossary:\nAppSpeak Translation Guide\n\nCrown = Hair\nGaze = Eyes\nGrin = Mouth/Teeth\nVisage = Face\nVessel = Body\nSanctuary = App\nReliquary = Tools/Devices\nApothecary = Consumables', 'Glossary');
-                  }} className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--card2)', borderColor: 'var(--plum)', color: 'var(--plum)' }}>Glossary of AppSpeak</button>
 
                   <button onClick={async () => {
                     if (await confirm("Leave the Sanctuary? You'll need to sign in again to return.")) {
