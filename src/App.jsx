@@ -356,7 +356,7 @@ export default function App() {
 
       {currentScreen === 'avatar' && (
         <div id="s-av" className="land">
-          <ConjureVisage onFinish={() => { 
+          <ConjureVisage onCancel={localStorage.getItem('avatar_config') ? () => setCurrentScreen('app') : undefined} onFinish={() => { 
             const isCompletedLocally = localStorage.getItem('intake_completed') === 'true';
             if (!isCompletedLocally) {
               setCurrentScreen('intake');
@@ -477,81 +477,85 @@ export default function App() {
                     <option value="system-ui">Mortal Script (System)</option>
                   </select>
                 </div>
-
-                  <button onClick={() => {
-                    alert('Glossary:\nAppSpeak Translation Guide\n\nCrown = Hair\nGaze = Eyes\nGrin = Mouth/Teeth\nVisage = Face\nVessel = Body\nSanctuary = App\nReliquary = Tools/Devices\nApothecary = Consumables', 'Glossary');
-                  }} className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--card2)', borderColor: 'var(--plum)', color: 'var(--plum)' }}>Glossary of AppSpeak</button>
-
+                
                 <div style={{ 
                   padding: '1rem', 
-                  border: '1px dashed var(--border)', 
-                  borderRadius: '8px',
-                  background: 'var(--bg)',
-                  marginTop: '1rem'
+                  border: '1px solid var(--border)', 
+                  borderRadius: '12px',
+                  background: 'rgba(25, 23, 26, 0.5)',
+                  marginBottom: '1.5rem'
                 }}>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginBottom: '0.5rem' }}>Scrying Glimpse:</div>
+                  <div style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: 'var(--plum)' }}>Scrying Glimpse</div>
                   <div style={{ 
-                    fontFamily: `"${settings.fontFamily}", serif`, 
+                    fontFamily: settings.fontFamily, 
                     fontSize: `${settings.fontSize}px`,
-                    color: 'var(--crimson)'
+                    lineHeight: '1.4',
+                    padding: '1rem',
+                    background: 'var(--card2)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)'
                   }}>
-                    The quick brown fox jumps over the lazy dog. 1234567890
+                    As above, so below. By ink and intent, this sanctuary is bound to my will. The ephemeral made concrete. 
+                    <br/><br/>
+                    1234567890
                   </div>
                 </div>
+
+                <button onClick={() => {
+                  alert('Glossary:\nAppSpeak Translation Guide\n\nCrown = Hair\nGaze = Eyes\nGrin = Mouth/Teeth\nVisage = Face\nVessel = Body\nSanctuary = App\nReliquary = Tools/Devices\nApothecary = Consumables', 'Glossary');
+                }} className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--card2)', borderColor: 'var(--plum)', color: 'var(--plum)' }}>Glossary of AppSpeak</button>
               </div>
               
               {/* Right Column: Ethereal Echoes & Conduits, then Danger Zone stacked below */}
               <div>
                 <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', textAlign: 'center' }}>Ethereal Echoes & Conduits</h3>
 
-                <div className="field" style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', }}>
-                    <input type="checkbox" checked={settings.tts} 
-                         onChange={e => {
-                           setSettings({...settings, tts: e.target.checked});
-                           setTtsEnabled(e.target.checked);
-                         }} /> Awaken Ethereal Voice
-                  </label>
-                  
-                  {settings.tts && (
-                    <div style={{ display: 'flex', marginTop: '0.5rem', flexDirection: 'column', gap: '0.5rem' }}>
-                      <label style={{ fontSize: '0.8rem' }}>Incantation Voice
-                        <select style={{ width: '100%', marginTop: '0.2rem' }}
-                                value={ttsOptions.voice}
-                                onChange={e => {
-                                  setTtsOptions({...ttsOptions, voice: e.target.value});
-                                  setTtsVoiceURI(e.target.value);
-                                }}>
-                          {availableVoices.map(v => (
-                            <option key={v.voiceURI} value={v.voiceURI}>{v.displayName}</option>
-                          ))}
-                        </select>
-                      </label>
-                      <label style={{ fontSize: '0.8rem' }}>Tempo of Speech
-                        <input type="range" min="0.5" max="2.0" step="0.1" style={{ width: '100%' }}
-                               value={ttsOptions.rate}
-                               onChange={e => {
-                                 const v = parseFloat(e.target.value);
-                                 setTtsOptions({...ttsOptions, rate: v});
-                                 setTtsRate(v);
-                               }} />
-                      </label>
-                      <label style={{ fontSize: '0.8rem' }}>Vocal Resonance
-                        <input type="range" min="0.5" max="2.0" step="0.1" style={{ width: '100%' }}
-                               value={ttsOptions.pitch}
-                               onChange={e => {
-                                 const v = parseFloat(e.target.value);
-                                 setTtsOptions({...ttsOptions, pitch: v});
-                                 setTtsPitch(v);
-                               }} />
-                      </label>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="field" style={{ marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginTop: '0.5rem', alignItems: 'center' }}>
-                    <label className="settings-toggle">
+                <div className="field" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '1rem', width: '100%', maxWidth: '300px' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <input type="checkbox" checked={settings.tts} 
+                           onChange={e => {
+                             setSettings({...settings, tts: e.target.checked});
+                             setTtsEnabled(e.target.checked);
+                           }} /> Awaken Ethereal Voice
+                    </label>
+                    
+                    {settings.tts && (
+                      <div style={{ display: 'flex', marginLeft: '1.5rem', marginTop: '0.5rem', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
+                        <label style={{ fontSize: '0.8rem' }}>Incantation Voice
+                          <select style={{ width: '100%', marginTop: '0.2rem' }}
+                                  value={ttsOptions.voice}
+                                  onChange={e => {
+                                    setTtsOptions({...ttsOptions, voice: e.target.value});
+                                    setTtsVoiceURI(e.target.value);
+                                  }}>
+                            {availableVoices.map(v => (
+                              <option key={v.voiceURI} value={v.voiceURI}>{v.displayName}</option>
+                            ))}
+                          </select>
+                        </label>
+                        <label style={{ fontSize: '0.8rem' }}>Tempo of Speech
+                          <input type="range" min="0.5" max="2.0" step="0.1" style={{ width: '100%' }}
+                                 value={ttsOptions.rate}
+                                 onChange={e => {
+                                   const v = parseFloat(e.target.value);
+                                   setTtsOptions({...ttsOptions, rate: v});
+                                   setTtsRate(v);
+                                 }} />
+                        </label>
+                        <label style={{ fontSize: '0.8rem' }}>Vocal Resonance
+                          <input type="range" min="0.5" max="2.0" step="0.1" style={{ width: '100%' }}
+                                 value={ttsOptions.pitch}
+                                 onChange={e => {
+                                   const v = parseFloat(e.target.value);
+                                   setTtsOptions({...ttsOptions, pitch: v});
+                                   setTtsPitch(v);
+                                 }} />
+                        </label>
+                      </div>
+                    )}
+
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       <input type="checkbox" checked={settings.health} onChange={async (e) => {
                         const checked = e.target.checked;
                         if (checked) {
@@ -567,12 +571,12 @@ export default function App() {
                       }} /> Corporeal Sensors (RingConn, Renpho, Samsung)
                     </label>
                     
-                    <label style={{ color: 'var(--crimson)', marginTop: '1rem' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--crimson)' }}>
                       <input type="checkbox" checked={settings.cal}
                              onChange={e => setSettings({...settings, cal: e.target.checked})} /> Solar Almanac (Google Calendar)
                     </label>
                     {settings.cal && (
-                      <div style={{ marginLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div style={{ marginLeft: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
                         <input type="text" placeholder="Google OAuth Client ID" value={settings.gcalClientId || ''} 
                                onChange={e => {
                                  setSettings({...settings, gcalClientId: e.target.value});
@@ -580,26 +584,28 @@ export default function App() {
                                    initGoogleCalendar(e.target.value, () => alert("The Solar Almanac is Bound!"));
                                  }
                                }} style={{ padding: '0.5rem', width: '100%' }} />
-                        <button className="btn sm g" onClick={() => requestCalendarAccess()} style={{ width: 'fit-content' }}>Bind Solar Almanac</button>
+                        <div style={{ display: 'flex', justifyContent: 'center' }}><button className="btn sm g" onClick={() => requestCalendarAccess()} style={{ width: 'fit-content' }}>Bind Solar Almanac</button></div>
                         <div className="mt" style={{ fontSize: '0.8rem' }}>Offer the Celestial ID to chart the wheel of the year.</div>
                       </div>
                     )}
                   </div>
                 </div>
-                <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem', color: 'var(--crimson)', textAlign: 'center' }}>Danger Zone</h3>
-
                 <div>
+                  <button onClick={() => {
+                    setShowSettings(false);
+                    setCurrentScreen('avatar');
+                  }} className="btn plum" style={{ width: '100%', marginBottom: '1rem' }}>Reshape Visage (Avatar Builder)</button>
 
                   <button onClick={async () => {
                     if (await confirm("Leave the Sanctuary? You'll need to sign in again to return.")) {
                       await handleLogout();
                     }
-                  }} className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--card2)', borderColor: 'var(--crimson)', color: 'var(--crimson)' }}>Leave the Sanctuary (Log Out)</button>
+                  }} className="btn" style={{ width: '100%', marginBottom: '0', background: 'var(--card2)', borderColor: 'var(--crimson)', color: 'var(--crimson)' }}>Leave the Sanctuary (Log Out)</button>
+                </div>
+                
+                <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem', color: 'var(--crimson)', textAlign: 'center' }}>Danger Zone</h3>
 
-                  <button onClick={() => {
-                    setShowSettings(false);
-                    setCurrentScreen('avatar');
-                  }} className="btn plum" style={{ width: '100%', marginBottom: '1rem' }}>Reshape Visage (Avatar Builder)</button>
+                <div>
 
 
                   <button onClick={async () => {
@@ -644,7 +650,9 @@ export default function App() {
                   }} className="btn g" style={{ width: '100%' }}>Raze the Sanctuary to Ash</button>
                 </div>
                 
-                <button onClick={() => saveSettings(settings)} className="btn full plum" style={{ marginTop: '2rem', padding: '1rem', fontSize: '1.2rem' }}>Bind the Runes of Power</button>
+              </div>
+              <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <button onClick={() => saveSettings(settings)} className="btn full plum" style={{ marginTop: '0', padding: '1rem', fontSize: '1.2rem' }}>Bind the Runes of Power</button>
               </div>
             </div>
           </div>
