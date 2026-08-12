@@ -671,6 +671,7 @@ export async function parseTeaImage(images) {
   }
 
   throw new Error("Failed to extract tea details from image");
+}
 
 export async function searchOpenBeautyFacts(query) {
   if (!query) return [];
