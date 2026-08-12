@@ -563,29 +563,6 @@ export default function ShadowTome({ pose }) {
                         {m.label}
                       </span>
                     ))}
-                    {!showCustomMood ? (
-                      <span 
-                        className="chip" 
-                        style={{ borderStyle: 'dashed' }}
-                        onClick={() => setShowCustomMood(true)}
-                      >
-                        <Icon name="plus" /> Add Your Own
-                      </span>
-                    ) : (
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'var(--card2)', padding: '0.2rem', borderRadius: '20px', border: '1px solid var(--plum)' }}>
-                        <input 
-                          type="text" 
-                          autoFocus
-                          value={customMoodText} 
-                          onChange={e => setCustomMoodText(e.target.value)} 
-                          onKeyDown={e => e.key === 'Enter' && handleAddCustomMood()}
-                          onBlur={() => { if(!customMoodText.trim()) setShowCustomMood(false); }}
-                          placeholder="Name your temper..." 
-                          style={{ background: 'transparent', border: 'none', color: 'var(--plum)', outline: 'none', paddingLeft: '0.5rem', width: '120px' }} 
-                        />
-                        <button className="btn sm plum" style={{ padding: '0.2rem 0.6rem', borderRadius: '15px' }} onClick={handleAddCustomMood}>Add</button>
-                      </div>
-                    )}
                   </>
                 )}
               </div>

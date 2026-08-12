@@ -92,35 +92,27 @@ export async function generateTraditions() {
 }
 
 export async function generateMoods() {
-  try {
-    const { data, error } = await invokeAnthropicProxy({
-      max_tokens: 300,
-      messages: [
-        {
-          role: 'user',
-          content: 'Generate exactly 18 highly evocative, poetic, and nuanced moods for a gothic self-care shadow-work journal (e.g., "Drained of Essence", "Fierce & Emboldened"). Do not use standard numeric scales, Eurocentric assumptions, or boring words. Return ONLY a valid JSON array of strings.'
-        }
-      ]
-    });
-    
-    if (data?.content?.[0]?.text) {
-      const text = data.content[0].text;
-      const jsonStart = text.indexOf('[');
-      const jsonEnd = text.lastIndexOf(']') + 1;
-      const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
-      return parsed.map(label => ({ id: label.toLowerCase().replace(/[^a-z0-9]/g, '-'), label }));
-    }
-  } catch (err) {
-    console.error("Failed to generate AI moods, falling back", err);
-  }
-
-  // Fallback if AI fails
   return [
     { id: 'drained', label: 'Drained of Essence' },
     { id: 'vibrant', label: 'Vibrant & Luminous' },
     { id: 'clouded', label: 'Clouded & Heavy' },
     { id: 'restless', label: 'Restless Spirit' },
-    { id: 'serene', label: 'Serene as Moonlight' }
+    { id: 'serene', label: 'Serene as Moonlight' },
+    { id: 'fierce', label: 'Fierce & Emboldened' },
+    { id: 'hollow', label: 'Hollow & Void' },
+    { id: 'agitated', label: 'Feverish & Agitated' },
+    { id: 'grounded', label: 'Rooted in Earth' },
+    { id: 'melancholy', label: 'Sweet Melancholy' },
+    { id: 'ethereal', label: 'Drifting & Ethereal' },
+    { id: 'fragile', label: 'Brittle & Fragile' },
+    { id: 'ravenous', label: 'Ravenous for Change' },
+    { id: 'stagnant', label: 'Mired in Stagnation' },
+    { id: 'radiant', label: 'Burning with Radiance' },
+    { id: 'withdrawn', label: 'Withdrawn to the Shadows' },
+    { id: 'overwhelmed', label: 'Drowning in the Tide' },
+    { id: 'focused', label: 'Piercing Clarity' },
+    { id: 'numb', label: 'Cold & Unfeeling' },
+    { id: 'chaotic', label: 'Swirling Chaos' }
   ];
 }
 

@@ -166,7 +166,7 @@ export default function Rootwork({ pose }) {
     
     try {
       const { parseProductImage, compressImage } = await import('../lib/ai-engine.js');
-      const dataUrl = await compressImage(file, 1024, 0.8);
+      const dataUrl = await compressImage(file, 2048, 0.95);
       const base64 = dataUrl.split(',')[1];
       const mime = dataUrl.split(';')[0].split(':')[1];
       
@@ -245,7 +245,7 @@ export default function Rootwork({ pose }) {
     
     try {
       const { parseProductImage, compressImage } = await import('../lib/ai-engine.js');
-      const dataUrl = await compressImage(file, 1024, 0.8);
+      const dataUrl = await compressImage(file, 2048, 0.95);
       const base64 = dataUrl.split(',')[1];
       const mime = dataUrl.split(';')[0].split(':')[1];
       
@@ -585,10 +585,9 @@ export default function Rootwork({ pose }) {
     
     try {
       const { parseBatchProductImages, compressImage } = await import('../lib/ai-engine.js');
-      
       // Read all files as base64 using compressImage
       const imagePromises = files.map(async file => {
-        const dataUrl = await compressImage(file, 1024, 0.8);
+        const dataUrl = await compressImage(file, 1280, 0.8);
         return {
           name: file.name,
           dataUrl: dataUrl,
@@ -932,7 +931,7 @@ export default function Rootwork({ pose }) {
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
               <div>
                 <h3 style={{color: 'var(--plum)'}}>The Relic Inscription</h3>
-                <div className="mt mb-4" style={{color: 'var(--plum)'}}>Summon a new artifact to your Reliquary or vessel to the Apothecary.</div>
+                <div className="mt mb-4" style={{color: 'var(--plum)'}}>Summon a new artifact to your Reliquary or potion to the Apothecary.</div>
               </div>
               {modalState !== 'manual' && (
                 <button className="btn sm" style={{whiteSpace: 'nowrap', flexShrink: 0}} onClick={() => setModalState('manual')} title="Manual Inscription">
@@ -1343,7 +1342,7 @@ export default function Rootwork({ pose }) {
                             </select>
                           </div>
                           <div className="field" style={{ margin: 0 }}>
-                            <label style={{color: 'var(--plum)'}}>Elixir Classification</label>
+                            <label style={{color: 'var(--plum)'}}>Item Classification</label>
                             <VoiceInput placeholder="e.g. Purifier, Tincture, Hair Oil" value={addForm.category}
                               onChange={e => setAddForm({...addForm, category: e.target.value})} />
                           </div>
