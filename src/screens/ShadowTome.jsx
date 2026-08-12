@@ -758,7 +758,6 @@ export default function ShadowTome({ pose }) {
                     <button className="btn plum" onClick={startNewAlchemy}>Ignite New Alchemy</button>
                   </div>
                 </div>
-              )}
 
               <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
                 <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Alchemist's Scale</h3>
