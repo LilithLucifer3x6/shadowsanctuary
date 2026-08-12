@@ -641,7 +641,7 @@ export default function Grimoire({ pose }) {
                     style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--plum)', fontSize: '1rem', minHeight: '60px' }}
                   />
                 </div>
-                <button className="btn plum" onClick={handleSendReading} disabled={readingState.isTyping || !readingState.input.trim()} style={{ width: 'fit-content', whiteSpace: 'nowrap', padding: '0.6rem 1.2rem' }}>Deliver unto the Keeper.</button>
+                <button className="btn plum" onClick={handleSendReading} disabled={readingState.isTyping || !readingState.input.trim()} style={{ width: 'fit-content', whiteSpace: 'nowrap', padding: '0.6rem 1.2rem' }}>Deliver unto the Keeper</button>
               </div>
             ) : (
               <div style={{ textAlign: 'center', marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
