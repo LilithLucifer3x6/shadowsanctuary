@@ -1,0 +1,35 @@
+{
+  "id": "jqnd0jdjcsrmw0czznx9bafwzg",
+  "model": "google/nano-banana-pro",
+  "version": "hidden",
+  "input": {
+    "aspect_ratio": "1:1",
+    "image_input": [
+      "data:image/jpeg;base64,..."
+    ],
+    "output_format": "png",
+    "prompt": "IDENTITY LOCK: Preserve exact face, facial piercings, choker collar, exact hourglass body proportions, and background. NO GOLD ANYWHERE ON THE CHARACTER. TARGETED EDITS: 1. Hair texture MUST be PENCIL-THIN MICROLOCS specifically, styled into the traditional updo (not straight, not silky). 2. Hairpins and hanging chains MUST be an exact mirrored/reflected arrangement on both sides (perfectly symmetrical count). 3. Tattoo ink MUST be genuinely deep black ink, high contrast against the skin tone (not blue, not navy). 4. Small, thin, delicate SILVER ankle bracelets (NO GOLD). 5. NO calf bracelets (bare calves). 6. Kimono is mostly BLACK with RED interior/accents and PINK cherry blossoms. 7. Left hand has silver ring/chain jewelry, right hand is bare/minimal rings. 8. Traditional Japanese GETA sandals on feet: flat wooden board elevated by two distinct separate wooden teeth (ha) with a visible wide gap between them, single V-shaped fabric thong (hanao), lacquered black or deep red. AVOID: straight hair, uneven hairpins, blue tattoos, chunky ankle cuffs, gold jewelry, calf bracelets, solid wedge sandals, mostly red kimono.",
+    "resolution": "2K"
+  },
+  "logs": "No sid\nGenerating image...\nTokens: 2341\nGenerated image in 26.19 seconds\n",
+  "output": "https://replicate.delivery/xezq/Q6SLQkjSIHZDHNjOmRfV3LzLKKQcFeHmWUxx83zNTXCDbADXA/tmpsv0pynnn.png",
+  "data_removed": false,
+  "error": null,
+  "source": "api",
+  "status": "succeeded",
+  "created_at": "2026-08-13T23:35:04.55Z",
+  "started_at": "2026-08-13T23:35:04.933315969Z",
+  "completed_at": "2026-08-13T23:35:31.637312374Z",
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/jqnd0jdjcsrmw0czznx9bafwzg/cancel",
+    "get": "https://api.replicate.com/v1/predictions/jqnd0jdjcsrmw0czznx9bafwzg",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-g3u2ejnni7vn5vkaggiypexlk2rahffdltls6ftndy6h6vj2gnda",
+    "web": "https://replicate.com/p/jqnd0jdjcsrmw0czznx9bafwzg"
+  },
+  "metrics": {
+    "image_output_count": 1,
+    "predict_time": 26.703996395,
+    "resolution_target": "2K",
+    "total_time": 27.087312374
+  }
+}
