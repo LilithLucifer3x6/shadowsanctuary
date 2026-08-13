@@ -50,7 +50,7 @@ export default function ShadowTome({ pose }) {
 
 
   const [teaForm, setTeaForm] = useState({
-    brand: '', name: '', ingredients: '', caffeine_content: '', steep_time: '', circadian_alignment: ''
+    brand: '', name: '', category: 'Tea', ingredients: '', caffeine_content: '', steep_time: '', circadian_alignment: ''
   });
 
   const breathTimeout1Ref = useRef(null);
@@ -58,6 +58,9 @@ export default function ShadowTome({ pose }) {
   const breathCycleRef = useRef(null);
   const tcheckInputRef = useRef(null);
   const [isScanningTCheck, setIsScanningTCheck] = useState(false);
+  const [isDiviningTea, setIsDiviningTea] = useState(false);
+  const [teaCandidates, setTeaCandidates] = useState([]);
+
 
   useEffect(() => {
     AI.generateMoods().then(list => setMoodsList(list || [])).catch(console.error);
