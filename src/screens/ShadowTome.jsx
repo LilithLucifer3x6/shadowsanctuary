@@ -388,6 +388,40 @@ export default function ShadowTome({ pose }) {
     }
   };
 
+  const handleScanTeaImage = async (e) => {
+    console.log("HandleScanTeaImage triggered");
+    const files = Array.from(e.target.files || []);
+    console.log("Files:", files.length);
+    if (!files.length) return;
+    setIsDiviningTea(true);
+    try {
+      const { compressImage } = await import('../lib/ai-engine.js');
+      const newImages = [];
+      for (const file of files) {
+        const dataUrl = await compressImage(file, 1024, 0.8);
+        const base64 = dataUrl.split(',')[1];
+        newImages.push({ base64, mediaType: file.type });
+      }
+      const details = await parseTeaImage(newImages);
+      setTeaForm(prev => ({
+        ...prev,
+        brand: details.brand || '',
+        name: details.name || '',
+        ingredients: Array.isArray(details.ingredients) ? details.ingredients.join(', ') : (details.ingredients || ''),
+        caffeine_content: details.caffeine_content || '',
+        steep_time: details.steep_time || '',
+        circadian_alignment: details.circadian_alignment || '',
+        category: 'Tea'
+      }));
+      setTeaModalState('confirm');
+      setShowTeaModal(true);
+    } catch(err) {
+      console.error(err);
+      alert('Failed to divine tea: ' + err.message);
+    }
+    setIsDiviningTea(false);
+  };
+
   const handleTeaLookup = async () => {
     if (!teaForm.brand || !teaForm.name) return;
     setIsDiviningTea(true);
@@ -632,7 +666,7 @@ export default function ShadowTome({ pose }) {
             <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 1rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', marginTop: '1rem' }}>
               <Icon name="ph-camera" /> 
               <span style={{ marginTop: '0.5rem', textAlign: 'center', fontSize: '1rem' }}>Divine The Consecrated Elements</span>
-              <input type="file" accept="image/*" capture="environment" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} onChange={() => {}} />
+              <input type="file" accept="image/*" capture="environment" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} onChange={handleScanTeaImage} />
             </div>
             
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>
