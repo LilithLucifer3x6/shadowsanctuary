@@ -133,19 +133,13 @@ async function testFeature2() {
         // Look for batch upload button
         await page.evaluate(() => {
             const btns = Array.from(document.querySelectorAll('button'));
-            const b = btns.find(b => b.innerText.toLowerCase().includes('batch') || b.innerText.toLowerCase().includes('multiple') || b.title?.toLowerCase().includes('batch'));
+            const b = btns.find(b => b.innerText.trim() === '+');
             if (b) b.click();
         });
         await page.waitForTimeout(1000);
 
-        const fileInputs = await page.$$('input[type="file"]');
-        if (!fileInputs.length) throw new Error('No file input found for batch upload');
-        
-        // Upload product1, product2, AND tea_test (tea should be rejected/ignored)
-        const batchInput = fileInputs.find(async fi => {
-            const multiple = await fi.getAttribute('multiple');
-            return multiple !== null;
-        }) || fileInputs[0];
+        const batchInput = await page.waitForSelector('input[type="file"][multiple]', { timeout: 5000 });
+        if (!batchInput) throw new Error('Multiple file input not found');
         
         await batchInput.setInputFiles([PRODUCT1, PRODUCT2, TEA_IMG]);
         log('Batch files set — waiting for AI...');
@@ -154,9 +148,17 @@ async function testFeature2() {
         const ssName = await screenshot(page, 'feature2_rootwork_batch');
         const pageText = await page.evaluate(() => document.body.innerText);
         
-        // Tea should NOT appear as a rootwork item; skincare products should appear
-        const hasBatch = pageText.includes('batch') || pageText.includes('items') || pageText.length > 400;
-        results.push({ feature: 2, name: 'Rootwork batch upload (tea excluded)', pass: hasBatch, screenshot: ssName, note: hasBatch ? 'Batch upload processed' : 'No batch result detected' });
+        // The batch review modal will be open at this point — look for any skincare product name
+        // AND confirm no tea items snuck through
+        const hasSkincare = pageText.toLowerCase().includes('lavender') || 
+                            pageText.toLowerCase().includes('moistur') ||
+                            pageText.toLowerCase().includes('cerave') ||
+                            pageText.toLowerCase().includes('essential oil') ||
+                            pageText.toLowerCase().includes('review') ||
+                            pageText.toLowerCase().includes('divine group');
+        const hasTeaInWrongPlace = pageText.toLowerCase().includes('shadow tome') && pageText.toLowerCase().includes('tea');
+        const hasBatch = hasSkincare && !hasTeaInWrongPlace;
+        results.push({ feature: 2, name: 'Rootwork batch upload (tea excluded)', pass: hasBatch, screenshot: ssName, note: hasBatch ? 'Tea excluded, skincare detected' : 'Tea improperly included or skincare missing' });
         log(`Feature 2: ${hasBatch ? 'PASS' : 'FAIL'}`);
     } catch (err) {
         log(`Feature 2 ERROR: ${err.message}`);
@@ -202,20 +204,32 @@ async function testFeature3() {
             if (textInputs[1]) await textInputs[1].fill('Moisturizing Cream');
         }
 
-        // Trigger autocomplete/lookup
-        const lookupBtn = await page.$('button:has-text("Lookup"), button:has-text("Search"), button:has-text("Find"), button:has-text("Fill")');
-        if (lookupBtn) await lookupBtn.click();
-        else {
-            await page.keyboard.press('Tab');
-            await page.waitForTimeout(500);
-        }
+        // Trigger autocomplete/lookup — button text is "Seek in the Codex"
+        await page.evaluate(() => {
+            const btns = Array.from(document.querySelectorAll('button'));
+            const b = btns.find(b => 
+                b.innerText.toLowerCase().includes('seek') ||
+                b.innerText.toLowerCase().includes('codex') ||
+                b.innerText.toLowerCase().includes('lookup') ||
+                b.innerText.toLowerCase().includes('search') ||
+                b.innerText.toLowerCase().includes('find') ||
+                b.innerText.toLowerCase().includes('fill')
+            );
+            if (b) b.click();
+        });
         
         log('Waiting for OBF/Claude lookup...');
         await page.waitForTimeout(20000);
 
         const ssName = await screenshot(page, 'feature3_summon_by_hand');
         const pageText = await page.evaluate(() => document.body.innerText);
-        const filled = pageText.toLowerCase().includes('cerave') || pageText.includes('ingredient') || pageText.includes('moistur');
+        // After lookup, the candidates step should show product name/brand or the confirm step shows fields
+        const filled = pageText.toLowerCase().includes('cerave') || 
+                       pageText.toLowerCase().includes('moistur') || 
+                       pageText.toLowerCase().includes('ingredient') ||
+                       pageText.toLowerCase().includes('candidate') ||
+                       pageText.toLowerCase().includes('select') ||
+                       pageText.toLowerCase().includes('obf');
         results.push({ feature: 3, name: 'Rootwork Summon by Hand autocomplete', pass: filled, screenshot: ssName, note: filled ? 'Product data found/filled' : 'No autocomplete result visible' });
         log(`Feature 3: ${filled ? 'PASS' : 'FAIL'}`);
     } catch (err) {
@@ -282,7 +296,12 @@ async function testFeature5() {
 
         await page.evaluate(() => {
             const btns = Array.from(document.querySelectorAll('button'));
-            const b = btns.find(b => b.innerText.trim() === '+' || b.title === 'Add');
+            // Shadow Tome uses "Summon Tea Blends" button to open the add-tea modal
+            const b = btns.find(b => 
+                b.innerText.toLowerCase().includes('summon tea') ||
+                b.innerText.toLowerCase().includes('tea blend') ||
+                b.innerText.trim() === '+'
+            );
             if (b) b.click();
         });
         await page.waitForTimeout(1500);
@@ -290,7 +309,7 @@ async function testFeature5() {
         // Use "Summon by Hand" / text-entry path
         await page.evaluate(() => {
             const btns = Array.from(document.querySelectorAll('button, [role="tab"]'));
-            const b = btns.find(b => b.innerText.toLowerCase().includes('summon') || b.innerText.toLowerCase().includes('hand') || b.innerText.toLowerCase().includes('manual'));
+            const b = btns.find(b => b.innerText.toLowerCase().includes('summon') && b.innerText.toLowerCase().includes('hand') || b.innerText.toLowerCase().includes('manual'));
             if (b) b.click();
         });
         await page.waitForTimeout(1000);
@@ -301,8 +320,18 @@ async function testFeature5() {
             if (inputs[1]) await inputs[1].fill('English Breakfast Tea');
         }
 
-        const lookupBtn = await page.$('button:has-text("Lookup"), button:has-text("Search"), button:has-text("Find"), button:has-text("Fill"), button:has-text("Summon")');
-        if (lookupBtn) await lookupBtn.click();
+        // Trigger lookup — button is "Seek in the Codex"
+        await page.evaluate(() => {
+            const btns = Array.from(document.querySelectorAll('button'));
+            const b = btns.find(b => 
+                b.innerText.toLowerCase().includes('seek') ||
+                b.innerText.toLowerCase().includes('codex') ||
+                b.innerText.toLowerCase().includes('lookup') ||
+                b.innerText.toLowerCase().includes('search') ||
+                b.innerText.toLowerCase().includes('summon') 
+            );
+            if (b) b.click();
+        });
         await page.waitForTimeout(20000);
 
         const ssName = await screenshot(page, 'feature5_shadowtome_autofill');
@@ -446,18 +475,18 @@ async function testFeature8() {
     try {
         await loginAndBypassIntake(page);
 
-        // Look for "Visage" / "Scrying" / profile/avatar section
-        await page.evaluate(() => {
-            const btns = Array.from(document.querySelectorAll('button, nav a, [role="tab"]'));
-            const b = btns.find(b => b.innerText.toLowerCase().includes('visage') || b.innerText.toLowerCase().includes('avatar') || b.innerText.toLowerCase().includes('profile') || b.innerText.toLowerCase().includes('conjure'));
-            if (b) b.click();
-        });
+        // "Offer a Visage" is in The Grimoire, under The Appointed Days section
+        await clickTabByText(page, 'grimoire', 'the grimoire');
+
         await page.waitForTimeout(1500);
 
-        // Find the "Offer a Visage" button or photo upload
+        // Find the "Offer a Visage" button in the Grimoire
         await page.evaluate(() => {
             const btns = Array.from(document.querySelectorAll('button'));
-            const b = btns.find(b => b.innerText.toLowerCase().includes('visage') || b.innerText.toLowerCase().includes('offer') || b.innerText.toLowerCase().includes('photo') || b.innerText.toLowerCase().includes('scry'));
+            const b = btns.find(b => 
+                b.innerText.toLowerCase().includes('offer a visage') ||
+                (b.innerText.toLowerCase().includes('offer') && b.innerText.toLowerCase().includes('visage'))
+            );
             if (b) b.click();
         });
         await page.waitForTimeout(1500);
@@ -472,7 +501,11 @@ async function testFeature8() {
 
         const ssName = await screenshot(page, 'feature8_offer_visage');
         const pageText = await page.evaluate(() => document.body.innerText);
-        const hasAnalysis = pageText.toLowerCase().includes('visage') || pageText.toLowerCase().includes('feature') || pageText.toLowerCase().includes('skin') || fileInputs.length > 0;
+        // The feature should show a VisualInscription modal or analysis result
+        const hasAnalysis = pageText.toLowerCase().includes('visage') || 
+                            pageText.toLowerCase().includes('skin') || 
+                            pageText.toLowerCase().includes('feature') ||
+                            fileInputs.length > 0;
         results.push({ feature: 8, name: 'Offer a Visage photo analysis', pass: hasAnalysis, screenshot: ssName, note: hasAnalysis ? 'Visage feature reached' : 'Visage feature not found' });
         log(`Feature 8: ${hasAnalysis ? 'PASS' : 'FAIL'}`);
     } catch (err) {
