@@ -320,13 +320,14 @@ async function testFeature5() {
             if (inputs[1]) await inputs[1].fill('English Breakfast Tea');
         }
 
-        // Trigger lookup — button is "Seek in the Codex"
+        // Trigger lookup — ShadowTome uses "Lookup Blend" button
         await page.evaluate(() => {
             const btns = Array.from(document.querySelectorAll('button'));
             const b = btns.find(b => 
+                b.innerText.toLowerCase().includes('lookup blend') ||
+                b.innerText.toLowerCase().includes('lookup') ||
                 b.innerText.toLowerCase().includes('seek') ||
                 b.innerText.toLowerCase().includes('codex') ||
-                b.innerText.toLowerCase().includes('lookup') ||
                 b.innerText.toLowerCase().includes('search') ||
                 b.innerText.toLowerCase().includes('summon') 
             );
