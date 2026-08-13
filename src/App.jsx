@@ -502,7 +502,7 @@ export default function App() {
                 </div>
 
                 <button onClick={() => {
-                  alert('Glossary:\nAppSpeak Translation Guide\n\nCrown = Hair\nGaze = Eyes\nGrin = Mouth/Teeth\nVisage = Face\nVessel = Body\nSanctuary = App\nReliquary = Tools/Devices\nApothecary = Consumables', 'Glossary');
+                  alert('Glossary:\nAppSpeak Translation Guide\n\nCrown = Hair\nGaze = Eyes\nGrin = Mouth/Teeth\nVisage = Face\nForm = Body\nSanctuary = App\nReliquary = Tools/Devices\nApothecary = Consumables', 'Glossary');
                 }} className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--card2)', borderColor: 'var(--plum)', color: 'var(--plum)' }}>Glossary of AppSpeak</button>
               </div>
               

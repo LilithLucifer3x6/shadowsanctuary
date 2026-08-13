@@ -320,7 +320,7 @@ export async function parseBatchProductImages(images) {
                 },
                 brand: { type: 'string' },
                 name: { type: 'string' },
-                domain: { type: 'string', enum: ['Crown', 'Visage', 'Vessel', 'Grin'] },
+                domain: { type: 'string', enum: ['Crown', 'Visage', 'Form', 'Grin'] },
                 category: { type: 'string' },
                 price: { type: 'number' },
                 ingredients: { 
@@ -372,9 +372,10 @@ export async function parseBatchProductImages(images) {
 Your task is to analyze all images simultaneously and GROUP them into distinct products (e.g. front label, back label, and price tag of the SAME product belong in one group).
 For each distinct product you identify:
 1. List the filenames of the images that belong to it.
-2. Extract brand, name, domain (Crown=Hair, Visage=Face, Vessel=Body, Grin=Mouth), and price.
+2. Extract brand, name, domain (Crown=Hair, Visage=Face, Form=Body, Grin=Mouth), and price.
 3. For non-safety fields (like name or price), if photos disagree, use Source Precedence (Physical container > Packaging > Retailer Listing > AI Knowledge) and output only the winner.
-4. For ingredients or risk flags, if photos disagree (e.g. front says "fragrance free" but back lists "parfum", or one photo cuts off the list), set 'ingredient_conflicts' to true and explain the conflict in 'ingredient_conflict_details' so the user must make an explicit choice. If they agree, set it to false.`
+4. For ingredients or risk flags, if photos disagree (e.g. front says "fragrance free" but back lists "parfum", or one photo cuts off the list), set 'ingredient_conflicts' to true and explain the conflict in 'ingredient_conflict_details' so the user must make an explicit choice. If they agree, set it to false.
+5. IMPORTANT: Teas, loose herbs, and ingestible tinctures belong ONLY in the Shadow Tome. If an image is clearly a tea or edible infusion, IGNORE it completely. Do not include it in the products array.`
   });
 
   const { data, error } = await invokeAnthropicProxy({
@@ -775,7 +776,7 @@ const DOMAIN_OBF_TAG = {
   'Visage':   'en:face-care',
   'Gaze':     'en:eye-make-up',
   'Grin':     'en:oral-hygiene',
-  'Vessel':   'en:body-care',
+  'Form':     'en:body-care',
   'Veil':     'en:make-up',
   'Steeping': 'en:hair-care', // infused oils are typically hair/body — no tea products in Rootwork
 };

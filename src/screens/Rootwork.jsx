@@ -999,7 +999,7 @@ export default function Rootwork({ pose }) {
                         <option value="Visage">Visage (Face)</option>
                         <option value="Gaze">Gaze (Eyes)</option>
                         <option value="Grin">Grin (Mouth &amp; Teeth)</option>
-                        <option value="Vessel">Vessel (Body)</option>
+                        <option value="Form">Form (Body)</option>
                         <option value="Veil">Veil (Makeup &amp; Color Cosmetics)</option>
                         <option value="Steeping">Steeping (Infusion &amp; Decarb Oils)</option>
                       </select>
@@ -1328,7 +1328,7 @@ export default function Rootwork({ pose }) {
                               <option value="Visage">Visage (Face)</option>
                               <option value="Gaze">Gaze (Eyes)</option>
                               <option value="Grin">Grin (Mouth &amp; Teeth)</option>
-                              <option value="Vessel">Vessel (Body)</option>
+                              <option value="Form">Form (Body)</option>
                               <option value="Veil">Veil (Makeup &amp; Color Cosmetics)</option>
                               <option value="Steeping">Steeping (Infusion &amp; Decarb Oils)</option>
                             </select>

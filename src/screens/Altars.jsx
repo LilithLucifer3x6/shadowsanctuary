@@ -133,7 +133,10 @@ export default function Altars({ pose }) {
     // Sort items by weight using engine logic
     const { getWeight } = buildBaseRoutines(items, {});
     let domainItems = items
-      .filter(i => (i.domain || '').toLowerCase() === activeAltarId)
+      .filter(i => {
+        const d = (i.domain || '').toLowerCase();
+        return activeAltarId === 'vessel' ? (d === 'form' || d === 'vessel') : d === activeAltarId;
+      })
       .sort((a, b) => getWeight(a) - getWeight(b));
 
     if (lesserRites[activeAltarId]) {

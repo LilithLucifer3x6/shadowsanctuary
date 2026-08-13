@@ -1,0 +1,182 @@
+diff --git a/src/App.jsx b/src/App.jsx
+index 03df2c5..3777894 100644
+--- a/src/App.jsx
++++ b/src/App.jsx
+@@ -60,6 +60,13 @@ export default function App() {
+     cal: false,
+     gcalClientId: ''
+   });
++
++  const [session, setSession] = useState(null);
++  const [authLoading, setAuthLoading] = useState(true);
++  const [loginEmail, setLoginEmail] = useState('');
++  const [loginPassword, setLoginPassword] = useState('');
++  const [loginError, setLoginError] = useState('');
++  const [loginSubmitting, setLoginSubmitting] = useState(false);
+   
+   const [ttsOptions, setTtsOptions] = useState({
+     voice: '',
+@@ -69,7 +76,32 @@ export default function App() {
+ 
+   const [availableVoices, setAvailableVoices] = useState([]);
+ 
++  useEffect(() => {
++    supabase.auth.getSession().then(({ data: { session } }) => {
++      setSession(session);
++      setAuthLoading(false);
++    });
++    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
++      setSession(session);
++    });
++    return () => subscription.unsubscribe();
++  }, []);
++
++  const handleLogin = async (e) => {
++    e.preventDefault();
++    setLoginError('');
++    setLoginSubmitting(true);
++    const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password: loginPassword });
++    if (error) {
++      setLoginError(error.message);
++    }
++    setLoginSubmitting(false);
++  };
+ 
++  const handleLogout = async () => {
++    await supabase.auth.signOut();
++    sessionStorage.clear();
++  };
+ 
+   useEffect(() => {
+     sessionStorage.setItem('al_currentScreen', currentScreen);
+@@ -259,6 +291,48 @@ export default function App() {
+     );
+   }
+ 
++  if (!session) {
++    return (
++      <div className="land" style={{ backgroundImage: 'url("/assets/app_bg.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
++        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }}></div>
++        <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '2rem', maxWidth: '400px', width: '90%' }}>
++          <h1 style={{ fontSize: 'clamp(2rem, 10vw, 3.5rem)', textShadow: '2px 2px 0 #0b090e, -1px -1px 0 #0b090e, 1px -1px 0 #0b090e, -1px 1px 0 #0b090e, 0 8px 30px rgba(0,0,0,1)', color: 'var(--plum)', margin: '0 0 0.5rem 0' }}>
++            Shadow &amp; Sanctuary
++          </h1>
++          <Icon name="ph-lock" style={{fontSize: '2rem', color: 'var(--plum)', marginBottom: '0.5rem'}} />
++          <div className="tag" style={{ fontSize: '1rem', textShadow: '1px 1px 0 #0b090e, 0 4px 15px rgba(0,0,0,1)', color: 'var(--plum)', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)', padding: '0.6rem', display: 'inline-block', marginBottom: '1.5rem' }}>
++            The wards hold fast. Identify yourself.
++          </div>
++          <form onSubmit={handleLogin}>
++            <input
++              id="login-email"
++              type="email"
++              placeholder="Email"
++              value={loginEmail}
++              onChange={e => setLoginEmail(e.target.value)}
++              required
++              style={{ width: '100%', marginBottom: '0.75rem', padding: '0.6rem', boxSizing: 'border-box', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--fg)', borderRadius: '6px' }}
++            />
++            <input
++              id="login-password"
++              type="password"
++              placeholder="Password"
++              value={loginPassword}
++              onChange={e => setLoginPassword(e.target.value)}
++              required
++              style={{ width: '100%', marginBottom: '1rem', padding: '0.6rem', boxSizing: 'border-box', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--fg)', borderRadius: '6px' }}
++            />
++            {loginError && (
++              <p style={{ color: 'var(--crimson-b)', marginBottom: '1rem', fontSize: '0.9rem', background: 'rgba(0,0,0,0.6)', padding: '0.5rem', borderRadius: '4px' }}>{loginError}</p>
++            )}
++            <button id="login-submit" type="submit" className="btn plum" style={{ width: '100%', boxShadow: '0 4px 15px rgba(0,0,0,0.8)' }} disabled={loginSubmitting}>
++              {loginSubmitting ? 'Testing the Wards...' : 'Enter'}
++            </button>
++          </form>
++        </div>
++      </div>
++    );
++  }
+ 
+   if (supabaseError) {
+     return (
+@@ -516,7 +590,13 @@ export default function App() {
+                   <button onClick={() => {
+                     alert('Glossary:\nAppSpeak Translation Guide\n\nCrown = Hair\nGaze = Eyes\nGrin = Mouth/Teeth\nVisage = Face\nVessel = Body\nSanctuary = App\nReliquary = Tools/Devices\nApothecary = Consumables', 'Glossary');
+                   }} className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--card2)', borderColor: 'var(--plum)', color: 'var(--plum)' }}>Glossary of AppSpeak</button>
+-                  
++
++                  <button onClick={async () => {
++                    if (await confirm("Leave the Sanctuary? You'll need to sign in again to return.")) {
++                      await handleLogout();
++                    }
++                  }} className="btn" style={{ width: '100%', marginBottom: '1rem', background: 'var(--card2)', borderColor: 'var(--crimson)', color: 'var(--crimson)' }}>Leave the Sanctuary (Log Out)</button>
++
+                   <button onClick={() => {
+                     setShowSettings(false);
+                     setCurrentScreen('avatar');
+diff --git a/supabase/functions/anthropic-proxy/index.ts b/supabase/functions/anthropic-proxy/index.ts
+index 7fa4caa..2e80af4 100644
+--- a/supabase/functions/anthropic-proxy/index.ts
++++ b/supabase/functions/anthropic-proxy/index.ts
+@@ -13,6 +13,29 @@ serve(async (req) => {
+   }
+ 
+   try {
++    const supabaseUrl = Deno.env.get('SUPABASE_URL');
++    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
++    const authHeader = req.headers.get('Authorization');
++
++    if (!supabaseUrl || !supabaseAnonKey) {
++      return new Response(JSON.stringify({ error: 'Supabase config missing in Edge Function' }), {
++        status: 500,
++        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
++      });
++    }
++
++    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
++      global: { headers: { Authorization: authHeader ?? '' } },
++    });
++    const { data: { user }, error: authError } = await supabase.auth.getUser();
++
++    if (authError || !user) {
++      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
++        status: 401,
++        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
++      });
++    }
++
+     const payload = await req.json();
+ 
+     const anthropicApiKey = Deno.env.get('ANTHROPIC_API_KEY');
+diff --git a/supabase/functions/image-proxy/index.ts b/supabase/functions/image-proxy/index.ts
+index 9c45100..9cfbf79 100644
+--- a/supabase/functions/image-proxy/index.ts
++++ b/supabase/functions/image-proxy/index.ts
+@@ -13,6 +13,29 @@ serve(async (req) => {
+   }
+ 
+   try {
++    const supabaseUrl = Deno.env.get('SUPABASE_URL');
++    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
++    const authHeader = req.headers.get('Authorization');
++
++    if (!supabaseUrl || !supabaseAnonKey) {
++      return new Response(JSON.stringify({ error: 'Supabase config missing in Edge Function' }), {
++        status: 500,
++        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
++      });
++    }
++
++    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
++      global: { headers: { Authorization: authHeader ?? '' } },
++    });
++    const { data: { user }, error: authError } = await supabase.auth.getUser();
++
++    if (authError || !user) {
++      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
++        status: 401,
++        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
++      });
++    }
++
+     const payload = await req.json();
+     const replicateToken = Deno.env.get('REPLICATE_API_TOKEN');

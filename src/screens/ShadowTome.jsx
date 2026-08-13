@@ -632,7 +632,7 @@ export default function ShadowTome({ pose }) {
             <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 1rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', marginTop: '1rem' }}>
               <Icon name="ph-camera" /> 
               <span style={{ marginTop: '0.5rem', textAlign: 'center', fontSize: '1rem' }}>Divine The Consecrated Elements</span>
-              <input type="file" accept="image/*" capture="environment" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} onChange={handleTeaUpload} />
+              <input type="file" accept="image/*" capture="environment" style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }} onChange={() => {}} />
             </div>
             
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>

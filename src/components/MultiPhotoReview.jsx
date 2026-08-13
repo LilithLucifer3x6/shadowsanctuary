@@ -85,7 +85,7 @@ function DroppableGroup({ product, onUpdateField, imagesData }) {
             >
               <option value="Crown">Crown (Hair)</option>
               <option value="Visage">Visage (Face)</option>
-              <option value="Vessel">Vessel (Body)</option>
+              <option value="Form">Form (Body)</option>
               <option value="Grin">Grin (Mouth)</option>
             </select>
             <input 

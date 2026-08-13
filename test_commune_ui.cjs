@@ -20,11 +20,11 @@ async function main() {
     console.log("Logging in...");
     await page.fill('input[type="email"]', 'test_1786474323159@gmail.com');
     await page.fill('input[type="password"]', 'flux_test_password_123!');
-    await page.click('button:has-text("Enter Sanctuary")');
+    await page.click('#login-submit');
     
     // Wait for the Dashboard
     console.log("Waiting for Grimoire/Dashboard...");
-    await page.waitForSelector('text=The Keeper of the Tome', { timeout: 10000 });
+    await page.waitForSelector('button:has-text("Commune")', { timeout: 10000 });
     
     console.log("Clicking 'Commune' button...");
     await page.click('button:has-text("Commune")');

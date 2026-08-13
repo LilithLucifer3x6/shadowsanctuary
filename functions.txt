@@ -1,0 +1,165 @@
+  const loadDrams = async () => {
+    try {
+      const { data } = await supabase.from('items').select('*').eq('domain', 'Measure').eq('lifecycle_state', 'stocked').order('created_at', { ascending: false });
+      if (data) setDrams(data);
+    } catch(e) { console.error(e); }
+  };
+
+  const loadAlchemies = async () => {
+    try {
+      const { data } = await supabase.from('alchemy_batches').select('*').in('lifecycle_state', ['stocked', 'ebbing', 'hollow']).order('created_at', { ascending: false });
+      if (data) setAlchemies(data);
+    } catch(e) { console.error(e); }
+  };
+
+  const startNewAlchemy = () => {
+    setAlchemyForm({
+      name: '',
+      oil_reading_raw: '',
+      oil_reading_unit: 'mg/mL',
+      oil_volume_ml: '',
+      honey_volume_ml: '',
+      lecithin_volume_ml: ''
+    });
+  };
+
+  const cancelAlchemy = () => setAlchemyForm(null);
+
+  const handleSaveAlchemy = async () => {
+    if (!alchemyForm.name || !alchemyForm.oil_reading_raw || !alchemyForm.oil_volume_ml || !alchemyForm.honey_volume_ml || !alchemyForm.lecithin_volume_ml) return;
+    
+    let rawReading = Number(alchemyForm.oil_reading_raw);
+    let canonical_mg_per_ml = rawReading;
+    if (alchemyForm.oil_reading_unit === 'mg/tsp') canonical_mg_per_ml = rawReading / 4.92892;
+    else if (alchemyForm.oil_reading_unit === 'mg/Tbsp') canonical_mg_per_ml = rawReading / 14.7868;
+    else if (alchemyForm.oil_reading_unit === 'mg/cup') canonical_mg_per_ml = rawReading / 236.588;
+
+    const oilVol = Number(alchemyForm.oil_volume_ml);
+    const honeyVol = Number(alchemyForm.honey_volume_ml);
+    const lecVol = Number(alchemyForm.lecithin_volume_ml);
+    const initialVol = oilVol + honeyVol + lecVol;
+    const totalMg = canonical_mg_per_ml * oilVol;
+    const finalMgMl = totalMg / initialVol;
+
+    await supabase.from('alchemy_batches').insert([{
+      name: alchemyForm.name,
+      oil_reading_raw: rawReading,
+      oil_reading_unit: alchemyForm.oil_reading_unit,
+      canonical_mg_per_ml: canonical_mg_per_ml,
+      oil_volume_ml: oilVol,
+      honey_volume_ml: honeyVol,
+      lecithin_volume_ml: lecVol,
+      calculated_total_mg: totalMg,
+      calculated_final_mg_ml: finalMgMl,
+      initial_volume_ml: initialVol,
+      remaining_volume_ml: initialVol,
+      lifecycle_state: 'stocked'
+    }]);
+    
+    setAlchemyForm(null);
+    loadAlchemies();
+  };
+
+  const handleReplenishAlchemy = () => {
+    startNewAlchemy();
+  };
+
+  const handleReleaseAlchemy = async (id) => {
+    if (await confirm("Release this Alchemy? This action cannot be undone.")) {
+      await supabase.from('alchemy_batches').delete().eq('id', id);
+      loadAlchemies();
+    }
+  };
+
+  const handleStageDram = (dram) => {
+    setStagedDoses(prev => {
+      const current = prev[dram.id] || { dram, count: 0 };
+      return { ...prev, [dram.id]: { dram, count: current.count + 1 } };
+    });
+  };
+
+  const clearStagedDrams = () => setStagedDoses({});
+
+  const handleAnointElixir = async (alchemyId) => {
+    const activeAlch = alchemies.find(a => a.id === alchemyId);
+    if (!activeAlch) return;
+
+    let totalMlConsumed = 0;
+    const parts = [];
+    Object.values(stagedDoses).forEach(({ dram, count }) => {
+      if (count > 0) {
+        totalMlConsumed += (dram.vessel_volume_ml * count);
+        parts.push(`${count}x ${dram.name}`);
+      }
+    });
+
+    if (totalMlConsumed === 0) return;
+
+    const mgConsumed = (activeAlch.calculated_final_mg_ml * totalMlConsumed).toFixed(2);
+    const note = `✨ Imbibed: ${parts.join(', ')} (${totalMlConsumed}ml) of ${activeAlch.name} (${mgConsumed}mg THC).`;
+
+    const optimisticEntry = {
+      id: Date.now(),
+      created_at: new Date().toISOString(),
+      body_text: note,
+      moods: [],
+    };
+    setHistory(prev => [optimisticEntry, ...prev]);
+    
+    await supabase.from('journal_entries').insert([{
+      body_text: note,
+      moods: [],
+      moon_phase: 'Unknown',
+      photos: []
+    }]);
+
+    const newVol = activeAlch.remaining_volume_ml - totalMlConsumed;
+    const ratio = newVol / activeAlch.initial_volume_ml;
+    let newState = activeAlch.lifecycle_state;
+    if (newVol <= 0) newState = 'hollow';
+    else if (ratio < 0.2) newState = 'ebbing';
+
+    await supabase.from('alchemy_batches').update({
+      remaining_volume_ml: Math.max(0, newVol),
+      lifecycle_state: newState
+    }).eq('id', activeAlch.id);
+
+    setStagedDoses({});
+    loadHistory();
+    loadAlchemies();
+  };
+
+  const handleSaveDram = async () => {
+    if (!dramForm.name || !dramForm.vessel_volume_ml) return;
+    await supabase.from('items').insert([{
+      name: dramForm.name,
+      vessel_volume_ml: parseFloat(dramForm.vessel_volume_ml),
+      domain: 'Measure',
+      item_type: 'tool',
+      lifecycle_state: 'stocked'
+    }]);
+    setShowDramModal(false);
+    setDramForm({ name: '', vessel_volume_ml: '' });
+    loadDrams();
+  };
+
+  const handleConjureDramName = async () => {
+    setIsRollingDram(true);
+    try {
+      const { data } = await supabase.functions.invoke('anthropic-proxy', {
+        body: {
+          messages: [{ role: 'user', content: 'Generate a single short poetic and whimsical name for a small measuring spoon/dram used for dosing honey (e.g., "The Silver Toll", "Waning Moon Spoon"). Return only the name, no quotes.' }],
+          temperature: 0.9
+        }
+      });
+      if (data && data.content && data.content[0]) {
+        setDramForm(prev => ({ ...prev, name: data.content[0].text.trim() }));
+      }
+    } catch(e) { console.error(e); }
+    setIsRollingDram(false);
+  };
+
+  const handleScanTCheck = async () => {
+    alert("tCheck OCR scan triggered (simulate success)");
+    setAlchemyForm(prev => ({ ...prev, oil_reading_raw: '15', oil_reading_unit: 'mg/mL' }));
+  };
