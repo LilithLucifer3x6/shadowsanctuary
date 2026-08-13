@@ -6,8 +6,8 @@ export default function KeeperAvatar({ config, scale = 1, style = {} }) {
   return (
     <div style={{
       position: 'relative', 
-      width: \`\${280 * scale}px\`, 
-      height: \`\${380 * scale}px\`,
+      width: `${280 * scale}px`, 
+      height: `${380 * scale}px`,
       ...style
     }}>
       {/* Base Body Anchor */}
@@ -20,7 +20,7 @@ export default function KeeperAvatar({ config, scale = 1, style = {} }) {
       {/* Robe Layer */}
       {config.layers.robe && (
         <img 
-          src={\`/assets/avatar-tests/transparent/\${config.layers.robe}\`}
+          src={`/assets/avatar-tests/transparent/${config.layers.robe}`}
           alt="Robe" 
           style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 2 }} 
         />
@@ -29,7 +29,7 @@ export default function KeeperAvatar({ config, scale = 1, style = {} }) {
       {/* Hair Layer */}
       {config.layers.hair && (
         <img 
-          src={\`/assets/avatar-tests/transparent/\${config.layers.hair}\`}
+          src={`/assets/avatar-tests/transparent/${config.layers.hair}`}
           alt="Hair" 
           style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 3 }} 
         />
@@ -38,7 +38,7 @@ export default function KeeperAvatar({ config, scale = 1, style = {} }) {
       {/* Jewelry Layer */}
       {config.layers.jewelry && (
         <img 
-          src={\`/assets/avatar-tests/transparent/\${config.layers.jewelry}\`}
+          src={`/assets/avatar-tests/transparent/${config.layers.jewelry}`}
           alt="Jewelry" 
           style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 4 }} 
         />
