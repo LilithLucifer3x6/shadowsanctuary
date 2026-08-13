@@ -13,6 +13,7 @@ import ConjureVisage from './screens/ConjureVisage.jsx';
 import Landing from './screens/Landing.jsx';
 import Intake from './screens/Intake.jsx';
 import Rites from './screens/Rites.jsx';
+import KeeperAvatar from './components/KeeperAvatar.jsx';
 import Grimoire from './screens/Grimoire.jsx';
 import Altars from './screens/Altars.jsx';
 import Rootwork from './screens/Rootwork.jsx';
@@ -428,9 +429,24 @@ export default function App() {
             </div>
           </div>
             
-            <div id="main-content">
+            <div id="main-content" style={{ position: 'relative', zIndex: 10 }}>
               {renderActiveTabContent()}
             </div>
+            
+            {/* The Static Composited Keeper Avatar */}
+            {(() => {
+              try {
+                const conf = JSON.parse(localStorage.getItem('avatar_config'));
+                if (conf && conf.layers) {
+                  return (
+                    <div style={{ position: 'fixed', bottom: '-2%', right: '5%', zIndex: 1, pointerEvents: 'none' }}>
+                      <KeeperAvatar config={conf} scale={1.8} />
+                    </div>
+                  );
+                }
+              } catch(e) {}
+              return null;
+            })()}
           </div>
         </div>
       )}
