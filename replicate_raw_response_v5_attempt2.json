@@ -1,0 +1,35 @@
+{
+  "id": "j5rbmzabw1rmt0czzn8bptbrt8",
+  "model": "google/nano-banana-pro",
+  "version": "hidden",
+  "input": {
+    "aspect_ratio": "1:1",
+    "image_input": [
+      "data:image/jpeg;base64,..."
+    ],
+    "output_format": "png",
+    "prompt": "TARGETED EDITS: 1. Bare legs instead of leggings/stockings. 2. Black ink tattoos directly on the bare thighs. 3. Taller elevated wooden platform geta sandals on the feet. 4. NO bangs/fringe across the forehead (hair pulled back). 5. Solid black band/choker around the neck holding the crescent pendant. IDENTITY LOCK: Preserve exact facial structure, art style, skin tone, hourglass body proportions (5'8\", 260 lbs, cinched waist, curvy hips, fupa), exact black-and-red crane kimono, silver obi, jewelry, hair ornaments (combs, pins), standing pose, and Japanese garden background exactly as they are in the reference image. AVOID: bangs, fringe, colored tattoos, floating necklaces, leggings, stockings, short sandals, flat sandals.",
+    "resolution": "2K"
+  },
+  "logs": "No sid\nGenerating image...\nTokens: 2229\nGenerated image in 26.95 seconds\n",
+  "output": "https://replicate.delivery/xezq/uYf25v9yzO0RTqNVo7eVIYYB0uKYd5gA5rezN31Z8LdQfeX4C/tmpjpvnp7gy.png",
+  "data_removed": false,
+  "error": null,
+  "source": "api",
+  "status": "succeeded",
+  "created_at": "2026-08-13T22:48:45.792Z",
+  "started_at": "2026-08-13T22:48:45.872637105Z",
+  "completed_at": "2026-08-13T22:49:13.058954294Z",
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/j5rbmzabw1rmt0czzn8bptbrt8/cancel",
+    "get": "https://api.replicate.com/v1/predictions/j5rbmzabw1rmt0czzn8bptbrt8",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-nuv5nyxaihtq5wnqaakdiqtrtzus5gofik3lxk7y6ovz7ykdqntq",
+    "web": "https://replicate.com/p/j5rbmzabw1rmt0czzn8bptbrt8"
+  },
+  "metrics": {
+    "image_output_count": 1,
+    "predict_time": 27.186317189,
+    "resolution_target": "2K",
+    "total_time": 27.266954294
+  }
+}
