@@ -34,7 +34,7 @@ export default function Landing({ onProceed, onOpenAvatar }) {
 
   return (
     <div className="land" style={{ 
-        backgroundImage: 'url("/assets/app_bg.jpg")',
+        backgroundImage: 'url("/assets/bg_manor.jpg")',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         minHeight: '100vh',
