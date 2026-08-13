@@ -1,0 +1,35 @@
+{
+  "id": "ejddqbf29xrmw0czzp5rrt55kw",
+  "model": "google/nano-banana-pro",
+  "version": "hidden",
+  "input": {
+    "aspect_ratio": "1:1",
+    "image_input": [
+      "data:image/jpeg;base64,..."
+    ],
+    "output_format": "png",
+    "prompt": "IDENTITY LOCK: Preserve exact face, facial piercings, choker collar, hourglass body proportions, skin tone, pencil-thin microlocs updo, and left hand silver jewelry. NO GOLD ANYWHERE ON THE CHARACTER. (Sandals and kimono shape intentionally excluded from preservation). ACTION AND SCENE: Mortal Rites daily ritual. The character is actively drinking from a small ornate ritual teacup (or holding a small glass vial). The setting is an interior traditional Japanese manor room in the woods, styled as a witchy ritual space with dark wood, tatami mats, glowing candles, and incense smoke. SPECIFIC TARGETS: 1. SANDALS: Traditional GETA sandals that are EXTREMELY TALL (9-10 inches high platform), towering, with two distinct separate wooden teeth (ha) and a wide gap between them. 2. HAIRPINS: On the RIGHT side of her head, she wears exactly 3 long hairpins and exactly 2 hanging silver chains. The LEFT side must be an exact mirror duplicate of the right side just described. 3. TATTOOS: Bold, stark black ink tattoos (zero blue tint). 4. ANKLE BRACELETS: Dangly, delicate, non-melting silver ankle bracelets on both ankles. Bare calves. 5. KIMONO: Furisode-style exaggerated wide sleeves, significantly wider and billowy in the body (not just a long hem), mostly BLACK with RED interior and pink cherry blossoms.",
+    "resolution": "2K"
+  },
+  "logs": "No sid\nGenerating image...\nTokens: 2442\nGenerated image in 29.24 seconds\n",
+  "output": "https://replicate.delivery/xezq/BOeCFcCAdbVyRSFOjoYiXw5iMegG6j3eBaIlUqHtC7JaZBGuA/tmp9_ebo350.png",
+  "data_removed": false,
+  "error": null,
+  "source": "api",
+  "status": "succeeded",
+  "created_at": "2026-08-13T23:53:50.927Z",
+  "started_at": "2026-08-13T23:53:51.428398323Z",
+  "completed_at": "2026-08-13T23:54:21.377476348Z",
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/ejddqbf29xrmw0czzp5rrt55kw/cancel",
+    "get": "https://api.replicate.com/v1/predictions/ejddqbf29xrmw0czzp5rrt55kw",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-fetcgj5wtowphvy4hd4fkzsndtodbauvul5vl75ltpzsifbpgria",
+    "web": "https://replicate.com/p/ejddqbf29xrmw0czzp5rrt55kw"
+  },
+  "metrics": {
+    "image_output_count": 1,
+    "predict_time": 29.949078025,
+    "resolution_target": "2K",
+    "total_time": 30.450476348
+  }
+}
