@@ -163,11 +163,25 @@ export default function Rites({ pose }) {
       return next;
     });
 
-    await supabase.from('isotretinoin_log').insert({ last_confirmed_dose_mg: dose, last_confirmed_date: today });
+    await supabase.from('isotretinoin_log').upsert(
+      { last_confirmed_dose_mg: dose, last_confirmed_date: today },
+      { onConflict: 'last_confirmed_date' }
+    );
     
     // Also record in routine_history so the day's record shows it was handled (not silently absent)
     const historyId = taken ? id : 'iso-missed';
-    await supabase.from('routine_history').insert(buildPayload(historyId, 'morning'));
+    
+    const { data: existing } = await supabase.from('routine_history')
+      .select('id')
+      .in('step_name', [id, 'iso-missed'])
+      .eq('routine_type', 'morning')
+      .gte('completed_at', today)
+      .maybeSingle();
+
+    const payload = buildPayload(historyId, 'morning');
+    if (existing) payload.id = existing.id;
+    
+    await supabase.from('routine_history').upsert(payload);
   };
 
   const handleCheck = async (id) => {

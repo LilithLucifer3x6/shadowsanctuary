@@ -290,7 +290,7 @@ export default function App() {
     );
   }
 
-  if (false) {
+  if (!session?.user || session.user.id === 'dummy') {
     return (
       <div className="land" style={{ backgroundImage: 'url("/assets/app_bg.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }}></div>
@@ -400,7 +400,7 @@ export default function App() {
       {currentScreen === 'app' && (
         <div id="s-app" style={{ position: 'relative', minHeight: '100vh' }}>
           <div style={{ position: 'relative', zIndex: 5 }}>
-            <div className="topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem 1rem', position: 'sticky', top: 0, zIndex: 40, background: 'transparent', gap: '1rem' }}>
+            <div className="topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem 1rem', position: 'sticky', top: 0, zIndex: 40, background: 'linear-gradient(to bottom, rgba(18,5,24,0.95) 0%, rgba(18,5,24,0.6) 60%, transparent 100%)', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '0 0 auto' }}>
             </div>
             
