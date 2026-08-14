@@ -402,6 +402,14 @@ export default function App() {
           <div style={{ position: 'relative', zIndex: 5 }}>
             <div className="topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem 1rem', position: 'sticky', top: 0, zIndex: 40, background: 'linear-gradient(to bottom, rgba(18,5,24,0.95) 0%, rgba(18,5,24,0.6) 60%, transparent 100%)', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '0 0 auto' }}>
+                <button 
+                  className="avatar-icon-btn" 
+                  onClick={() => { if (settings.tts) speak("Conjure Visage"); setCurrentScreen('avatar'); }} 
+                  title="Profile" 
+                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--plum)', padding: 0 }}
+                >
+                  <Icon name="ph-user" style={{fontSize: '1.4rem'}} />
+                </button>
             </div>
             
             <div className="tabs" style={{ display: 'flex', justifyContent: 'center', flex: 1, gap: '0.5rem', overflowX: 'auto', scrollbarWidth: 'none', padding: '0 0.3rem' }}>

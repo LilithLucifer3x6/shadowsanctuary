@@ -20,7 +20,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@phosphor-icons/web": "^2.1.2",
-    "@supabase/supabase-js": "^2.49.0",
+    "@supabase/supabase-js": "^2.112.3",
     "@vitejs/plugin-react": "^5.0.0",
     "libsodium-wrappers": "^0.8.4",
     "node-fetch": "^3.3.2",

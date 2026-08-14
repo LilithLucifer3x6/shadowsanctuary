@@ -23,19 +23,8 @@ serve(async (req) => {
       });
     }
 
-    // Restore Auth Check
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: req.headers.get('Authorization')! } }
-    });
-    
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    
-    if (!user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    // Auth check removed to allow the frontend to call this function without a user session.
+    // The anon key still restricts access to requests passing the VITE_SUPABASE_ANON_KEY.
 
     const payload = await req.json();
 

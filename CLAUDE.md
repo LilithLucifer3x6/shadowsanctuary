@@ -334,7 +334,7 @@ Palette: obsidian ground, plum accents throughout, silver and platinum metals. P
 - Display names are consistent. Every tab and section heading carries the definite article: The Mortal Rites, The Grimoire, The Altars, The Rootwork, The Scrying Pool, The Shadow Tome. Running prose follows ordinary grammar.
 - Voice applies to all interface copy, including anything AI generates for display. Consecrate the Morning Rite, not Mark Complete. Replenish, not Mark as Restocked. Invoke and Banish for accepting or dismissing. Empty states speak in the same voice. Backend vocabulary never surfaces.
 - The landing screen is a static illustrated exterior view of a small, richly-appointed manor deep in an ancient forest, isolated by choice not by need, preceding the avatar builder, by explicit decision. The avatar and a single familiar appear within the application after the builder, not on this initial exterior screen. Nothing animates.
-- An avatar builder runs before The First Inscription, on first launch only. Defaults: melanated skin, red cat eyes, shoulder-length microlocs. Options lean goth and cat-girl. Every hairstyle offered is 4C-textured and loc-compatible; no European hair textures are offered.
+- An avatar builder runs before The First Inscription, on first launch only. Defaults: melanated skin, red cat eyes, shoulder-length microlocs. Options lean goth and feline. Every hairstyle offered is 4C-textured and loc-compatible; no European hair textures are offered.
 - A familiar is chosen alongside the avatar and appears in the same scene.
 - The avatar and familiar are editable later without repeating intake.
 - Navigation is by tabs across the top.

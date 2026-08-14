@@ -58,6 +58,9 @@ export async function invokeImageProxy(body, retries = 2) {
  * @returns {Promise<{ reply: string, extractedData: Object|null }>}
  */
 export async function conductIntake(messageHistory) {
+  if (!navigator.onLine) {
+    throw new Error("No Connection: The oracle is sleeping. Please connect to the internet.");
+  }
   const userTurnCount = messageHistory.filter(h => h.role === 'user').length;
   // Same lesson learned in converseReading: a soft "call finalize_intake when
   // you feel ready" instruction has no real enforcement and can be ignored
@@ -167,7 +170,7 @@ export async function parseProductImage(base64Image, mediaType) {
           form: { type: 'string', enum: ['liquid', 'cream', 'gel', 'powder', 'solid'], description: 'Physical form of the product' },
           container_size: { type: 'string', description: 'Volume or weight (e.g. 50ml, 1.7oz, 30g)' },
           texture: { type: 'string', enum: ['liquid', 'gel', 'serum', 'lotion', 'mousse', 'cream', 'oil', 'balm', 'ointment', 'solid', 'powder'], description: 'Physical texture of the product' },
-          application_zones: { type: 'array', items: { type: 'string' }, description: 'Body zones where this is applied (e.g., Visage, Vessel, Crown, Grin, oral)' },
+          application_zones: { type: 'array', items: { type: 'string' }, description: 'Body zones where this is applied (e.g., Visage, Form, Crown, Grin, oral)' },
           period_after_opening_months: { type: 'number', description: 'PAO from the open jar icon (in months), if present' },
           unopened_shelf_life_months: { type: 'number', description: 'Unopened shelf life (in months), if explicitly stated' },
           manufacture_date: { type: 'string', description: 'Manufacture date (YYYY-MM-DD), if present' },
@@ -197,7 +200,7 @@ export async function parseProductImage(base64Image, mediaType) {
             },
             {
               type: 'text',
-              text: 'Extract the brand, product name, ingredients list, category (e.g. Cleanser, Moisturizer, Toner), and physical form of this product. Crucially, infer the application_zones (e.g. Visage, Vessel, Crown, Grin, or oral for pills), read the PAO (Period After Opening) jar icon if present, look for any printed manufacture/expiration dates, check if it is a pharmacy prescription (is_prescription), and classify its item_type (consumable for products, arsenal for physical tools/devices).'
+              text: 'Extract the brand, product name, ingredients list, category (e.g. Cleanser, Moisturizer, Toner), and physical form of this product. Crucially, infer the application_zones (e.g. Visage, Form, Crown, Grin, or oral for pills), read the PAO (Period After Opening) jar icon if present, look for any printed manufacture/expiration dates, check if it is a pharmacy prescription (is_prescription), and classify its item_type (consumable for products, arsenal for physical tools/devices).'
             }
           ]
         }
@@ -224,6 +227,9 @@ export async function parseProductImage(base64Image, mediaType) {
  * @returns {Promise<Array>}
  */
 export async function parseBatchProductImages(images) {
+  if (!navigator.onLine) {
+    throw new Error("No Connection: The oracle is sleeping. Please connect to the internet.");
+  }
   if (!images || images.length === 0) return [];
 
   const tools = [
@@ -256,7 +262,7 @@ export async function parseBatchProductImages(images) {
                 form: { type: 'string', enum: ['liquid', 'cream', 'gel', 'powder', 'solid'], description: 'Physical form of the product' },
                 container_size: { type: 'string', description: 'Volume or weight (e.g. 50ml, 1.7oz, 30g)' },
                 texture: { type: 'string', enum: ['liquid', 'gel', 'serum', 'lotion', 'mousse', 'cream', 'oil', 'balm', 'ointment', 'solid', 'powder'], description: 'Physical texture of the product' },
-                application_zones: { type: 'array', items: { type: 'string' }, description: 'Body zones where this is applied (e.g., Visage, Vessel, Crown, Grin, oral)' },
+                application_zones: { type: 'array', items: { type: 'string' }, description: 'Body zones where this is applied (e.g., Visage, Form, Crown, Grin, oral)' },
                 period_after_opening_months: { type: 'number', description: 'PAO from the open jar icon (in months), if present' },
                 unopened_shelf_life_months: { type: 'number', description: 'Unopened shelf life (in months), if explicitly stated' },
                 manufacture_date: { type: 'string', description: 'Manufacture date (YYYY-MM-DD), if present' },
@@ -329,8 +335,10 @@ For each distinct product you identify:
  * @returns {Promise<string>} - The AI's evaluation in the ritual voice.
  */
 export async function evaluateScryingPool(productInfo, userProfile, inventory, reactions = {}) {
+  if (!navigator.onLine) {
+    throw new Error("No Connection: The oracle is sleeping. Please connect to the internet.");
+  }
   
-
   const banished = inventory.filter(i => i.lifecycle_state === 'banished');
   const banishedStr = banished.map(i => {
     let base = `${i.name} (Ingredients: ${i.ingredients})`;
@@ -398,8 +406,10 @@ ${(() => {
  * @returns {Promise<string>} - The AI's holistic evaluation in the ritual voice (Markdown).
  */
 export async function generateScryingEvaluation(inventory, banishedItems, ledgerEntries, intakeAnswers) {
+  if (!navigator.onLine) {
+    throw new Error("No Connection: The oracle is sleeping. Please connect to the internet.");
+  }
   
-
   const systemPrompt = `You are the Scrying Pool, an oracle within Shadow and Sanctuary.
 The user seeks a holistic divination of their entire routine ecosystem.
 Analyze their active inventory, banished products, somatic reactions, and intake goals.
@@ -721,6 +731,9 @@ const DOMAIN_OBF_TAG = {
  * @returns {Promise<Array>} Normalized candidate array
  */
 export async function lookupProductDetails(brand, name, domain) {
+  if (!navigator.onLine) {
+    throw new Error("No Connection: The oracle is sleeping. Please connect to the internet.");
+  }
   const domainTag = DOMAIN_OBF_TAG[domain] || '';
   const searchQuery = [brand, name].filter(Boolean).join(' ');
 
@@ -799,7 +812,7 @@ export async function lookupProductDetails(brand, name, domain) {
 
 Brand: ${brand || '(not specified)'}
 Product name: ${name}
-Product domain: ${domain} (Crown=hair/scalp, Visage=face, Gaze=eyes, Grin=oral, Vessel=body, Veil=makeup, Steeping=infused oils)
+Product domain: ${domain} (Crown=hair/scalp, Visage=face, Gaze=eyes, Grin=oral, Form=body, Veil=makeup, Steeping=infused oils)
 
 Return your best known data for this product. If it's a well-known commercial product, use real ingredient data. If it's handmade or generic, provide sensible defaults.`
         }]

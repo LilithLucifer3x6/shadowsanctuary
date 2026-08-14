@@ -78,7 +78,7 @@ export default function VisualInscription({ onComplete, onSkip, inline = false }
             },
             {
               type: "text",
-              text: "You are the Keeper of the Grimoire. Look at this close-up photo of the user's skin, hair, or vessel. Provide a highly concise, purely visual description of what you see (e.g. 'Red, raised bumps on the cheeks', 'Dry, flaky patches along the scalp'). Do NOT attempt to diagnose it or name a medical condition (e.g., do not say 'acne' or 'psoriasis'). Speak in a gentle, observant tone."
+              text: "You are the Keeper of the Grimoire. Look at this close-up photo of the user's skin, hair, or vessel. Provide a highly concise, purely visual description of what you see ('Red, raised bumps on the cheeks', 'Dry, flaky patches along the scalp'). Do NOT attempt to diagnose it or name a medical condition (do not say 'acne' or 'psoriasis'). Speak in a gentle, observant tone."
             }
           ]
         }
@@ -151,7 +151,7 @@ export default function VisualInscription({ onComplete, onSkip, inline = false }
       )}
 
       {aiObservation && !loading && (
-        <div style={{ textAlign: 'left' }}>
+        <div style={{ textAlign: 'center' }}>
           {imagePreview && (
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <img src={imagePreview} alt="Scrying Result" style={{ width: '120px', height: '120px', objectFit: 'cover', borderRadius: '50%', border: '2px solid var(--plum)', boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }} />
@@ -168,7 +168,7 @@ export default function VisualInscription({ onComplete, onSkip, inline = false }
           
           <input 
             type="text" 
-            placeholder="e.g. Cystic Acne, Psoriasis, Eczema"
+            placeholder="Cystic Acne, Psoriasis, Eczema"
             value={userOverride}
             onChange={(e) => setUserOverride(e.target.value)}
             style={{ width: '100%', marginBottom: '1.5rem', padding: '0.8rem', boxSizing: 'border-box', background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--fg)', borderRadius: '6px' }}

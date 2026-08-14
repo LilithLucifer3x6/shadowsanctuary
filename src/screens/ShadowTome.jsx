@@ -36,6 +36,7 @@ export default function ShadowTome({ pose }) {
   // Herbal Pantry State
   const [pantry, setPantry] = useState([]);
   const [showTeaModal, setShowTeaModal] = useState(false);
+  const [stillroomItems, setStillroomItems] = useState([]);
   const [teaModalState, setTeaModalState] = useState('photo'); // photo, manual, confirm
   const [teaStatus, setTeaStatus] = useState('Offer or Divine Vision');
   const [teaImages, setTeaImages] = useState([]);
@@ -66,6 +67,7 @@ export default function ShadowTome({ pose }) {
     AI.generateMoods().then(list => setMoodsList(list || [])).catch(console.error);
     loadHistory();
     loadPantry();
+    loadStillroom();
     loadHealthData();
     loadDrams();
     loadAlchemies();
@@ -92,6 +94,29 @@ export default function ShadowTome({ pose }) {
         .eq('lifecycle_state', 'stocked')
         .order('name');
       if (data) setPantry(data);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const loadStillroom = async () => {
+    try {
+      const { data } = await supabase.from('items')
+        .select('*')
+        .order('name');
+      if (data) {
+        const keywords = ['oil', 'honey', 'lecithin', 'mct', 'carrier', 'raw herb', 'botanical'];
+        const stillroom = data.filter(i => {
+          // Broaden text search to include ingredients
+          const text = ((i.name || '') + ' ' + (i.category || '') + ' ' + (i.ingredients || '')).toLowerCase();
+          const isMatch = keywords.some(k => text.includes(k));
+          // It's a Stillroom item if it matches keywords and is NOT a tea/blend. 
+          // Do not arbitrarily exclude 'Measure' or 'Herbal Elixirs' domains because users may classify ingredients there.
+          const isNotTea = !text.includes('tea') && !text.includes('blend') && i.category !== 'Tea' && i.category !== 'tea';
+          return isMatch && isNotTea;
+        });
+        setStillroomItems(stillroom);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -455,11 +480,17 @@ export default function ShadowTome({ pose }) {
         circadian_alignment: analysis.circadian || '',
         category: analysis.character || prev.category
       }));
-      setTeaModalState('confirm');
     } catch(err) {
       console.error(err);
-      alert('Failed to analyze tea properties.');
+      // Fallback: Proceed to manual confirm step even if AI fails
+      setTeaForm(prev => ({
+        ...prev,
+        brand: candidate.brand || prev.brand,
+        name: candidate.name || prev.name,
+        ingredients: candidate.ingredients || ''
+      }));
     } finally {
+      setTeaModalState('confirm');
       setIsDiviningTea(false);
     }
   };
@@ -476,7 +507,9 @@ export default function ShadowTome({ pose }) {
     setIsSavingTea(true);
     
     try {
-      await supabase.from('items').insert([{
+      let user_id = (await supabase.auth.getUser()).data.user?.id;
+      
+      const res = await supabase.from('items').insert([{
         brand: teaForm.brand,
         name: teaForm.name,
         domain: 'Herbal Elixirs',
@@ -488,11 +521,13 @@ export default function ShadowTome({ pose }) {
         elixir_steep_time: teaForm.steep_time,
         elixir_circadian: teaForm.circadian_alignment
       }]);
+      if (res.error) console.error("Insert error:", res.error);
     } catch (err) {
       console.error("Save failed", err);
     }
     
     setIsSavingTea(false);
+    fetchItems();
     closeTeaModal();
     loadPantry();
   };
@@ -616,7 +651,7 @@ export default function ShadowTome({ pose }) {
               />
             </div>
             
-            <div style={{ textAlign: 'right', marginTop: '2rem' }}>
+            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
               <button id="btn-save-tome" className="btn plum" onClick={handleSave}>
                 Bind the Parchment
               </button>
@@ -673,7 +708,7 @@ export default function ShadowTome({ pose }) {
             </div>
             
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-              <button className="btn" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => { setShowTeaModal(true); setTeaModalState('seed'); }}>Summon Tea Blends</button>
+              <button className="btn" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => { setShowTeaModal(true); setTeaModalState('seed'); }}>Seek in the Codex</button>
             </div>
           </div>
 
@@ -715,7 +750,7 @@ export default function ShadowTome({ pose }) {
               
                               <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {alchemies.map(alch => (
-                    <div key={alch.id} style={{ background: 'var(--card2)', padding: '1rem', borderRadius: '8px', border: '1px dashed var(--border)', textAlign: 'left' }}>
+                    <div key={alch.id} style={{ background: 'var(--card2)', padding: '1rem', borderRadius: '8px', border: '1px dashed var(--border)', textAlign: 'center' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div style={{ color: 'var(--plum)', fontWeight: 'bold', fontSize: '1.1rem' }}>{alch.name}</div>
                         <div style={{ fontSize: '0.8rem', color: alch.lifecycle_state === 'ebbing' ? 'var(--orange)' : (alch.lifecycle_state === 'hollow' ? 'var(--red)' : 'var(--green)') }}>
@@ -761,6 +796,61 @@ export default function ShadowTome({ pose }) {
                     <button className="btn plum" onClick={startNewAlchemy}>Ignite New Alchemy</button>
                   </div>
                 </div>
+
+              <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Stillroom</h3>
+                <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Raw botanicals and carrier oils.</div>
+                {stillroomItems.length === 0 ? (
+                  <div className="empty" style={{ padding: '1rem' }}>The stillroom is bare.</div>
+                ) : (
+                  <div className="rites2">
+                    {stillroomItems.map(item => (
+                      <div key={item.id} className="act" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem' }}>
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ color: 'var(--plum)' }}>{item.name}</div>
+                          <div style={{ fontSize: '0.75rem' }}>{item.brand} • {item.category}</div>
+                        </div>
+                        <div style={{ color: 'var(--gold)' }}>{item.weight ? `${item.weight}g` : ''}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* The Harvest */}
+              <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
+                <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Harvest <SpeakerButton text="The Harvest" /></h3>
+                <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Dose tracking for infused honey.</div>
+                
+                <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+                  <div>
+                    <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--plum)' }}>Potency</div>
+                    <input 
+                      type="number" 
+                      value={thcStrength}
+                      onChange={e => setThcStrength(Number(e.target.value))}
+                      style={{ width: '80px', textAlign: 'center', padding: '0.5rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }}
+                    />
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--dim)' }}>mg per ml</div>
+                  </div>
+                  <div>
+                    <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--plum)' }}>Imbibed</div>
+                    <input 
+                      type="number" 
+                      value={thcDose}
+                      onChange={e => setThcDose(Number(e.target.value))}
+                      style={{ width: '80px', textAlign: 'center', padding: '0.5rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }}
+                    />
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--dim)' }}>ml</div>
+                  </div>
+                </div>
+                
+                <div style={{ marginBottom: '1rem' }}>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--gold)' }}>{thcTotal} mg</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--dim)' }}>Total Essence</div>
+                </div>
+                <button className="btn plum" onClick={appendThcNote}>Record Harvest</button>
+              </div>
 
               <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
                 <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Alchemist's Scale</h3>
@@ -810,7 +900,7 @@ export default function ShadowTome({ pose }) {
 
       {/* Tea Scanner Modal */}
       {showTeaModal && (
-        <div className="modal" style={{display: 'block'}}>
+        <div className="modal">
           <div className="modal-content card" style={{maxWidth: '500px'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             
@@ -823,12 +913,12 @@ export default function ShadowTome({ pose }) {
 
             {teaModalState === 'seed' && (
               <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                <input type="text" placeholder="Brand / Lineage (e.g. Celestial Seasonings)" value={teaForm.brand} onChange={e => setTeaForm({...teaForm, brand: e.target.value})} />
-                <input type="text" placeholder="Product Name (e.g. Sleepytime)" value={teaForm.name} onChange={e => setTeaForm({...teaForm, name: e.target.value})} />
+                <input type="text" placeholder="Brand / Lineage" value={teaForm.brand} onChange={e => setTeaForm({...teaForm, brand: e.target.value})} />
+                <input type="text" placeholder="Product / Blend Name" value={teaForm.name} onChange={e => setTeaForm({...teaForm, name: e.target.value})} />
                 <input type="text" placeholder="Steeping Instructions (e.g. 5 mins at 212F)" value={teaForm.steep_time} onChange={e => setTeaForm({...teaForm, steep_time: e.target.value})} />
                 
                 <button className="btn plum" onClick={handleTeaLookup} disabled={isDiviningTea || !teaForm.brand || !teaForm.name}>
-                  {isDiviningTea ? 'Divining...' : 'Lookup Blend'}
+                  {isDiviningTea ? 'Divining...' : 'Seek in the Codex'}
                 </button>
               </div>
             )}
@@ -904,11 +994,11 @@ export default function ShadowTome({ pose }) {
       {/* Vessel Scanner Modal */}
       
       {alchemyForm && (
-        <div className="modal" style={{display: 'block'}}>
-          <div className="modal-content card" style={{maxWidth: '400px'}}>
+        <div className="modal">
+          <div className="modal-content card" style={{maxWidth: '400px', maxHeight: '90vh', overflowY: 'auto', margin: 'auto'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Ignite New Alchemy</h3>
-            <div style={{ textAlign: 'left', marginTop: '1rem' }}>
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
                   <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
                     <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. The Transmutation (Oil Infusion)</div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -965,7 +1055,7 @@ export default function ShadowTome({ pose }) {
       )}
 
       {showDramModal && (
-        <div className="modal" style={{display: 'block'}}>
+        <div className="modal">
           <div className="modal-content card" style={{maxWidth: '400px'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             

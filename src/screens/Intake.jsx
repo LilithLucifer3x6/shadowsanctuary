@@ -488,19 +488,19 @@ export default function Intake({ onComplete }) {
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                         <div className="field">
                           <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Name</label>
-                          <VoiceInput value={rx.name} onChange={e => updateRx(i, 'name', e.target.value)} placeholder="e.g. Tacrolimus" />
+                          <VoiceInput value={rx.name} onChange={e => updateRx(i, 'name', e.target.value)} placeholder="" />
                         </div>
                         <div className="field">
                           <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Strength</label>
-                          <VoiceInput value={rx.strength} onChange={e => updateRx(i, 'strength', e.target.value)} placeholder="e.g. 0.05%" />
+                          <VoiceInput value={rx.strength} onChange={e => updateRx(i, 'strength', e.target.value)} placeholder="" />
                         </div>
                         <div className="field">
                           <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Zone</label>
-                          <VoiceInput value={rx.zone} onChange={e => updateRx(i, 'zone', e.target.value)} placeholder="e.g. Face" />
+                          <VoiceInput value={rx.zone} onChange={e => updateRx(i, 'zone', e.target.value)} placeholder="" />
                         </div>
                         <div className="field">
                           <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Frequency</label>
-                          <VoiceInput value={rx.frequency} onChange={e => updateRx(i, 'frequency', e.target.value)} placeholder="e.g. Nightly" />
+                          <VoiceInput value={rx.frequency} onChange={e => updateRx(i, 'frequency', e.target.value)} placeholder="" />
                         </div>
                       </div>
                     </div>
@@ -514,7 +514,7 @@ export default function Intake({ onComplete }) {
           {currentStep === 7 && (
             <div className="ins-step">
               {renderTitle('Medical Directives (Oral)')}
-              <div className="mt mb-4">Internal remedies that may cause systemic shifts (e.g. dryness, sensitivity).</div>
+              <div className="mt mb-4">Internal remedies that may cause systemic shifts.</div>
               
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--plum)' }}>
                 <input type="checkbox" checked={noOral} onChange={e => { setNoOral(e.target.checked); if(e.target.checked) setOralList([]); }} /> I consume no internal remedies that alter my vessel.
@@ -525,7 +525,7 @@ export default function Intake({ onComplete }) {
                   {oralList.map((med, i) => (
                     <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <div style={{ flex: 1 }}>
-                        <VoiceInput value={med} onChange={e => updateOral(i, e.target.value)} placeholder="e.g. Spironolactone" />
+                        <VoiceInput value={med} onChange={e => updateOral(i, e.target.value)} placeholder="" />
                       </div>
                       <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: '0.5rem' }} onClick={() => removeOral(i)}>Shatter</button>
                     </div>
@@ -562,7 +562,7 @@ export default function Intake({ onComplete }) {
                             newList[i] = e.target.value;
                             setAlgList(newList);
                           }}
-                          placeholder="e.g. Lanolin" 
+                          placeholder="" 
                         />
                       </div>
                       <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: '0.5rem' }} onClick={() => {

@@ -1,15 +1,19 @@
 import React from 'react';
 
-export default function KeeperAvatar({ config, scale = 1, style = {} }) {
+export default function KeeperAvatar({ config, scale = 1, style = {}, onClick }) {
   if (!config || !config.layers) return null;
 
   return (
-    <div style={{
-      position: 'relative', 
-      width: `${280 * scale}px`, 
-      height: `${380 * scale}px`,
-      ...style
-    }}>
+    <div 
+      onClick={onClick}
+      style={{
+        position: 'relative', 
+        width: `${280 * scale}px`, 
+        height: `${380 * scale}px`,
+        cursor: onClick ? 'pointer' : 'default',
+        ...style
+      }}
+    >
       {/* Base Body Anchor */}
       <img 
         src="/assets/avatar-tests/transparent/anchor_body_corrected_v5555_transparent.png" 

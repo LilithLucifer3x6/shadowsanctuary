@@ -3,6 +3,7 @@ import path from 'path';
 import Replicate from 'replicate';
 import { createWriteStream } from 'fs';
 import { Readable } from 'stream';
+import { existsSync } from 'fs';
 
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
@@ -16,68 +17,68 @@ async function main() {
   const outDir = path.join(assetsDir, 'transparent');
   await fs.mkdir(outDir, { recursive: true });
 
-  console.log(`Found ${swatches.length} images to process.`);
+  // Read existing transparent files to skip them
+  const existingFiles = await fs.readdir(outDir);
+  const existingSet = new Set(existingFiles);
 
-  for (const filename of swatches) {
-    if (filename.endsWith('_transparent.png') || filename.includes('debug')) {
+  for (const file of swatches) {
+    if (!file.endsWith('.jpg') && !file.endsWith('.png')) continue;
+    
+    // Convert filename base
+    const base = file.replace(/\.(jpg|png)$/, '');
+    const outFilename = `${base}_transparent.png`;
+    const outPath = path.join(outDir, outFilename);
+    
+    if (existingSet.has(outFilename)) {
+      console.log(`Skipping ${file} - already processed`);
       continue;
     }
-    
-    const name = path.parse(filename).name;
-    const outPath = path.join(outDir, `${name}_transparent.png`);
-    
-    try {
-      await fs.access(outPath);
-      console.log(`Skipping ${filename}, already processed.`);
-      continue;
-    } catch (e) {
-      // File doesn't exist, proceed
-    }
 
-    console.log(`Processing ${filename}...`);
+    console.log(`Processing ${file}...`);
     try {
-      const imgPath = path.join(assetsDir, filename);
-      const imgBuffer = await fs.readFile(imgPath);
-      const ext = path.extname(filename).toLowerCase();
-      const mime = ext === '.png' ? 'image/png' : 'image/jpeg';
-      const base64 = `data:${mime};base64,${imgBuffer.toString('base64')}`;
+      const fileData = await fs.readFile(path.join(assetsDir, file));
+      const mime = file.endsWith('.png') ? 'image/png' : 'image/jpeg';
+      const b64 = fileData.toString('base64');
+      const dataUri = `data:${mime};base64,${b64}`;
 
       const output = await replicate.run(
-        "lucataco/remove-bg:95fcc2a26d3899cd6c2691c900465aaeff466285a65c14638cc5f36f34befaf1",
+        "cjwbw/rembg:fb8af171cfa1616ddcf1242c093f9c46bcada5ad4cf6f2fbe8b81b330ec5c003",
         {
           input: {
-            image: base64
+            image: dataUri
           }
         }
       );
+      
+      let downloadUrl = output;
+      if (Array.isArray(output)) downloadUrl = output[0];
 
-      // Replicate might return a ReadableStream or a string URL depending on the model/client
-      if (typeof output === 'string' && output.startsWith('http')) {
-        const response = await fetch(output);
+      if (typeof downloadUrl === 'string' && downloadUrl.startsWith('http')) {
+        const response = await fetch(downloadUrl);
         const arrayBuffer = await response.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         await fs.writeFile(outPath, buffer);
         console.log(`Saved transparent version to ${outPath}`);
-      } else if (output && typeof output.getReader === 'function') {
-        // It's a web ReadableStream
-        const webStream = output;
-        const nodeStream = Readable.fromWeb(webStream);
+      } else if (downloadUrl && typeof downloadUrl.getReader === 'function') {
+        const nodeStream = Readable.fromWeb(downloadUrl);
         const writeStream = createWriteStream(outPath);
-        
         await new Promise((resolve, reject) => {
             nodeStream.pipe(writeStream);
             nodeStream.on('end', resolve);
             nodeStream.on('error', reject);
-            writeStream.on('error', reject);
             writeStream.on('finish', resolve);
         });
         console.log(`Saved transparent version (stream) to ${outPath}`);
       } else {
-        console.log(`Unexpected output for ${filename}:`, output);
+        console.log(`Unexpected output for ${file}:`, output);
       }
     } catch (e) {
-      console.error(`Failed to process ${filename}:`, e);
+      console.error(`Failed to process ${file}:`, e);
     }
+    
+    // Throttle for rate limits
+    console.log('Waiting 15s to avoid rate limit...');
+    await new Promise(r => setTimeout(r, 15000));
   }
 }
 

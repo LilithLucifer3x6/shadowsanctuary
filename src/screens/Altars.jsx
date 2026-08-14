@@ -117,7 +117,7 @@ export default function Altars({ pose }) {
       ) : (
         <input type="checkbox" className="step-chk" checked={checkedIds.has(item.id)} onChange={() => handleCheck(item.id)} />
       )}
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, textAlign: 'center' }}>
         <div className="nm" style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
           <span style={{ color: 'var(--silver)', fontSize: '1.2em', marginRight: '0.4rem', display: 'flex', alignItems: 'center' }}><Icon name={getGlyph(item)} /></span>
           {item.name} 
