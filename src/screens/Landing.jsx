@@ -48,23 +48,7 @@ export default function Landing({ onProceed, onOpenAvatar }) {
       {/* Background Overlay to ensure text readability */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }}></div>
 
-      {/* Avatar Dynamic Overlay */}
-      {hasProfile && avatarConfig && avatarConfig.avatarVibe && (
-        <div style={{ position: 'absolute', bottom: '5%', right: '10%', zIndex: 2, display: 'flex', alignItems: 'flex-end', gap: '1rem' }}>
-          <img 
-            src={`/assets/fam_${avatarConfig.familiar}.jpg`} 
-            alt="Familiar" 
-            style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '50%', border: '2px solid var(--plum)', boxShadow: '0 4px 15px rgba(0,0,0,0.8)', marginBottom: '20px' }} 
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-          <img 
-            src={`/assets/avatar_${avatarConfig.avatarVibe}.jpg`} 
-            alt="Avatar" 
-            style={{ width: '200px', height: '300px', objectFit: 'cover', borderRadius: '8px', border: '2px solid var(--plum)', boxShadow: '0 4px 15px rgba(0,0,0,0.8)' }} 
-            onError={(e) => { e.target.style.display = 'none'; }}
-          />
-        </div>
-      )}
+      {/* Avatar Dynamic Overlay (Removed as the new 9:16 background natively embeds the avatar) */}
 
       {/* Main UI Container — no card box, text sits directly over the background */}
       <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '1rem' }}>

@@ -430,20 +430,7 @@ export default function App() {
               {renderActiveTabContent()}
             </div>
             
-            {/* The Static Composited Keeper Avatar */}
-            {(() => {
-              try {
-                const conf = JSON.parse(localStorage.getItem('avatar_config'));
-                if (conf && conf.layers) {
-                  return (
-                    <div style={{ position: 'fixed', bottom: '-2%', right: '5%', zIndex: 1, pointerEvents: 'none' }}>
-                      <KeeperAvatar config={conf} scale={1.8} />
-                    </div>
-                  );
-                }
-              } catch(e) {}
-              return null;
-            })()}
+            {/* The Static Composited Keeper Avatar (Removed as the new 9:16 backgrounds natively embed the avatar) */}
           </div>
         </div>
       )}
