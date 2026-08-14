@@ -20,12 +20,12 @@ import Scrying from './screens/Scrying.jsx';
 import ShadowTome from './screens/ShadowTome.jsx';
 
 const TABS = [
-  { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bg: '/assets/avatar-tests/part4_1x1_mortal_rites.jpg', pose: 'working' },
-  { id: 'grim', label: 'The Grimoire', glyph: G.tabGrim, bg: '/assets/avatar-tests/part4_1x1_grimoire.jpg', pose: 'reading' },
-  { id: 'altars', label: 'The Altars', glyph: G.tabAltars, bg: '/assets/avatar-tests/part4_1x1_altars.jpg', pose: 'meditating' },
-  { id: 'root', label: 'The Rootwork', glyph: G.tabRoot, bg: '/assets/avatar-tests/part4_1x1_rootwork.jpg', pose: 'working' },
-  { id: 'pool', label: 'The Scrying Pool', glyph: G.tabPool, bg: '/assets/avatar-tests/part4_1x1_scrying_pool.jpg', pose: 'scrying' },
-  { id: 'tome', label: 'The Shadow Tome', glyph: G.tabTome, bg: '/assets/avatar-tests/part4_1x1_shadow_tome.jpg', pose: 'reading' }
+  { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bg: '/assets/avatar-tests/part3_916_mortal_rites.png', pose: 'working' },
+  { id: 'grim', label: 'The Grimoire', glyph: G.tabGrim, bg: '/assets/avatar-tests/part3_916_grimoire.png', pose: 'reading' },
+  { id: 'altars', label: 'The Altars', glyph: G.tabAltars, bg: '/assets/avatar-tests/part3_916_altars.png', pose: 'meditating' },
+  { id: 'root', label: 'The Rootwork', glyph: G.tabRoot, bg: '/assets/avatar-tests/part3_916_rootwork.png', pose: 'working' },
+  { id: 'pool', label: 'The Scrying Pool', glyph: G.tabPool, bg: '/assets/avatar-tests/part3_916_scrying_pool.png', pose: 'scrying' },
+  { id: 'tome', label: 'The Shadow Tome', glyph: G.tabTome, bg: '/assets/avatar-tests/part3_916_shadow_tome.png', pose: 'reading' }
 ];
 
 function getSpellDate() {
