@@ -1,0 +1,35 @@
+{
+  "id": "h7vaxy1979rmy0czzp999vpm8c",
+  "model": "google/nano-banana-pro",
+  "version": "hidden",
+  "input": {
+    "aspect_ratio": "1:1",
+    "image_input": [
+      "data:image/jpeg;base64,..."
+    ],
+    "output_format": "png",
+    "prompt": "IDENTITY LOCK: Preserve exact face, facial piercings, choker collar, hourglass body proportions, skin tone, pencil-thin microlocs updo, silver hand jewelry. NO GOLD ANYWHERE. TATTOOS: Bold black ink. ANKLES: Dangly silver bracelets. KIMONO: Furisode-style wide sleeves, black with red interior and pink cherry blossoms. SANDALS: Tall platform geta with two teeth. ACTION AND SCENE: Scrying Pool. The character is gazing intently down into a dark indoor reflecting basin/koi pond. The setting is viewed from the wooden veranda (engawa) of a Japanese manor, moody reflections, water ripples, night time.",
+    "resolution": "2K"
+  },
+  "logs": "No sid\nGenerating image...\nTokens: 2187\nGenerated image in 24.71 seconds\n",
+  "output": "https://replicate.delivery/xezq/8Eap1vLWPurjINDKf3IeAe4wfTJKro5PehPWpaE1XbYYYGY4C/tmp4e5ra9vu.png",
+  "data_removed": false,
+  "error": null,
+  "source": "api",
+  "status": "succeeded",
+  "created_at": "2026-08-14T00:00:42.298Z",
+  "started_at": "2026-08-14T00:00:42.630355378Z",
+  "completed_at": "2026-08-14T00:01:07.805710698Z",
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/h7vaxy1979rmy0czzp999vpm8c/cancel",
+    "get": "https://api.replicate.com/v1/predictions/h7vaxy1979rmy0czzp999vpm8c",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-7ltwi4ygnpj3qd6iyuwaoh4usr74gg5avvxbddegrh3fzgo5xxsa",
+    "web": "https://replicate.com/p/h7vaxy1979rmy0czzp999vpm8c"
+  },
+  "metrics": {
+    "image_output_count": 1,
+    "predict_time": 25.17535535,
+    "resolution_target": "2K",
+    "total_time": 25.507710698
+  }
+}
