@@ -34,9 +34,9 @@ export default function Landing({ onProceed, onOpenAvatar }) {
 
   return (
     <div className="land" style={{ 
-        backgroundImage: 'url("/assets/bg_manor.jpg")',
+        backgroundImage: 'url("/assets/avatar-tests/part3_916_manor_exterior.png")',
         backgroundSize: 'cover',
-        backgroundPosition: 'center',
+        backgroundPosition: 'center top',
         minHeight: '100vh',
         display: 'flex',
         flexDirection: 'column',
@@ -67,11 +67,11 @@ export default function Landing({ onProceed, onOpenAvatar }) {
       )}
 
       {/* Main UI Container — no card box, text sits directly over the background */}
-      <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '2rem' }}>
-          <h1 style={{ fontSize: 'clamp(2rem, 10vw, 3.5rem)', textShadow: '2px 2px 0 #0b090e, -1px -1px 0 #0b090e, 1px -1px 0 #0b090e, -1px 1px 0 #0b090e, 0 8px 30px rgba(0,0,0,1)', color: 'var(--plum)', margin: '0 0 0.5rem 0' }}>
+      <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '1rem' }}>
+          <h1 style={{ fontSize: 'clamp(1.5rem, 6vw, 2.5rem)', textShadow: '2px 2px 0 #0b090e, -1px -1px 0 #0b090e, 1px -1px 0 #0b090e, -1px 1px 0 #0b090e, 0 8px 30px rgba(0,0,0,1)', color: 'var(--plum)', margin: '0 0 0.2rem 0' }}>
             Shadow & Sanctuary
           </h1>
-          <div className="tag" style={{ fontSize: '1rem', textShadow: '1px 1px 0 #0b090e, 0 4px 15px rgba(0,0,0,1)', color: 'var(--plum)', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)', padding: '0.6rem', display: 'inline-block', marginBottom: '2rem' }}>
+          <div className="tag" style={{ fontSize: '1rem', textShadow: '1px 1px 0 #0b090e, 0 4px 15px rgba(0,0,0,1)', color: 'var(--plum)', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)', padding: '0.4rem', display: 'inline-block', marginBottom: '1rem' }}>
             A sanctuary of self-care.
           </div>
           
@@ -103,3 +103,4 @@ export default function Landing({ onProceed, onOpenAvatar }) {
     </div>
   );
 }
+

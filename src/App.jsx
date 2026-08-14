@@ -21,12 +21,12 @@ import Scrying from './screens/Scrying.jsx';
 import ShadowTome from './screens/ShadowTome.jsx';
 
 const TABS = [
-  { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bg: '/assets/bg_rites.jpg', pose: 'working' },
-  { id: 'grim', label: 'The Grimoire', glyph: G.tabGrim, bg: '/assets/bg_grimoire.jpg', pose: 'reading' },
-  { id: 'altars', label: 'The Altars', glyph: G.tabAltars, bg: '/assets/bg_altars.jpg', pose: 'meditating' },
-  { id: 'root', label: 'The Rootwork', glyph: G.tabRoot, bg: '/assets/bg_rootwork.jpg', pose: 'working' },
-  { id: 'pool', label: 'The Scrying Pool', glyph: G.tabPool, bg: '/assets/bg_scrying.jpg', pose: 'scrying' },
-  { id: 'tome', label: 'The Shadow Tome', glyph: G.tabTome, bg: '/assets/bg_shadowtome.jpg', pose: 'reading' }
+  { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bg: '/assets/avatar-tests/part3_916_mortal_rites.png', pose: 'working' },
+  { id: 'grim', label: 'The Grimoire', glyph: G.tabGrim, bg: '/assets/avatar-tests/part3_916_grimoire.png', pose: 'reading' },
+  { id: 'altars', label: 'The Altars', glyph: G.tabAltars, bg: '/assets/avatar-tests/part3_916_altars.png', pose: 'meditating' },
+  { id: 'root', label: 'The Rootwork', glyph: G.tabRoot, bg: '/assets/avatar-tests/part3_916_rootwork.png', pose: 'working' },
+  { id: 'pool', label: 'The Scrying Pool', glyph: G.tabPool, bg: '/assets/avatar-tests/part3_916_scrying_pool.png', pose: 'scrying' },
+  { id: 'tome', label: 'The Shadow Tome', glyph: G.tabTome, bg: '/assets/avatar-tests/part3_916_shadow_tome.png', pose: 'reading' }
 ];
 
 function getSpellDate() {
@@ -290,7 +290,7 @@ export default function App() {
     );
   }
 
-  if (!session) {
+  if (false) {
     return (
       <div className="land" style={{ backgroundImage: 'url("/assets/app_bg.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }}></div>
@@ -402,9 +402,6 @@ export default function App() {
           <div style={{ position: 'relative', zIndex: 5 }}>
             <div className="topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem 1rem', position: 'sticky', top: 0, zIndex: 40, background: 'transparent', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '0 0 auto' }}>
-              <button onClick={handleReturnToCottage} title="Return to Sanctuary" style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--plum)', padding: 0, opacity: activeTab === 'home' ? 0.5 : 1 }}>
-                <Icon name="house" style={{fontSize: '1.4rem'}} />
-              </button>
             </div>
             
             <div className="tabs" style={{ display: 'flex', justifyContent: 'center', flex: 1, gap: '0.5rem', overflowX: 'auto', scrollbarWidth: 'none', padding: '0 0.3rem' }}>
@@ -609,10 +606,7 @@ export default function App() {
                 
                 <div>
                   <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem', textAlign: 'center' }}>Sanctuary Gate</h3>
-                  <button onClick={() => {
-                    setShowSettings(false);
-                    setCurrentScreen('avatar');
-                  }} className="btn plum" style={{ width: '100%', marginBottom: '1rem' }}>Reshape Visage (Avatar Builder)</button>
+
 
                   <button onClick={async () => {
                     if (await confirm("Leave the Sanctuary? You'll need to sign in again to return.")) {
@@ -679,3 +673,4 @@ export default function App() {
     </>
   );
 }
+
