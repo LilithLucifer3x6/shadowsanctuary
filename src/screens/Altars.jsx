@@ -254,13 +254,15 @@ export default function Altars({ pose }) {
         ))}
       </div>
       
-      <div className="card" style={{ width: '100%', minHeight: '300px', transition: 'opacity 0.3s ease', opacity }}>
+      <div className="card" style={{ width: '100%', transition: 'opacity 0.3s ease', opacity, position: 'relative' }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3 style={{ flex: 1, justifyContent: 'center' }}>The {displayedAltar} <SpeakerButton text={`The ${displayedAltar}`} /></h3>
-          <button 
-            className={`btn ${lesserRites[activeAltarId] ? 'plum' : 'g'}`} 
-            onClick={() => setLesserRites(prev => ({...prev, [activeAltarId]: !prev[activeAltarId]}))}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', minHeight: '32px', marginBottom: '0.5rem' }}>
+          <h3 style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', margin: 0, textAlign: 'center' }}>The {displayedAltar}</h3>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <SpeakerButton text={`The ${displayedAltar}`} />
+            <button 
+              className={`btn ${lesserRites[activeAltarId] ? 'plum' : 'g'}`} 
+              onClick={() => setLesserRites(prev => ({...prev, [activeAltarId]: !prev[activeAltarId]}))}
             style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}
           >
             {lesserRites[activeAltarId] ? 'Full' : 'Lesser'}

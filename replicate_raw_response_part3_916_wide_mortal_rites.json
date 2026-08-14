@@ -1,0 +1,35 @@
+{
+  "id": "mwyzzprr3srmr0czzv0sp4n1d4",
+  "model": "google/nano-banana-pro",
+  "version": "hidden",
+  "input": {
+    "aspect_ratio": "9:16",
+    "image_input": [
+      "data:image/jpeg;base64,..."
+    ],
+    "output_format": "png",
+    "prompt": "WIDE FULL-BODY SHOT — the entire character must be visible from head to feet, including the sandals, with clear margin/space above the head and below the feet. Do NOT crop at the waist, chest, or knees. Camera pulled back to show the full figure AND a generous amount of the surrounding room/scene. IDENTITY LOCK: Preserve exact face, PRESERVE FACIAL PIERCINGS EXACTLY AS SHOWN IN THE REFERENCE (nose ring, ear piercings, etc), choker collar, hourglass body proportions, skin tone, pencil-thin microlocs updo, silver hand jewelry. EXPLICIT INSTRUCTION: Clear, well-defined, undistorted eyes matching the reference image's eye rendering perfectly. NO GOLD. TATTOOS: Bold black ink. ANKLES: Dangly silver bracelets. KIMONO: Furisode-style wide sleeves, black with red interior and pink cherry blossoms. SANDALS: Perfectly matching, symmetrical tall platform geta with two teeth. ART STYLE: Painterly/illustrated digital art style, matching the reference image perfectly. ABSOLUTELY NO PHOTOREALISM. ASPECT RATIO FRAMING: This is a 9:16 portrait image. Ensure the avatar and key scene elements remain well-composed and are not cropped awkwardly at this taller/wider framing. ACTION AND SCENE: Mortal Rites ritual room. The character is standing gracefully in the center of a beautiful traditional Japanese manor room, wooden floor, shoji screens, dim lantern light, holding a silver chalice.",
+    "resolution": "2K"
+  },
+  "logs": "No sid\nGenerating image...\nTokens: 2361\nGenerated image in 44.92 seconds\n",
+  "output": "https://replicate.delivery/xezq/HJxEfy993HzLa6FtQDAk7Og1YA2LveD4z2tDl9t1eZJJTLGuA/tmpp7ipjw9d.png",
+  "data_removed": false,
+  "error": null,
+  "source": "api",
+  "status": "succeeded",
+  "created_at": "2026-08-14T05:31:35.326Z",
+  "started_at": "2026-08-14T05:31:35.667859054Z",
+  "completed_at": "2026-08-14T05:32:21.060934318Z",
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/mwyzzprr3srmr0czzv0sp4n1d4/cancel",
+    "get": "https://api.replicate.com/v1/predictions/mwyzzprr3srmr0czzv0sp4n1d4",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-hzhpdsphozlaszj3p6i6dw6wly5bf7fhfhl3nq5tw4obq3ki2dna",
+    "web": "https://replicate.com/p/mwyzzprr3srmr0czzv0sp4n1d4"
+  },
+  "metrics": {
+    "image_output_count": 1,
+    "predict_time": 45.393075264,
+    "resolution_target": "2K",
+    "total_time": 45.734934318
+  }
+}

@@ -204,3 +204,16 @@
 body.tts-disabled .spk { display: none !important; }
 
 .card h3 + div { text-align: center; }
+
+ @ m e d i a   ( m a x - w i d t h :   7 6 8 p x )   { 
+     b o d y   { 
+         b a c k g r o u n d - s i z e :   c o v e r ; 
+     } 
+ } 
+ @ m e d i a   ( m i n - w i d t h :   7 6 9 p x )   { 
+     b o d y   { 
+         b a c k g r o u n d - s i z e :   c o n t a i n ; 
+     } 
+ } 
+  
+ 

@@ -1,0 +1,33 @@
+{
+  "id": "rag8jn3qjxrmy0czzr6a0q7h78",
+  "model": "google/nano-banana-pro",
+  "version": "hidden",
+  "input": {
+    "aspect_ratio": "9:16",
+    "image_input": [
+      "data:image/jpeg;base64,..."
+    ],
+    "output_format": "png",
+    "prompt": "WIDE FULL-BODY SHOT — the entire character must be visible from head to feet, including the sandals, with clear margin/space above the head and below the feet. Do NOT crop at the waist, chest, or knees. Camera pulled back to show the full figure AND a generous amount of the surrounding room/scene. IDENTITY LOCK: Preserve exact face, PRESERVE FACIAL PIERCINGS EXACTLY AS SHOWN IN THE REFERENCE (nose ring, ear piercings, etc), choker collar, hourglass body proportions, skin tone, pencil-thin microlocs updo, silver hand jewelry. EXPLICIT INSTRUCTION: Clear, well-defined, undistorted eyes matching the reference image's eye rendering perfectly. NO GOLD. TATTOOS: Bold black ink. ANKLES: Dangly silver bracelets. KIMONO: Furisode-style wide sleeves, black with red interior and pink cherry blossoms. SANDALS: Perfectly matching, symmetrical tall platform geta with two teeth. ART STYLE: Painterly/illustrated digital art style, matching the reference image perfectly. ABSOLUTELY NO PHOTOREALISM. ASPECT RATIO FRAMING: This is a 9:16 portrait image. Ensure the avatar and key scene elements remain well-composed and are not cropped awkwardly at this taller/wider framing. ACTION AND SCENE: Rootwork apothecary. The character is actively grinding herbs in a mortar and pestle. The setting is an apothecary/stillroom styled with Japanese wooden tansu cabinetry, hanging dried herbs, glass vials, moody witchy lighting.",
+    "resolution": "2K"
+  },
+  "logs": "No sid\nGenerating image...\nReceived a 429 HTTP response from the Google API. Backing off...\n",
+  "output": null,
+  "data_removed": false,
+  "error": "Prediction failed: Async prediction failed: ModelRateLimitError: Service is currently unavailable due to high demand. Please try again later. (E003) (1cah9wlWR9)",
+  "source": "api",
+  "status": "failed",
+  "created_at": "2026-08-14T02:14:17.751Z",
+  "started_at": "2026-08-14T02:14:18.011718469Z",
+  "completed_at": "2026-08-14T02:15:24.661028431Z",
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/rag8jn3qjxrmy0czzr6a0q7h78/cancel",
+    "get": "https://api.replicate.com/v1/predictions/rag8jn3qjxrmy0czzr6a0q7h78",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-chqnxxsa57uszqitpzd3h7ksac4gxjxzpwq75bvg7zjmpgfeb7oq",
+    "web": "https://replicate.com/p/rag8jn3qjxrmy0czzr6a0q7h78"
+  },
+  "metrics": {
+    "predict_time": 66.649309962,
+    "total_time": 66.910028431
+  }
+}

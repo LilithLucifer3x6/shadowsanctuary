@@ -20,12 +20,12 @@ import Scrying from './screens/Scrying.jsx';
 import ShadowTome from './screens/ShadowTome.jsx';
 
 const TABS = [
-  { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bg: '/assets/avatar-tests/part3_916_mortal_rites.png', pose: 'working' },
-  { id: 'grim', label: 'The Grimoire', glyph: G.tabGrim, bg: '/assets/avatar-tests/part3_916_grimoire.png', pose: 'reading' },
-  { id: 'altars', label: 'The Altars', glyph: G.tabAltars, bg: '/assets/avatar-tests/part3_916_altars.png', pose: 'meditating' },
-  { id: 'root', label: 'The Rootwork', glyph: G.tabRoot, bg: '/assets/avatar-tests/part3_916_rootwork.png', pose: 'working' },
-  { id: 'pool', label: 'The Scrying Pool', glyph: G.tabPool, bg: '/assets/avatar-tests/part3_916_scrying_pool.png', pose: 'scrying' },
-  { id: 'tome', label: 'The Shadow Tome', glyph: G.tabTome, bg: '/assets/avatar-tests/part3_916_shadow_tome.png', pose: 'reading' }
+  { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bg: '/assets/avatar-tests/part4_1x1_mortal_rites.jpg', pose: 'working' },
+  { id: 'grim', label: 'The Grimoire', glyph: G.tabGrim, bg: '/assets/avatar-tests/part4_1x1_grimoire.jpg', pose: 'reading' },
+  { id: 'altars', label: 'The Altars', glyph: G.tabAltars, bg: '/assets/avatar-tests/part4_1x1_altars.jpg', pose: 'meditating' },
+  { id: 'root', label: 'The Rootwork', glyph: G.tabRoot, bg: '/assets/avatar-tests/part4_1x1_rootwork.jpg', pose: 'working' },
+  { id: 'pool', label: 'The Scrying Pool', glyph: G.tabPool, bg: '/assets/avatar-tests/part4_1x1_scrying_pool.jpg', pose: 'scrying' },
+  { id: 'tome', label: 'The Shadow Tome', glyph: G.tabTome, bg: '/assets/avatar-tests/part4_1x1_shadow_tome.jpg', pose: 'reading' }
 ];
 
 function getSpellDate() {
@@ -131,10 +131,6 @@ export default function App() {
       }
 
       document.body.style.backgroundImage = `url('${bgUrl}')`;
-      document.body.style.backgroundSize = 'contain';
-      document.body.style.backgroundRepeat = 'no-repeat';
-      document.body.style.backgroundPosition = 'center';
-      document.body.style.backgroundColor = '#0b090e'; // Dark fallback for the empty side bars
     }
   }, [activeTab, currentScreen]);
 
@@ -376,7 +372,6 @@ export default function App() {
           <div style={{ position: 'relative', zIndex: 5 }}>
             <div className="topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem 1rem', position: 'sticky', top: 0, zIndex: 40, background: 'linear-gradient(to bottom, rgba(18,5,24,0.95) 0%, rgba(18,5,24,0.6) 60%, transparent 100%)', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                {activeTab !== 'grim' && <div className="datemark" style={{ position: 'static', margin: 0 }}>{dateStr}</div>}
               </div>
             
             <div className="tabs" style={{ display: 'flex', justifyContent: 'center', flex: 1, gap: '0.5rem', overflowX: 'auto', scrollbarWidth: 'none', padding: '0 0.3rem' }}>

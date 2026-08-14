@@ -19,11 +19,6 @@ export default function ShadowTome({ pose }) {
   const [showCustomMood, setShowCustomMood] = useState(false);
   const [customMoodText, setCustomMoodText] = useState('');
   
-  // THC Calc State
-  const [thcStrength, setThcStrength] = useState(10);
-  const [thcDose, setThcDose] = useState(5);
-  const thcTotal = thcStrength * thcDose;
-
   // Breathwork State
   const [isBreathing, setIsBreathing] = useState(false);
   const [breathInst, setBreathInst] = useState('');
@@ -233,20 +228,8 @@ export default function ShadowTome({ pose }) {
     const mgConsumed = (activeAlch.calculated_final_mg_ml * totalMlConsumed).toFixed(2);
     const note = `✨ Imbibed: ${parts.join(', ')} (${totalMlConsumed}ml) of ${activeAlch.name} (${mgConsumed}mg THC).`;
 
-    const optimisticEntry = {
-      id: Date.now(),
-      created_at: new Date().toISOString(),
-      body_text: note,
-      moods: [],
-    };
-    setHistory(prev => [optimisticEntry, ...prev]);
-    
-    await supabase.from('journal_entries').insert([{
-      body_text: note,
-      moods: [],
-      moon_phase: 'Unknown',
-      photos: []
-    }]);
+    setEntryText(prev => prev ? prev + '\n\n' + note : note);
+    alert('Added to today\'s journal entry');
 
     const newVol = activeAlch.remaining_volume_ml - totalMlConsumed;
     const ratio = newVol / activeAlch.initial_volume_ml;
@@ -387,7 +370,7 @@ export default function ShadowTome({ pose }) {
   };
 
   const appendThcNote = () => {
-    const note = `\u2728 Infusion: Consumed ${thcDose}ml of THC honey at ${thcStrength}mg/ml (The Harvest: ${thcTotal}mg THC).`;
+    const note = `\u2728 Infusion: Consumed ${thcDose}ml of THC honey at ${thcStrength}mg/ml.`;
     setEntryText(prev => prev ? prev + '\n\n' + note : note);
   };
 
@@ -728,7 +711,7 @@ export default function ShadowTome({ pose }) {
           {/* Row 1: Herbal Elixirs */}
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" /></h3>
+            <h3 style={{ fontSize: '1.5rem', textAlign: 'center' }}>The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" /></h3>
             
             <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 1rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', marginTop: '1rem' }}>
               <Icon name="ph-camera" /> 
@@ -744,7 +727,7 @@ export default function ShadowTome({ pose }) {
           {/* Row 2: Botanical Trove */}
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Herbarium <SpeakerButton text="The Herbarium" /></h3>
+            <h3 style={{ fontSize: '1.5rem', textAlign: 'center' }}>The Herbarium <SpeakerButton text="The Herbarium" /></h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {pantry.length > 0 ? pantry.map(tea => (
@@ -771,10 +754,34 @@ export default function ShadowTome({ pose }) {
             </div>
           </div>
 
+          {/* Row 2.5: The Stillroom */}
+          <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <div>
+              <h3 style={{ fontSize: '1.5rem', textAlign: 'center' }}>The Stillroom</h3>
+              <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Raw botanicals and carrier oils.</div>
+              {stillroomItems.length === 0 ? (
+                <div className="empty" style={{ padding: '1rem' }}>The stillroom is bare.</div>
+              ) : (
+                <div className="rites2">
+                  {stillroomItems.map(item => (
+                    <div key={item.id} className="act" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ color: 'var(--plum)' }}>{item.name}</div>
+                        <div style={{ fontSize: '0.75rem' }}>{item.brand} • {item.category}</div>
+                      </div>
+                      <div style={{ color: 'var(--gold)' }}>{item.weight ? `${item.weight}g` : ''}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Row 3: Alchemies */}
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
               <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-              <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Alchemies <SpeakerButton text="The Alchemies" /></h3>
+              <h3 style={{ fontSize: '1.5rem', textAlign: 'center' }}>The Alchemies <SpeakerButton text="The Alchemies" /></h3>
               
               <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {alchemies.map(alch => (
@@ -823,81 +830,17 @@ export default function ShadowTome({ pose }) {
                 <div style={{ textAlign: 'center', marginTop: '1rem' }}>
                   <button className="btn plum" onClick={startNewAlchemy}>Ignite New Alchemy</button>
                 </div>
+                <div style={{ textAlign: 'center', marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '1rem' }}>
+                  <h3 style={{ fontSize: '1.2rem', textAlign: 'center', margin: '0 0 1rem 0' }}>The Alchemist's Scale</h3>
+                  <button className="btn" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowDramModal(true)}>
+                    <Icon name="plus" /> Consecrate New Dram
+                  </button>
+                </div>
               </div>
           </div>
 
-          {/* Row 4: The Stillroom & Harvest */}
-          <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
-            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            
-            <div>
-              <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Stillroom</h3>
-              <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Raw botanicals and carrier oils.</div>
-              {stillroomItems.length === 0 ? (
-                <div className="empty" style={{ padding: '1rem' }}>The stillroom is bare.</div>
-              ) : (
-                <div className="rites2">
-                  {stillroomItems.map(item => (
-                    <div key={item.id} className="act" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem' }}>
-                      <div style={{ textAlign: 'center' }}>
-                        <div style={{ color: 'var(--plum)' }}>{item.name}</div>
-                        <div style={{ fontSize: '0.75rem' }}>{item.brand} • {item.category}</div>
-                      </div>
-                      <div style={{ color: 'var(--gold)' }}>{item.weight ? `${item.weight}g` : ''}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
 
-            {/* The Harvest */}
-            <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Harvest <SpeakerButton text="The Harvest" /></h3>
-              <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Dose tracking for infused honey.</div>
-              
-              <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-                <div>
-                  <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--plum)' }}>Potency</div>
-                  <input 
-                    type="number" 
-                    value={thcStrength}
-                    onChange={e => setThcStrength(Number(e.target.value))}
-                    style={{ width: '80px', textAlign: 'center', padding: '0.5rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }}
-                  />
-                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--dim)' }}>mg per ml</div>
-                </div>
-                <div>
-                  <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--plum)' }}>Imbibed</div>
-                  <input 
-                    type="number" 
-                    value={thcDose}
-                    onChange={e => setThcDose(Number(e.target.value))}
-                    style={{ width: '80px', textAlign: 'center', padding: '0.5rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }}
-                  />
-                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--dim)' }}>ml</div>
-                </div>
-              </div>
-              
-              <div style={{ marginBottom: '1rem' }}>
-                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--gold)' }}>{thcTotal} mg</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--dim)' }}>Total Essence</div>
-              </div>
-              <button className="btn plum" onClick={appendThcNote}>Record Harvest</button>
-            </div>
-
-            <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Alchemist's Scale</h3>
-              <button className="btn mt-3" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowDramModal(true)}>
-                <Icon name="plus" /> Consecrate New Dram
-              </button>
-            </div>
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* Tea Scanner Modal */}
+          {/* Tea Scanner Modal */}
       {showTeaModal && (
         <div className="modal">
           <div className="modal-content card" style={{maxWidth: '500px'}}>

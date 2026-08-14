@@ -95,7 +95,7 @@ export default function Rootwork({ pose }) {
     setLoading(true);
     const { data } = await supabase.from('items')
       .select('*')
-      .not('domain', 'in', '("Herbal Elixirs","Measure","ShadowTome")')
+      .not('domain', 'in', '("Herbal Elixirs","Measure","ShadowTome","Steeping")')
       .order('name');
     const { data: ebbingIds } = await supabase.rpc('get_ebbing_items');
     
@@ -779,12 +779,12 @@ export default function Rootwork({ pose }) {
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', marginBottom: '1rem' }}>
           <h3 style={{ margin: 0 }}>The Apothecary <SpeakerButton text="The Apothecary" /></h3>
           <div style={{ position: 'absolute', right: 0, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <button className="btn plum"  onClick={() => {
+            <button className="btn plum" onClick={() => {
               setAddForm({ brand: '', name: '', domain: 'Crown', category: '', ingredients: '', weight: '5', period_after_opening_months: '', unopened_shelf_life_months: '', manufacture_date: '', purchase_date: '', price: '', is_essential: false, is_composite: false, item_type: 'consumable', is_opened: false, opened_date: '', application_zones: [], is_prescription: false, prescription_details: '', selectedComponents: [], measured_potency_mg_ml: '', inferred_potency_mg_ml: '', potency_source: '', levo_material_qty: '', levo_temperature: '', levo_duration: '', levo_carrier_oil: '' });
-              setPhotoStatus('Offer or Scry Photo');
-              setModalState('photo');
+              setModalState('manual');
+              setManualStep('seed');
               setShowAddModal(true);
-            }}>+</button>
+            }}>Inscribe</button>
           </div>
         </div>
         <div className="mt mb-4" style={{ textAlign: 'center' }}>Your sacred elixirs and treatments.</div>
