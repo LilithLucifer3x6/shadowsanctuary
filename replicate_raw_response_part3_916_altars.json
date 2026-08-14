@@ -1,0 +1,35 @@
+{
+  "id": "zkp16m8mvdrmt0czzpq98bbrtg",
+  "model": "google/nano-banana-pro",
+  "version": "hidden",
+  "input": {
+    "aspect_ratio": "9:16",
+    "image_input": [
+      "data:image/jpeg;base64,..."
+    ],
+    "output_format": "png",
+    "prompt": "IDENTITY LOCK: Preserve exact face, PRESERVE FACIAL PIERCINGS EXACTLY AS SHOWN IN THE REFERENCE (nose ring, ear piercings, etc), choker collar, hourglass body proportions, skin tone, pencil-thin microlocs updo, silver hand jewelry. EXPLICIT INSTRUCTION: Clear, well-defined, undistorted eyes matching the reference image's eye rendering perfectly. NO GOLD. TATTOOS: Bold black ink. ANKLES: Dangly silver bracelets. KIMONO: Furisode-style wide sleeves, black with red interior and pink cherry blossoms. SANDALS: Perfectly matching, symmetrical tall platform geta with two teeth. ART STYLE: Painterly/illustrated digital art style, matching the reference image perfectly. ABSOLUTELY NO PHOTOREALISM. ASPECT RATIO FRAMING: This is a 9:16 portrait image. Ensure the avatar and key scene elements remain well-composed and are not cropped awkwardly at this taller/wider framing. ACTION AND SCENE: Altars shrine. The character is standing reverently before a traditional wooden altar. The setting is a formal shrine room within a Japanese manor, thick with incense smoke, highly concentrated glowing candles, ancestral and witchy focal points.",
+    "resolution": "2K"
+  },
+  "logs": "No sid\nGenerating image...\nTokens: 2310\nGenerated image in 27.49 seconds\n",
+  "output": "https://replicate.delivery/xezq/nMg8dvkDPAqVPVvjqcn8c8tCZpLTOmgeyWr00KirTnX2nghLA/tmpkg2o7p7m.png",
+  "data_removed": false,
+  "error": null,
+  "source": "api",
+  "status": "succeeded",
+  "created_at": "2026-08-14T00:31:12.091Z",
+  "started_at": "2026-08-14T00:31:12.438792175Z",
+  "completed_at": "2026-08-14T00:31:40.980066042Z",
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/zkp16m8mvdrmt0czzpq98bbrtg/cancel",
+    "get": "https://api.replicate.com/v1/predictions/zkp16m8mvdrmt0czzpq98bbrtg",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-26gvagrczq3rsb5yek52sazubdqas2xcmoru4c3c64a6romnwxia",
+    "web": "https://replicate.com/p/zkp16m8mvdrmt0czzpq98bbrtg"
+  },
+  "metrics": {
+    "image_output_count": 1,
+    "predict_time": 28.541273857,
+    "resolution_target": "2K",
+    "total_time": 28.889066042
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "rsj0331e99rmr0czzppr2p2rv4",
+  "model": "google/nano-banana-pro",
+  "version": "hidden",
+  "input": {
+    "aspect_ratio": "9:16",
+    "image_input": [
+      "data:image/jpeg;base64,..."
+    ],
+    "output_format": "png",
+    "prompt": "IDENTITY LOCK: Preserve exact face, PRESERVE FACIAL PIERCINGS EXACTLY AS SHOWN IN THE REFERENCE (nose ring, ear piercings, etc), choker collar, hourglass body proportions, skin tone, pencil-thin microlocs updo, silver hand jewelry. EXPLICIT INSTRUCTION: Clear, well-defined, undistorted eyes matching the reference image's eye rendering perfectly. NO GOLD. TATTOOS: Bold black ink. ANKLES: Dangly silver bracelets. KIMONO: Furisode-style wide sleeves, black with red interior and pink cherry blossoms. SANDALS: Perfectly matching, symmetrical tall platform geta with two teeth. ART STYLE: Painterly/illustrated digital art style, matching the reference image perfectly. ABSOLUTELY NO PHOTOREALISM. ASPECT RATIO FRAMING: This is a 9:16 portrait image. Ensure the avatar and key scene elements remain well-composed and are not cropped awkwardly at this taller/wider framing. ACTION AND SCENE: Mortal Rites ritual room. The character is standing gracefully in the center of a beautiful traditional Japanese manor room, wooden floor, shoji screens, dim lantern light, holding a silver chalice.",
+    "resolution": "2K"
+  },
+  "logs": "No sid\nGenerating image...\nTokens: 2417\nGenerated image in 25.23 seconds\n",
+  "output": "https://replicate.delivery/xezq/68BIP8Y3omZWFpXwTYZySnHvgiUw5NxDfSVl6SveGwguOBDXA/tmprv3bewj9.png",
+  "data_removed": false,
+  "error": null,
+  "source": "api",
+  "status": "succeeded",
+  "created_at": "2026-08-14T00:30:13.066Z",
+  "started_at": "2026-08-14T00:30:13.330544334Z",
+  "completed_at": "2026-08-14T00:30:39.022103081Z",
+  "urls": {
+    "cancel": "https://api.replicate.com/v1/predictions/rsj0331e99rmr0czzppr2p2rv4/cancel",
+    "get": "https://api.replicate.com/v1/predictions/rsj0331e99rmr0czzppr2p2rv4",
+    "stream": "https://stream.replicate.com/v1/files/jbxs-t6neh3ovxdie6e2eue6bfwuvzwlkmg2a3gf4fa4ns7wpswq2avoq",
+    "web": "https://replicate.com/p/rsj0331e99rmr0czzppr2p2rv4"
+  },
+  "metrics": {
+    "image_output_count": 1,
+    "predict_time": 25.691558747,
+    "resolution_target": "2K",
+    "total_time": 25.956103081
+  }
+}
