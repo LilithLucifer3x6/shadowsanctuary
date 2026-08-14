@@ -20,6 +20,24 @@ export async function initEngineRules() {
   }
 }
 
+export function isShadowTomeItem(item) {
+  if (!item) return false;
+  
+  const domain = (item.domain || '').toLowerCase();
+  if (domain === 'herbal elixirs' || domain === 'measure' || domain === 'shadowtome' || domain === 'steeping') {
+    return true;
+  }
+  
+  const text = ((item.name || '') + ' ' + (item.category || '') + ' ' + (typeof item.ingredients === 'string' ? item.ingredients : (Array.isArray(item.ingredients) ? item.ingredients.join(' ') : ''))).toLowerCase();
+  
+  // Exclude 'oil' to prevent matching 'Rosemary Mint Scalp Oil' and other real skincare oils
+  const stillroomKeywords = ['honey', 'lecithin', 'mct', 'carrier oil', 'raw herb', 'botanical', 'tincture', 'extract', 'syrup'];
+  const isMatch = stillroomKeywords.some(k => text.includes(k));
+  const isNotTea = !text.includes('tea') && !text.includes('blend') && (item.category || '').toLowerCase() !== 'tea';
+  
+  return isMatch && isNotTea;
+}
+
 // Risk Ward checks (presence-based triggers)
 const MELANIN_TRIGGERS = ['hydroquinone', 'citrus', 'lemon', 'lime', 'grapefruit'];
 
@@ -120,6 +138,11 @@ export function buildBaseRoutines(items, userProfile = {}, wearables = {}) {
 
   allItems.forEach(rawItem => {
     const item = parseFlags(rawItem);
+    
+    // SHADOW TOME ISOLATION
+    if (isShadowTomeItem(item)) {
+      return; // Stripped entirely from Mortal Rites
+    }
     
     // THE CODEX: Dynamic DB Ban
     const dynamicBans = cachedCodex.map(c => c.ingredient.toLowerCase());

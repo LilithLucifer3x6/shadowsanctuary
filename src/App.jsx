@@ -9,7 +9,6 @@ import { syncWearableSnapshot } from './lib/health-connect.js';
 import { Capacitor } from '@capacitor/core';
 import { initEngineRules } from './lib/routine-engine.js';
 
-import ConjureVisage from './screens/ConjureVisage.jsx';
 import Landing from './screens/Landing.jsx';
 import Intake from './screens/Intake.jsx';
 import Rites from './screens/Rites.jsx';
@@ -132,8 +131,10 @@ export default function App() {
       }
 
       document.body.style.backgroundImage = `url('${bgUrl}')`;
-      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundSize = 'contain';
+      document.body.style.backgroundRepeat = 'no-repeat';
       document.body.style.backgroundPosition = 'center';
+      document.body.style.backgroundColor = '#0b090e'; // Dark fallback for the empty side bars
     }
   }, [activeTab, currentScreen]);
 
@@ -242,11 +243,6 @@ export default function App() {
     })();
   }, []);
 
-  const handleReturnToCottage = () => {
-    if (settings.tts) speak("Return to Sanctuary");
-    handleTabClick('rites');
-  };
-
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
   };
@@ -268,7 +264,6 @@ export default function App() {
     const pose = tab ? tab.pose : 'working';
     
     switch (activeTab) {
-      case 'home': return <div style={{ minHeight: 'calc(100vh - 120px)' }}><Landing onProceed={(skipIntake) => skipIntake ? handleTabClick('rites') : setCurrentScreen('intake')} onOpenAvatar={() => setCurrentScreen('avatar')} /></div>;
       case 'rites': return <div><Rites pose={pose} /></div>;
       case 'grim': return <div><Grimoire pose={pose} /></div>;
       case 'altars': return <div><Altars pose={pose} /></div>;
@@ -355,38 +350,17 @@ export default function App() {
         </div>
       )}
 
-      {currentScreen === 'avatar' && (
-        <div id="s-av" className="land">
-          <ConjureVisage onCancel={localStorage.getItem('avatar_config') ? () => setCurrentScreen('app') : undefined} onFinish={() => { 
-            const isCompletedLocally = localStorage.getItem('intake_completed') === 'true';
-            if (!isCompletedLocally) {
-              setCurrentScreen('intake');
-            } else {
-              setCurrentScreen('app'); 
-              handleTabClick('rites'); 
-            }
-          }} />
-        </div>
-      )}
-
       {currentScreen === 'landing' && (
         <div id="s-land">
           <Landing 
             onProceed={(skipIntake) => {
-              let hasAvatar = false;
-              try {
-                const conf = JSON.parse(localStorage.getItem('avatar_config'));
-                if (conf && Object.keys(conf).length > 0) hasAvatar = true;
-              } catch(e) {}
               const hasIntake = localStorage.getItem('intake_completed') === 'true';
-              if (!hasAvatar) setCurrentScreen('avatar');
-              else if (!skipIntake && !hasIntake) setCurrentScreen('intake');
+              if (!skipIntake && !hasIntake) setCurrentScreen('intake');
               else {
                 setCurrentScreen('app');
                 handleTabClick('rites');
               }
             }} 
-            onOpenAvatar={() => setCurrentScreen('avatar')} 
           />
         </div>
       )}
@@ -401,16 +375,9 @@ export default function App() {
         <div id="s-app" style={{ position: 'relative', minHeight: '100vh' }}>
           <div style={{ position: 'relative', zIndex: 5 }}>
             <div className="topbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.8rem 1rem', position: 'sticky', top: 0, zIndex: 40, background: 'linear-gradient(to bottom, rgba(18,5,24,0.95) 0%, rgba(18,5,24,0.6) 60%, transparent 100%)', gap: '1rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: '0 0 auto' }}>
-                <button 
-                  className="avatar-icon-btn" 
-                  onClick={() => { if (settings.tts) speak("Conjure Visage"); setCurrentScreen('avatar'); }} 
-                  title="Profile" 
-                  style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--plum)', padding: 0 }}
-                >
-                  <Icon name="ph-user" style={{fontSize: '1.4rem'}} />
-                </button>
-            </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                {activeTab !== 'grim' && <div className="datemark" style={{ position: 'static', margin: 0 }}>{dateStr}</div>}
+              </div>
             
             <div className="tabs" style={{ display: 'flex', justifyContent: 'center', flex: 1, gap: '0.5rem', overflowX: 'auto', scrollbarWidth: 'none', padding: '0 0.3rem' }}>
               {TABS.map(t => (

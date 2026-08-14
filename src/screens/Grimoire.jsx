@@ -145,6 +145,7 @@ export default function Grimoire({ pose }) {
   };
 
   const handleStartReading = async () => {
+    if (readingState && readingState.isTyping) return;
     setReadingState({ history: [], input: '', isTyping: true, completeSummary: null });
     try {
       const reply = await withHardTimeout((async () => {
@@ -370,7 +371,7 @@ export default function Grimoire({ pose }) {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="card" style={{ marginTop: 0 }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-        <h3>The Appointed Times <SpeakerButton text="The Appointed Times" /></h3>
+        <h3 style={{ justifyContent: 'center' }}>The Appointed Times <SpeakerButton text="The Appointed Times" /></h3>
         
         {realEvents.length > 0 ? realEvents.map((ev, i) => (
           <div key={i} className="step">
@@ -392,7 +393,7 @@ export default function Grimoire({ pose }) {
         <div className="card mt-4" style={{ alignSelf: 'flex-start' }}>
           <div className="corner tl"></div><div className="corner tr"></div>
           <div className="corner bl"></div><div className="corner br"></div>
-          <h3>
+          <h3 style={{ justifyContent: 'center' }}>
             The Appointed Days{' '}
             <SpeakerButton text='The Appointed Days' />
           </h3>
@@ -456,11 +457,12 @@ export default function Grimoire({ pose }) {
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <button 
-                  className="btn plum" 
-                  onClick={handleStartReading}
-                >
-                  Commune
+                  <button 
+                    className="btn plum" 
+                    onClick={handleStartReading}
+                    disabled={readingState?.isTyping}
+                  >
+                    Commune
                 </button>
                 <button 
                   className="btn" 
@@ -479,7 +481,7 @@ export default function Grimoire({ pose }) {
         <div className="card" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
           <div className="corner tl"></div><div className="corner tr"></div>
           <div className="corner bl"></div><div className="corner br"></div>
-          <h3>
+          <h3 style={{ justifyContent: 'center' }}>
             The Weekly Wheel{' '}
             <SpeakerButton text='The Weekly Wheel' />
           </h3>
@@ -524,7 +526,7 @@ export default function Grimoire({ pose }) {
         <div className="card" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
         <div className="corner tl"></div><div className="corner tr"></div>
         <div className="corner bl"></div><div className="corner br"></div>
-        <h3>
+        <h3 style={{ justifyContent: 'center' }}>
           The Ephemeris{' '}
           <SpeakerButton text='The Ephemeris' />
         </h3>

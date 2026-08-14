@@ -257,7 +257,7 @@ export default function Altars({ pose }) {
       <div className="card" style={{ width: '100%', minHeight: '300px', transition: 'opacity 0.3s ease', opacity }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h3>The {displayedAltar} <SpeakerButton text={`The ${displayedAltar}`} /></h3>
+          <h3 style={{ flex: 1, justifyContent: 'center' }}>The {displayedAltar} <SpeakerButton text={`The ${displayedAltar}`} /></h3>
           <button 
             className={`btn ${lesserRites[activeAltarId] ? 'plum' : 'g'}`} 
             onClick={() => setLesserRites(prev => ({...prev, [activeAltarId]: !prev[activeAltarId]}))}

@@ -546,11 +546,23 @@ export default function ShadowTome({ pose }) {
     setBreathCircle({ transform: 'scale(1)', borderColor: 'var(--plum)', transition: 'all 0.5s ease' });
   };
 
-  const runMeditationCycle = (roundsLeft) => {
+  const runMeditationCycle = async (roundsLeft) => {
     if (roundsLeft === 0) {
       setIsBreathing(false);
       setBreathInst('Meditation Complete');
       setBreathCircle({ transform: 'scale(1)', borderColor: 'var(--plum)', transition: 'all 2s ease-in-out' });
+      
+      const exerciseType = readiness === 'low' ? '4-4-4-4 Box Breathing' : '4-7-8 Spirit Calming';
+      const note = `✨ Meditation: Completed a session of ${exerciseType}.`;
+      
+      setHistory(prev => [{ id: Date.now(), created_at: new Date().toISOString(), body_text: note, moods: [] }, ...prev]);
+      await supabase.from('journal_entries').insert([{
+        body_text: note,
+        moods: [],
+        moon_phase: 'Unknown',
+        photos: []
+      }]);
+      loadHistory();
       return;
     }
 
@@ -619,6 +631,23 @@ export default function ShadowTome({ pose }) {
             <h3 style={{ textAlign: 'center', justifyContent: 'center' }}>The Inner Sanctum <SpeakerButton text="The Inner Sanctum" /></h3>
             <div className="note mb-4" style={{ fontSize: '1.2rem', textAlign: 'center' }}>"The ink is your own."</div>
             
+            {/* Ethereal Breath Button */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--card2)', padding: '1rem', borderRadius: '8px', border: '1px dashed var(--border)' }}>
+              <div style={{ fontSize: '0.9rem', color: 'var(--dim)', marginBottom: '0.5rem' }}>
+                {isBreathing ? breathInst : (readiness === 'low' ? '4-4-4-4 Box Breathing' : '4-7-8 Spirit Calming')}
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {isBreathing && (
+                  <button className="btn" onClick={cancelMeditation} style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}>
+                    Cease
+                  </button>
+                )}
+                <button className="btn plum" onClick={startMeditation} disabled={isBreathing} style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', opacity: isBreathing ? 0.5 : 1 }}>
+                  {isBreathing ? 'Inhaling...' : 'Begin Meditation'}
+                </button>
+              </div>
+            </div>
+
             <div className="field" style={{ marginTop: '1rem' }}>
               <label style={{ fontSize: '1.15rem' }}>The Spirit's Temperament</label>
               <div className="chips" id="tome-moods">
@@ -697,7 +726,7 @@ export default function ShadowTome({ pose }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           
           {/* Row 1: Herbal Elixirs */}
-<div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+          <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" /></h3>
             
@@ -713,7 +742,7 @@ export default function ShadowTome({ pose }) {
           </div>
 
           {/* Row 2: Botanical Trove */}
-<div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+          <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Herbarium <SpeakerButton text="The Herbarium" /></h3>
             
@@ -742,155 +771,125 @@ export default function ShadowTome({ pose }) {
             </div>
           </div>
 
-          {/* Row 3: Ethereal Vapors and Breath (Side by Side) */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
-  <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+          {/* Row 3: Alchemies */}
+          <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
               <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
               <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Alchemies <SpeakerButton text="The Alchemies" /></h3>
               
-                              <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {alchemies.map(alch => (
-                    <div key={alch.id} style={{ background: 'var(--card2)', padding: '1rem', borderRadius: '8px', border: '1px dashed var(--border)', textAlign: 'center' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ color: 'var(--plum)', fontWeight: 'bold', fontSize: '1.1rem' }}>{alch.name}</div>
-                        <div style={{ fontSize: '0.8rem', color: alch.lifecycle_state === 'ebbing' ? 'var(--orange)' : (alch.lifecycle_state === 'hollow' ? 'var(--red)' : 'var(--green)') }}>
-                          {alch.lifecycle_state === 'stocked' ? 'Endowed' : alch.lifecycle_state}
-                        </div>
+              <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {alchemies.map(alch => (
+                  <div key={alch.id} style={{ background: 'var(--card2)', padding: '1rem', borderRadius: '8px', border: '1px dashed var(--border)', textAlign: 'center' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ color: 'var(--plum)', fontWeight: 'bold', fontSize: '1.1rem' }}>{alch.name}</div>
+                      <div style={{ fontSize: '0.8rem', color: alch.lifecycle_state === 'ebbing' ? 'var(--orange)' : (alch.lifecycle_state === 'hollow' ? 'var(--red)' : 'var(--green)') }}>
+                        {alch.lifecycle_state === 'stocked' ? 'Endowed' : alch.lifecycle_state}
                       </div>
-                      <div style={{ fontSize: '0.9rem', color: 'var(--dim)', margin: '0.5rem 0' }}>
-                        Strength: {Number(alch.calculated_final_mg_ml).toFixed(2)} mg/ml <br/>
-                        Remaining: {Number(alch.remaining_volume_ml).toFixed(1)} / {Number(alch.initial_volume_ml).toFixed(1)} ml
-                      </div>
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--dim)', margin: '0.5rem 0' }}>
+                      Strength: {Number(alch.calculated_final_mg_ml).toFixed(2)} mg/ml <br/>
+                      Remaining: {Number(alch.remaining_volume_ml).toFixed(1)} / {Number(alch.initial_volume_ml).toFixed(1)} ml
+                    </div>
 
-                      {alch.lifecycle_state === 'hollow' ? (
-                        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                          <button className="btn sm" style={{ flex: 1 }} onClick={handleReplenishAlchemy}>Replenish</button>
-                          <button className="btn sm g" style={{ flex: 1 }} onClick={() => handleReleaseAlchemy(alch.id)}>Release the Alchemy</button>
+                    {alch.lifecycle_state === 'hollow' ? (
+                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                        <button className="btn sm" style={{ flex: 1 }} onClick={handleReplenishAlchemy}>Replenish</button>
+                        <button className="btn sm g" style={{ flex: 1 }} onClick={() => handleReleaseAlchemy(alch.id)}>Release the Alchemy</button>
+                      </div>
+                    ) : (
+                      <div style={{ marginTop: '1rem' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--plum)', marginBottom: '0.5rem' }}>Anoint with a Dram:</div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          {drams.map(d => (
+                            <button key={d.id} className="btn sm" onClick={() => handleStageDram(alch.id, d)}>
+                              Imbibe 1x {d.name}
+                            </button>
+                          ))}
                         </div>
-                      ) : (
-                        <div style={{ marginTop: '1rem' }}>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--plum)', marginBottom: '0.5rem' }}>Anoint with a Dram:</div>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            {drams.map(d => (
-                              <button key={d.id} className="btn sm" onClick={() => handleStageDram(alch.id, d)}>
-                                Imbibe 1x {d.name}
-                              </button>
-                            ))}
-                          </div>
-                          {stagedDoses[alch.id] && Object.keys(stagedDoses[alch.id]).length > 0 && (
-                            <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
-                              <div style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-                                Staged: {Object.values(stagedDoses[alch.id]).filter(sd => sd.count > 0).map(sd => `${sd.count}x ${sd.dram.name}`).join(', ')}
-                              </div>
-                              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                <button className="btn sm" onClick={() => clearStagedDrams(alch.id)}>Clear</button>
-                                <button className="btn sm plum" style={{ flex: 1 }} onClick={() => handleAnointElixir(alch.id)}>Anoint the Elixir</button>
-                              </div>
+                        {stagedDoses[alch.id] && Object.keys(stagedDoses[alch.id]).length > 0 && (
+                          <div style={{ marginTop: '1rem', padding: '0.5rem', background: 'rgba(0,0,0,0.2)', borderRadius: '4px' }}>
+                            <div style={{ fontSize: '0.85rem', marginBottom: '0.5rem' }}>
+                              Staged: {Object.values(stagedDoses[alch.id]).filter(sd => sd.count > 0).map(sd => `${sd.count}x ${sd.dram.name}`).join(', ')}
                             </div>
-                          )}
-                        </div>
-                      )}
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <button className="btn sm" onClick={() => clearStagedDrams(alch.id)}>Clear</button>
+                              <button className="btn sm plum" style={{ flex: 1 }} onClick={() => handleAnointElixir(alch.id)}>Anoint the Elixir</button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                  <button className="btn plum" onClick={startNewAlchemy}>Ignite New Alchemy</button>
+                </div>
+              </div>
+          </div>
+
+          {/* Row 4: The Stillroom & Harvest */}
+          <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            
+            <div>
+              <h3 style={{ fontSize: '1.5rem', justifyContent: 'center' }}>The Stillroom</h3>
+              <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Raw botanicals and carrier oils.</div>
+              {stillroomItems.length === 0 ? (
+                <div className="empty" style={{ padding: '1rem' }}>The stillroom is bare.</div>
+              ) : (
+                <div className="rites2">
+                  {stillroomItems.map(item => (
+                    <div key={item.id} className="act" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ color: 'var(--plum)' }}>{item.name}</div>
+                        <div style={{ fontSize: '0.75rem' }}>{item.brand} • {item.category}</div>
+                      </div>
+                      <div style={{ color: 'var(--gold)' }}>{item.weight ? `${item.weight}g` : ''}</div>
                     </div>
                   ))}
-                  <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                    <button className="btn plum" onClick={startNewAlchemy}>Ignite New Alchemy</button>
-                  </div>
                 </div>
-
-              <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Stillroom</h3>
-                <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Raw botanicals and carrier oils.</div>
-                {stillroomItems.length === 0 ? (
-                  <div className="empty" style={{ padding: '1rem' }}>The stillroom is bare.</div>
-                ) : (
-                  <div className="rites2">
-                    {stillroomItems.map(item => (
-                      <div key={item.id} className="act" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem' }}>
-                        <div style={{ textAlign: 'center' }}>
-                          <div style={{ color: 'var(--plum)' }}>{item.name}</div>
-                          <div style={{ fontSize: '0.75rem' }}>{item.brand} • {item.category}</div>
-                        </div>
-                        <div style={{ color: 'var(--gold)' }}>{item.weight ? `${item.weight}g` : ''}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* The Harvest */}
-              <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
-                <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Harvest <SpeakerButton text="The Harvest" /></h3>
-                <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Dose tracking for infused honey.</div>
-                
-                <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-                  <div>
-                    <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--plum)' }}>Potency</div>
-                    <input 
-                      type="number" 
-                      value={thcStrength}
-                      onChange={e => setThcStrength(Number(e.target.value))}
-                      style={{ width: '80px', textAlign: 'center', padding: '0.5rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }}
-                    />
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--dim)' }}>mg per ml</div>
-                  </div>
-                  <div>
-                    <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--plum)' }}>Imbibed</div>
-                    <input 
-                      type="number" 
-                      value={thcDose}
-                      onChange={e => setThcDose(Number(e.target.value))}
-                      style={{ width: '80px', textAlign: 'center', padding: '0.5rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }}
-                    />
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--dim)' }}>ml</div>
-                  </div>
-                </div>
-                
-                <div style={{ marginBottom: '1rem' }}>
-                  <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--gold)' }}>{thcTotal} mg</div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--dim)' }}>Total Essence</div>
-                </div>
-                <button className="btn plum" onClick={appendThcNote}>Record Harvest</button>
-              </div>
-
-              <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
-                <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Alchemist's Scale</h3>
-                <button className="btn mt-3" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowDramModal(true)}>
-                  <Icon name="plus" /> Consecrate New Dram
-                </button>
-              </div>
-
-              
+              )}
             </div>
 
-  <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
-              <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* The Harvest */}
+            <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
+              <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Harvest <SpeakerButton text="The Harvest" /></h3>
+              <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Dose tracking for infused honey.</div>
+              
+              <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                 <div>
-                  <h3 style={{ fontSize: '1.2rem', margin: 0, justifyContent: 'center' }}>The Ethereal Breath <SpeakerButton text="The Ethereal Breath" /></h3>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--dim)', marginTop: '0.5rem', marginBottom: '1rem', textAlign: 'center' }}>
-                    {isBreathing ? breathInst : (readiness === 'low' ? '4-4-4-4 Box Breathing' : '4-7-8 Spirit Calming')}
-                  </div>
+                  <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--plum)' }}>Potency</div>
+                  <input 
+                    type="number" 
+                    value={thcStrength}
+                    onChange={e => setThcStrength(Number(e.target.value))}
+                    style={{ width: '80px', textAlign: 'center', padding: '0.5rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }}
+                  />
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--dim)' }}>mg per ml</div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {isBreathing && (
-                    <button 
-                      className="btn" 
-                      onClick={cancelMeditation} 
-                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}
-                    >
-                      Cease
-                    </button>
-                  )}
-                  <button 
-                    className="btn plum" 
-                    onClick={startMeditation} 
-                    disabled={isBreathing}
-                    style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', opacity: isBreathing ? 0.5 : 1 }}
-                  >
-                    {isBreathing ? 'Inhaling...' : 'Begin'}
-                  </button>
+                <div>
+                  <div style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--plum)' }}>Imbibed</div>
+                  <input 
+                    type="number" 
+                    value={thcDose}
+                    onChange={e => setThcDose(Number(e.target.value))}
+                    style={{ width: '80px', textAlign: 'center', padding: '0.5rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }}
+                  />
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--dim)' }}>ml</div>
                 </div>
               </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--gold)' }}>{thcTotal} mg</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--dim)' }}>Total Essence</div>
+              </div>
+              <button className="btn plum" onClick={appendThcNote}>Record Harvest</button>
+            </div>
+
+            <div style={{ marginTop: '2rem', borderTop: '1px dashed var(--border)', paddingTop: '1.5rem', textAlign: 'center' }}>
+              <h3 style={{ fontSize: '1.2rem', justifyContent: 'center' }}>The Alchemist's Scale</h3>
+              <button className="btn mt-3" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowDramModal(true)}>
+                <Icon name="plus" /> Consecrate New Dram
+              </button>
             </div>
           </div>
 

@@ -6,7 +6,7 @@ import Icon from '../components/Icon.jsx';
 import VoiceInput from '../components/VoiceInput.jsx';
 import { useDialog } from '../components/Dialogs.jsx';
 import { attachVoice } from '../lib/voice.js';
-import { buildBaseRoutines } from '../lib/routine-engine.js';
+import { buildBaseRoutines, isShadowTomeItem } from '../lib/routine-engine.js';
 import SpeakerButton from '../components/SpeakerButton.jsx';
 
 export default function Rootwork({ pose }) {
@@ -125,7 +125,7 @@ export default function Rootwork({ pose }) {
   const ebbing = items.filter(i => i.lifecycle_state === 'ebbing' || i.lifecycle_state === 'hollow');
   const banished = items.filter(i => i.lifecycle_state === 'banished');
   const enrichedApothecary = items
-    .filter(i => (i.item_type === 'consumable' || i.item_type === 'composite') && !['ebbing', 'hollow', 'banished'].includes(i.lifecycle_state))
+    .filter(i => (i.item_type === 'consumable' || i.item_type === 'composite') && !['ebbing', 'hollow', 'banished'].includes(i.lifecycle_state) && !isShadowTomeItem(i))
     .map(i => {
       let expiryPAO = null;
       let expiryShelf = null;
@@ -158,7 +158,7 @@ export default function Rootwork({ pose }) {
 
   const apothecaryActive = enrichedApothecary.filter(i => !i.is_waning && !i.is_expired);
   const waningItems = enrichedApothecary.filter(i => i.is_waning || i.is_expired);
-  const arsenal = items.filter(i => i.item_type === 'arsenal' && !['ebbing', 'hollow', 'banished'].includes(i.lifecycle_state));
+  const arsenal = items.filter(i => i.item_type === 'tool' && !['ebbing', 'hollow', 'banished'].includes(i.lifecycle_state) && !isShadowTomeItem(i));
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
@@ -639,7 +639,7 @@ export default function Rootwork({ pose }) {
       name: p.name || 'Unknown',
       brand: p.brand || 'Unknown',
       domain: p.domain || 'Visage',
-      primary_category: p.category || null,
+      category: p.category || null,
       item_type: p.item_type,
       lifecycle_state: 'stocked',
       price: p.price || null,
