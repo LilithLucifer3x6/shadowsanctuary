@@ -204,20 +204,3 @@
 body.tts-disabled .spk { display: none !important; }
 
 .card h3 + div { text-align: center; }
-/* Responsive background sizing: cover on mobile (close to 9:16), contain on desktop */
-@media (max-width: 768px) {
-  body {
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center top;
-    background-color: #0b090e;
-  }
-}
-@media (min-width: 769px) {
-  body {
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: #0b090e;
-  }
-}
