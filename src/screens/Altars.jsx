@@ -260,13 +260,14 @@ export default function Altars({ pose }) {
           <h3 style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', margin: 0, textAlign: 'center' }}>The {displayedAltar}</h3>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <SpeakerButton text={`The ${displayedAltar}`} />
-            <button 
-              className={`btn ${lesserRites[activeAltarId] ? 'plum' : 'g'}`} 
+            <button
+              className={`btn ${lesserRites[activeAltarId] ? 'plum' : 'g'}`}
               onClick={() => setLesserRites(prev => ({...prev, [activeAltarId]: !prev[activeAltarId]}))}
-            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}
-          >
-            {lesserRites[activeAltarId] ? 'Full' : 'Lesser'}
-          </button>
+              style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}
+            >
+              {lesserRites[activeAltarId] ? 'Full' : 'Lesser'}
+            </button>
+          </div>
         </div>
         {renderAltarContent()}
       </div>

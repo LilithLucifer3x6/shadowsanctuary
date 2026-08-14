@@ -838,9 +838,10 @@ export default function ShadowTome({ pose }) {
                 </div>
               </div>
           </div>
+        </div>
+      </div>
 
-
-          {/* Tea Scanner Modal */}
+      {/* Tea Scanner Modal */}
       {showTeaModal && (
         <div className="modal">
           <div className="modal-content card" style={{maxWidth: '500px'}}>
@@ -1028,7 +1029,8 @@ export default function ShadowTome({ pose }) {
 
           </div>
         </div>
-      )}</div>
+      )}
+    </div>
   );
 }
 
