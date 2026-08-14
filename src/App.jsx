@@ -20,12 +20,12 @@ import Scrying from './screens/Scrying.jsx';
 import ShadowTome from './screens/ShadowTome.jsx';
 
 const TABS = [
-  { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bg: '/assets/avatar-tests/part3_916_mortal_rites.png', pose: 'working' },
-  { id: 'grim', label: 'The Grimoire', glyph: G.tabGrim, bg: '/assets/avatar-tests/part3_916_grimoire.png', pose: 'reading' },
-  { id: 'altars', label: 'The Altars', glyph: G.tabAltars, bg: '/assets/avatar-tests/part3_916_altars.png', pose: 'meditating' },
-  { id: 'root', label: 'The Rootwork', glyph: G.tabRoot, bg: '/assets/avatar-tests/part3_916_rootwork.png', pose: 'working' },
-  { id: 'pool', label: 'The Scrying Pool', glyph: G.tabPool, bg: '/assets/avatar-tests/part3_916_scrying_pool.png', pose: 'scrying' },
-  { id: 'tome', label: 'The Shadow Tome', glyph: G.tabTome, bg: '/assets/avatar-tests/part3_916_shadow_tome.png', pose: 'reading' }
+  { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bg: '/assets/avatar-tests/part5_169_action_mortal_rites.png', pose: 'working' },
+  { id: 'grim', label: 'The Grimoire', glyph: G.tabGrim, bg: '/assets/avatar-tests/part5_169_action_grimoire.png', pose: 'reading' },
+  { id: 'altars', label: 'The Altars', glyph: G.tabAltars, bg: '/assets/avatar-tests/part5_169_action_altars.png', pose: 'meditating' },
+  { id: 'root', label: 'The Rootwork', glyph: G.tabRoot, bg: '/assets/avatar-tests/part5_169_action_rootwork.png', pose: 'working' },
+  { id: 'pool', label: 'The Scrying Pool', glyph: G.tabPool, bg: '/assets/avatar-tests/part5_169_action_scrying_pool.png', pose: 'scrying' },
+  { id: 'tome', label: 'The Shadow Tome', glyph: G.tabTome, bg: '/assets/avatar-tests/part5_169_action_shadow_tome.png', pose: 'reading' }
 ];
 
 function getSpellDate() {
@@ -272,7 +272,7 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="land" style={{ backgroundImage: 'url("/assets/app_bg.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)' }} />
         <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
           <div className="tag" style={{ textShadow: '1px 1px 0 #0b090e, 0 4px 15px rgba(0,0,0,1)', color: 'var(--plum)', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)', padding: '0.6rem', display: 'inline-block' }}>Consulting the wards...</div>
@@ -283,7 +283,7 @@ export default function App() {
 
   if (!session?.user || session.user.id === 'dummy') {
     return (
-      <div className="land" style={{ backgroundImage: 'url("/assets/app_bg.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }}></div>
         <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '2rem', maxWidth: '400px', width: '90%' }}>
           <h1 style={{ fontSize: 'clamp(2rem, 10vw, 3.5rem)', textShadow: '2px 2px 0 #0b090e, -1px -1px 0 #0b090e, 1px -1px 0 #0b090e, -1px 1px 0 #0b090e, 0 8px 30px rgba(0,0,0,1)', color: 'var(--plum)', margin: '0 0 0.5rem 0' }}>
@@ -630,4 +630,5 @@ export default function App() {
     </>
   );
 }
+
 
