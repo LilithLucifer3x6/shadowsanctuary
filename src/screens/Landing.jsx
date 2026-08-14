@@ -67,9 +67,6 @@ export default function Landing({ onProceed, onOpenAvatar }) {
 
           {!hasProfile ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-              <button className="btn plum" onClick={onOpenAvatar} style={{ fontSize: '1.2rem', padding: '0.8rem 2rem', width: '250px' }}>
-                <Icon name="ph-user" /> Conjure Your Visage
-              </button>
               <button className="btn" onClick={() => onProceed(false)} style={{ fontSize: '1.2rem', padding: '0.8rem 2rem', width: '250px' }}>
                 <Icon name={G.sparkles || 'sparkles'} /> The First Inscription
               </button>
@@ -87,4 +84,5 @@ export default function Landing({ onProceed, onOpenAvatar }) {
     </div>
   );
 }
+
 
