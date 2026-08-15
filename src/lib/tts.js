@@ -62,7 +62,7 @@ export function createSpeakerButton(text) {
   btn.type = 'button';
   btn.className = 'spk';
   
-  import('./custom-icons.js').then(({ ic }) => {
+  import('./custom-icons.jsx').then(({ ic }) => {
     btn.innerHTML = ic('speaker-high');
   });
   

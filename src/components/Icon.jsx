@@ -1,5 +1,5 @@
 import React from 'react';
-import { ic } from '../lib/custom-icons.js';
+import { ic } from '../lib/custom-icons.jsx';
 
 export default function Icon({ name, ...props }) {
   if (!name) return null;
