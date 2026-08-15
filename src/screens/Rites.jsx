@@ -349,7 +349,12 @@ export default function Rites({ pose }) {
     const isoButtons = isIso ? (
       <div style={{ display: 'flex', gap: '0.6rem', flexShrink: 0, justifyContent: 'center', marginTop: '0.6rem', width: '100%' }}>
         {checkedIds.has(item.id) || checkedIds.has('iso-missed') ? (
-          <span style={{color:'var(--silver)', fontSize:'0.9rem', fontWeight: 'bold'}}>{checkedIds.has(item.id) ? 'Taken' : 'Missed'}</span>
+          <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
+            <span style={{color:'var(--silver)', fontSize:'0.9rem', fontWeight: 'bold'}}>{checkedIds.has(item.id) ? 'Taken' : 'Missed'}</span>
+            <button className="btn sm" style={{ background: 'transparent', border: '1px solid var(--dim)', color: 'var(--dim)' }} onClick={() => handleCheck(checkedIds.has(item.id) ? item.id : 'iso-missed')} title="Undo Log">
+              <Icon name="ph-arrow-counter-clockwise" /> Undo
+            </button>
+          </div>
         ) : (
           <>
             <button className="btn plum" style={{padding:'0.4rem 0.9rem', fontSize:'0.85rem'}} onClick={() => handleIsoCheck(item.id, true)}>Took {item.expectedDose}mg</button>

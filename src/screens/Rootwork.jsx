@@ -828,8 +828,15 @@ export default function Rootwork({ pose }) {
       <div className="rootwork-grid mt-4" style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
         <div className="card mb-4" style={{ marginBottom: 0, width: '100%', gridColumn: '1', height: 'fit-content' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem' }}>The Echo <SpeakerButton text="The Echo" /></h3>
-            <div className="mt mb-4" style={{ textAlign: 'center' }}>Unveil the hidden resonance of the relic.</div>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+              <div>
+                <h3 style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', margin: 0 }}>The Echo <SpeakerButton text="The Echo" /></h3>
+                <div className="mt mb-4" style={{ marginTop: '0.5rem' }}>Unveil the hidden resonance of the relic.</div>
+              </div>
+              <button className="btn sm" style={{whiteSpace: 'nowrap', flexShrink: 0}} onClick={() => setEchoMode(echoMode === 'photo' ? 'manual' : 'photo')} title="Toggle Method">
+                {echoMode === 'photo' ? 'Summon by Hand' : 'Offer Image(s)'}
+              </button>
+            </div>
             
             {echoMode === 'photo' && (
               <div className="field" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -873,7 +880,7 @@ export default function Rootwork({ pose }) {
           </div>
         <div className="card mb-4" style={{ marginBottom: 0, alignSelf: 'start', width: '100%', gridColumn: '2', gridRow: '1 / span 3' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem' }}>The Silver Toll <SpeakerButton text="The Silver Toll" /></h3>
+            <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'break-word' }}>The Silver Toll <SpeakerButton text="The Silver Toll" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>The material cost of your active rituals, tied to frequency of devotion.</div>
             {(() => {
               const DOMAINS = ['Crown', 'Visage', 'Gaze', 'Grin', 'Vessel', 'Veil'];
