@@ -818,7 +818,7 @@ export default function Rootwork({ pose }) {
         </div>
       </div>
 
-      <div className="tome-grid mt-4" style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+      <div className="rootwork-grid mt-4" style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
         <div className="card mb-4" style={{ marginBottom: 0, width: '100%' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem' }}>The Echo <SpeakerButton text="The Echo" /></h3>
