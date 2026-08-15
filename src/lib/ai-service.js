@@ -139,6 +139,49 @@ export async function generateSkinTypes() {
   ];
 }
 
+export async function generateScalpTypes() {
+  try {
+    const { data } = await invokeAnthropicProxy({
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: 'Generate exactly 4 scalp types: Oily, Dry, Balanced, Sensitive. Return ONLY a valid JSON array of strings.' }]
+    });
+    if (data?.content?.[0]?.text) {
+      const text = data.content[0].text;
+      const jsonStart = text.indexOf('[');
+      const jsonEnd = text.lastIndexOf(']') + 1;
+      const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
+      return parsed.map(label => ({ id: label.toLowerCase().replace(/[^a-z0-9]/g, '-'), label }));
+    }
+  } catch (err) { console.error("AI scalp types failed", err); }
+  return [
+    { id: 'oily', label: 'Oily' },
+    { id: 'dry', label: 'Dry' },
+    { id: 'balanced', label: 'Balanced' },
+    { id: 'sensitive', label: 'Sensitive' }
+  ];
+}
+
+export async function generatePorosity() {
+  try {
+    const { data } = await invokeAnthropicProxy({
+      max_tokens: 1024,
+      messages: [{ role: 'user', content: 'Generate exactly 3 hair porosity levels: Low Porosity, Medium Porosity, High Porosity. Return ONLY a valid JSON array of strings.' }]
+    });
+    if (data?.content?.[0]?.text) {
+      const text = data.content[0].text;
+      const jsonStart = text.indexOf('[');
+      const jsonEnd = text.lastIndexOf(']') + 1;
+      const parsed = JSON.parse(text.substring(jsonStart, jsonEnd));
+      return parsed.map(label => ({ id: label.toLowerCase().replace(/[^a-z0-9]/g, '-'), label }));
+    }
+  } catch (err) { console.error("AI porosity failed", err); }
+  return [
+    { id: 'low', label: 'Low Porosity' },
+    { id: 'medium', label: 'Medium Porosity' },
+    { id: 'high', label: 'High Porosity' }
+  ];
+}
+
 export async function generateTextures() {
   try {
     const { data } = await invokeAnthropicProxy({

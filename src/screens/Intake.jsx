@@ -6,22 +6,30 @@ import SpeakerButton from '../components/SpeakerButton.jsx';
 import * as AI from '../lib/ai-service.js';
 import Icon from '../components/Icon.jsx';
 import { G } from '../lib/icons.jsx';
+import { SkinQuiz, ScalpQuiz, PorosityQuiz } from '../components/AssessmentQuizzes.jsx';
 
 import VoiceInput from '../components/VoiceInput.jsx';
 
 export default function Intake({ onComplete }) {
   const [path, setPath] = useState('ai');
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 9;
+  const totalSteps = 11;
 
   // Fast Path State
   const [skinTypesOptions, setSkinTypesOptions] = useState([]);
+  const [scalpTypesOptions, setScalpTypesOptions] = useState([]);
+  const [porosityOptions, setPorosityOptions] = useState([]);
   const [concernsOptions, setConcernsOptions] = useState([]);
   const [conditionsOptions, setConditionsOptions] = useState([]);
   const [traditionsOptions, setTraditionsOptions] = useState([]);
   const [texturesOptions, setTexturesOptions] = useState([]);
   
   const [selectedSkinType, setSelectedSkinType] = useState('');
+  const [selectedScalpType, setSelectedScalpType] = useState('');
+  const [selectedPorosity, setSelectedPorosity] = useState('');
+  const [showSkinQuiz, setShowSkinQuiz] = useState(false);
+  const [showScalpQuiz, setShowScalpQuiz] = useState(false);
+  const [showPorosityQuiz, setShowPorosityQuiz] = useState(false);
   const [selectedConcerns, setSelectedConcerns] = useState([]);
   const [primaryConcern, setPrimaryConcern] = useState('');
   const [selectedConditions, setSelectedConditions] = useState([]);
@@ -57,6 +65,8 @@ export default function Intake({ onComplete }) {
         if (data.intake_answers) {
           const ans = data.intake_answers;
         if (ans.skinType) setSelectedSkinType(ans.skinType);
+        if (ans.scalpType) setSelectedScalpType(ans.scalpType);
+        if (ans.hairPorosity) setSelectedPorosity(ans.hairPorosity);
         if (ans.concerns) setSelectedConcerns(ans.concerns);
         if (ans.primaryConcern) setPrimaryConcern(ans.primaryConcern);
         if (ans.conditions) setSelectedConditions(ans.conditions);
@@ -73,7 +83,7 @@ export default function Intake({ onComplete }) {
         // If they already completed it but are just missing the date, jump to step 4
         if (ans.oralList && ans.oralList.some(m => m.toLowerCase().includes('isotretinoin') || m.toLowerCase().includes('accutane')) && !ans.prescription_start_date) {
             setPath('fast');
-            setCurrentStep(4);
+            setCurrentStep(6);
         }
         }
       }
@@ -82,6 +92,8 @@ export default function Intake({ onComplete }) {
 
   useEffect(() => {
     AI.generateSkinTypes().then(setSkinTypesOptions);
+    AI.generateScalpTypes().then(setScalpTypesOptions);
+    AI.generatePorosity().then(setPorosityOptions);
     AI.generateConcerns().then(setConcernsOptions);
     AI.generateConditions().then(setConditionsOptions);
     AI.generateTextures().then(setTexturesOptions);
@@ -152,6 +164,8 @@ export default function Intake({ onComplete }) {
       intake_completed: true,
       intake_answers: { 
         skinType: selectedSkinType,
+        scalpType: selectedScalpType,
+        hairPorosity: selectedPorosity,
         concerns: selectedConcerns, 
         primaryConcern,
         conditions: selectedConditions, 
@@ -180,13 +194,15 @@ export default function Intake({ onComplete }) {
 
   const canProceed = () => {
     if (currentStep === 1) return selectedSkinType !== '';
-    if (currentStep === 2) return selectedConcerns.length > 0 && (selectedConcerns.includes('relaxation') || selectedConcerns.includes('na') || primaryConcern !== '');
-    if (currentStep === 4) return selectedConditions.length > 0;
-    if (currentStep === 5) return selectedTextures.length > 0;
-    if (currentStep === 6) return noRx || rxList.some(r => r.name.trim() !== '');
-    if (currentStep === 7) return noOral || oralList.some(o => o.trim() !== '');
-    if (currentStep === 8) return noAlg || algList.length > 0 || newAlg.trim() !== '';
-    if (currentStep === 9) return selectedTraditions.length > 0;
+    if (currentStep === 2) return selectedScalpType !== '';
+    if (currentStep === 3) return selectedPorosity !== '';
+    if (currentStep === 4) return selectedConcerns.length > 0 && (selectedConcerns.includes('relaxation') || selectedConcerns.includes('na') || primaryConcern !== '');
+    if (currentStep === 6) return selectedConditions.length > 0;
+    if (currentStep === 7) return selectedTextures.length > 0;
+    if (currentStep === 8) return noRx || rxList.some(r => r.name.trim() !== '');
+    if (currentStep === 9) return noOral || oralList.some(o => o.trim() !== '');
+    if (currentStep === 10) return noAlg || algList.length > 0 || newAlg.trim() !== '';
+    if (currentStep === 11) return selectedTraditions.length > 0;
     return true;
   };
 
@@ -333,21 +349,72 @@ export default function Intake({ onComplete }) {
             <div className="ins-step">
               {renderTitle('The Foundation of the Vessel')}
               <div className="mt">Which best describes your skin\'s natural state?</div>
-              <div className="chips">
-                {skinTypesOptions.length > 0 ? skinTypesOptions.map(st => (
-                  <div 
-                    key={st.id}
-                    className={`chip ${selectedSkinType === st.id ? 'on' : ''}`}
-                    onClick={() => setSelectedSkinType(st.id)}
-                  >
-                    {st.label}
-                  </div>
-                )) : <div style={{ opacity: 0.5 }}>Divining skin types...</div>}
-              </div>
+              {showSkinQuiz ? (
+                <SkinQuiz onComplete={(res) => { setSelectedSkinType(res); setShowSkinQuiz(false); }} />
+              ) : (
+                <div className="chips">
+                  {skinTypesOptions.length > 0 ? skinTypesOptions.map(st => (
+                    <div 
+                      key={st.id}
+                      className={`chip ${selectedSkinType === st.id ? 'on' : ''}`}
+                      onClick={() => setSelectedSkinType(st.id)}
+                    >
+                      {st.label}
+                    </div>
+                  )) : <div style={{ opacity: 0.5 }}>Divining skin types...</div>}
+                  <div className="chip" style={{ borderStyle: 'dashed' }} onClick={() => setShowSkinQuiz(true)}>Help me divine this</div>
+                </div>
+              )}
             </div>
           )}
 
           {currentStep === 2 && (
+            <div className="ins-step">
+              {renderTitle('The Crown\'s Terrain')}
+              <div className="mt">How would you describe your scalp\'s natural state?</div>
+              {showScalpQuiz ? (
+                <ScalpQuiz onComplete={(res) => { setSelectedScalpType(res); setShowScalpQuiz(false); }} />
+              ) : (
+                <div className="chips">
+                  {scalpTypesOptions.length > 0 ? scalpTypesOptions.map(st => (
+                    <div 
+                      key={st.id}
+                      className={`chip ${selectedScalpType === st.id ? 'on' : ''}`}
+                      onClick={() => setSelectedScalpType(st.id)}
+                    >
+                      {st.label}
+                    </div>
+                  )) : <div style={{ opacity: 0.5 }}>Divining scalp types...</div>}
+                  <div className="chip" style={{ borderStyle: 'dashed' }} onClick={() => setShowScalpQuiz(true)}>Help me divine this</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentStep === 3 && (
+            <div className="ins-step">
+              {renderTitle('The Thirst of the Strands')}
+              <div className="mt">What is your hair\'s porosity level?</div>
+              {showPorosityQuiz ? (
+                <PorosityQuiz onComplete={(res) => { setSelectedPorosity(res); setShowPorosityQuiz(false); }} />
+              ) : (
+                <div className="chips">
+                  {porosityOptions.length > 0 ? porosityOptions.map(st => (
+                    <div 
+                      key={st.id}
+                      className={`chip ${selectedPorosity === st.id ? 'on' : ''}`}
+                      onClick={() => setSelectedPorosity(st.id)}
+                    >
+                      {st.label}
+                    </div>
+                  )) : <div style={{ opacity: 0.5 }}>Divining porosity...</div>}
+                  <div className="chip" style={{ borderStyle: 'dashed' }} onClick={() => setShowPorosityQuiz(true)}>Help me divine this</div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentStep === 4 && (
             <div className="ins-step">
               {renderTitle('What brings you to this place?')}
               <div className="mt mb-4">Select all that weigh upon you. <strong>Double-tap one to mark it as your Primary focus.</strong></div>
@@ -387,7 +454,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 3 && (
+          {currentStep === 5 && (
             <div className="ins-step">
               {renderTitle('The Visual Inscription')}
               <VisualInscription 
@@ -408,7 +475,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 6 && (
             <div className="ins-step">
               {renderTitle('What must the Lounge protect?')}
               <div className="mt">Conditions that shape how you care for yourself. Be sure to include systemic, scalp, or full-body conditions.</div>
@@ -438,7 +505,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 5 && (
+          {currentStep === 7 && (
             <div className="ins-step">
               {renderTitle('Sensory Preferences')}
               <div className="mt">What product formats and textures do you prefer to apply?</div>
@@ -468,7 +535,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 6 && (
+          {currentStep === 8 && (
             <div className="ins-step">
               {renderTitle('Sacred Healing Directives (Topical Decrees)')}
               <div className="mt mb-4">Potent formulas prescribed by healers. These take priority in all routines.</div>
@@ -511,7 +578,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 7 && (
+          {currentStep === 9 && (
             <div className="ins-step">
               {renderTitle('Medical Directives (Oral)')}
               <div className="mt mb-4">Internal remedies that may cause systemic shifts.</div>
@@ -543,7 +610,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 8 && (
+          {currentStep === 10 && (
             <div className="ins-step">
               {renderTitle('The ingredients to never touch')}
               <div className="mt mb-4">Allergies and sensitivities.</div>
@@ -578,7 +645,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 9 && (
+          {currentStep === 11 && (
             <div className="ins-step">
               {renderTitle('Which traditions call to you?')}
               <div className="mt">Your preferred approaches to care.</div>
@@ -608,7 +675,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
 
-          {currentStep === 9 && (
+          {currentStep === 11 && (
             <div className="ins-step" style={{ textAlign: 'center', margin: 'auto' }}>
               <h3 style={{ fontSize: '3rem', color: 'var(--plum)' }}>The First Inscription is consecrated</h3>
               <div className="mt" style={{ fontSize: '1.2rem', marginTop: '2rem' }}>Your chamber awaits.</div>
@@ -622,8 +689,8 @@ export default function Intake({ onComplete }) {
           <button 
             className="btn" 
             onClick={() => {
-                if (currentStep === 5 && selectedConcerns.includes('relaxation')) {
-                  setCurrentStep(2);
+                if (currentStep === 7 && selectedConcerns.includes('relaxation')) {
+                  setCurrentStep(4);
                 } else {
                 setCurrentStep(prev => Math.max(1, prev - 1));
               }
@@ -656,8 +723,8 @@ export default function Intake({ onComplete }) {
             disabled={!canProceed()}
             style={{ opacity: canProceed() ? 1 : 0.5, cursor: canProceed() ? 'pointer' : 'not-allowed' }}
             onClick={() => {
-                if (currentStep === 2 && selectedConcerns.includes('relaxation')) {
-                  setCurrentStep(5); // Skip visual and conditions
+                if (currentStep === 4 && selectedConcerns.includes('relaxation')) {
+                  setCurrentStep(7); // Skip visual and conditions
                 } else if (currentStep < totalSteps) {
                 setCurrentStep(prev => prev + 1);
               } else {
