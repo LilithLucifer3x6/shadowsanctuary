@@ -1,56 +1,69 @@
-const puppeteer = require('puppeteer');
+const { chromium } = require('playwright');
+async function run() {
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext();
+    const page = await context.newPage();
 
-(async () => {
-  const browser = await puppeteer.launch({ headless: 'new' });
-  const page = await browser.newPage();
-  page.on('console', msg => console.log('LOG:', msg.text()));
-  page.on('pageerror', err => console.log('ERROR:', err.message));
-  
-  await page.goto('http://localhost:5173/');
+    page.on('console', msg => {
+        if (msg.type() === 'error') {
+            console.log(`[BROWSER ERROR] ${msg.text()}`);
+        } else if (msg.type() === 'warning') {
+            // ignore
+        } else {
+            console.log(`[BROWSER LOG] ${msg.text()}`);
+        }
+    });
+    page.on('pageerror', error => {
+        console.log(`[UNCAUGHT PAGE ERROR] ${error.message}`);
+    });
 
-  await page.waitForSelector('input[type="email"]', { timeout: 10000 });
-  await page.type('input[type="email"]', 'test-automation@shadowsanctuary.local');
-  await page.type('input[type="password"]', 'TestPassword123!');
-  await page.evaluate(() => document.querySelector('form button').click());
-  await new Promise(r => setTimeout(r, 2000));
-  
-  await page.evaluate(() => {
-      localStorage.setItem('intake_completed', 'true');
-      sessionStorage.setItem('al_currentScreen', 'app');
-  });
-  await page.goto('http://localhost:5173/');
-  await new Promise(r => setTimeout(r, 2000));
+    try {
+        console.log('Navigating to http://localhost:5173...');
+        await page.goto('http://localhost:5173');
+        await page.waitForLoadState('networkidle');
 
-  await page.evaluate(() => {
-      const tabs = Array.from(document.querySelectorAll('.tabs button'));
-      const stTab = tabs.find(t => t.textContent.includes('Tome'));
-      if (stTab) stTab.click();
-  });
-  await new Promise(r => setTimeout(r, 1000));
+        console.log('Clicking "The First Inscription" to open login modal...');
+        await page.locator('button', { hasText: 'The First Inscription' }).click();
+        await page.waitForTimeout(1000);
 
-  console.log("Clicking Ignite New Alchemy...");
-  await page.evaluate(() => {
-      const btns = Array.from(document.querySelectorAll('button'));
-      const btn = btns.find(b => b.textContent.includes('Ignite New Alchemy'));
-      if (btn) btn.click();
-  });
-  await new Promise(r => setTimeout(r, 1000));
-  
-  console.log("Checking if Modal opened...");
-  const modalVisible = await page.evaluate(() => !!document.querySelector('.modal'));
-  console.log("Modal Visible:", modalVisible);
+        console.log('Logging in as playwright_tester_99@gmail.com...');
+        await page.fill('#login-email', 'playwright_tester_99@gmail.com');
+        await page.fill('#login-password', 'realtestpassword123');
+        await page.click('button[type="submit"]');
+        
+        await page.waitForTimeout(3000);
 
-  console.log("Clicking Record Harvest...");
-  await page.evaluate(() => {
-      const btns = Array.from(document.querySelectorAll('button'));
-      const btn = btns.find(b => b.textContent.includes('Record Harvest'));
-      if (btn) btn.click();
-  });
-  await new Promise(r => setTimeout(r, 1000));
+        const continueBtn = await page.locator('button', { hasText: 'Continue to the Sanctuary' }).count();
+        if (continueBtn > 0) {
+            console.log('Bypassing Avatar Customizer...');
+            await page.locator('button', { hasText: 'Continue to the Sanctuary' }).first().click();
+            await page.waitForTimeout(2000);
+        }
 
-  console.log("Checking Entry Text Box...");
-  const entryText = await page.evaluate(() => document.querySelector('#tome-history textarea')?.value || '');
-  console.log("Entry Text Box contains:", entryText.substring(0, 50) + "...");
+        console.log('Switching to Shadow Tome...');
+        await page.evaluate(() => {
+            const tabs = document.querySelectorAll('.tabs button');
+            if(tabs[3]) tabs[3].click();
+        });
+        await page.waitForTimeout(2000);
 
-  await browser.close();
-})();
+        console.log('\n--- CLICKING BUTTONS ---');
+        
+        await page.evaluate(() => {
+            const btns = Array.from(document.querySelectorAll('button'));
+            const b = btns.find(x => x.textContent.includes('Ignite New Alchemy'));
+            if (b) {
+                console.log('Clicking Ignite New Alchemy via JS');
+                b.click();
+            } else console.log('[BROWSER ERROR] Ignite New Alchemy not found');
+        });
+        await page.waitForTimeout(1000);
+
+        console.log('\n--- TEST COMPLETE ---');
+    } catch (e) {
+        console.error('Test script crashed:', e);
+    } finally {
+        await browser.close();
+    }
+}
+run();

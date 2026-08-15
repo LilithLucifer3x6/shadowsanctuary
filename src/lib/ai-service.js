@@ -5,7 +5,7 @@ import { invokeAnthropicProxy } from './ai-engine.js';
 export async function generateConcerns() {
   try {
     const { data } = await invokeAnthropicProxy({
-      max_tokens: 300,
+      max_tokens: 1024,
       messages: [{ role: 'user', content: 'Generate exactly 15 highly varied and recognizable skin, body, or wellness concerns. IMPORTANT: Draw from global dermatological knowledge, not just Eurocentric sources. Explicitly include conditions presenting in melanated skin (e.g. Post-Inflammatory Hyperpigmentation, keloiding tendency). The first two items in your array MUST be hyperpigmentation or dark-spot related. Return ONLY a valid JSON array of strings.' }]
     });
     if (data?.content?.[0]?.text) {
@@ -36,7 +36,7 @@ export async function generateConcerns() {
 export async function generateConditions() {
   try {
     const { data } = await invokeAnthropicProxy({
-      max_tokens: 300,
+      max_tokens: 1024,
       messages: [{ role: 'user', content: 'Generate exactly 15 highly varied underlying health or neurodivergent conditions that shape self-care (e.g. ADHD, PCOS, Rheumatoid Arthritis, Keloids, Sickle Cell). Do not assume Eurocentric beauty or health standards. Return ONLY a valid JSON array of strings.' }]
     });
     if (data?.content?.[0]?.text) {
@@ -67,7 +67,7 @@ export async function generateConditions() {
 export async function generateTraditions() {
   try {
     const { data } = await invokeAnthropicProxy({
-      max_tokens: 300,
+      max_tokens: 1024,
       messages: [{ role: 'user', content: 'Generate exactly 15 highly varied cosmetic product philosophies or traditions (e.g., "Western Clinical", "K-Beauty", "Ayurvedic Principles"). Return ONLY a valid JSON array of strings.' }]
     });
     if (data?.content?.[0]?.text) {
@@ -119,7 +119,7 @@ export async function generateMoods() {
 export async function generateSkinTypes() {
   try {
     const { data } = await invokeAnthropicProxy({
-      max_tokens: 300,
+      max_tokens: 1024,
       messages: [{ role: 'user', content: 'Generate exactly 10 descriptive skin types. The first 5 MUST be the standard Baumann clinical axes: Oily, Dry, Combination, Sensitive, Normal. The remaining 5 should be nuanced clinical subtypes (e.g. Dehydration-Prone Combination, Extremely Oily & Acneic). Return ONLY a valid JSON array of strings.' }]
     });
     if (data?.content?.[0]?.text) {
@@ -142,7 +142,7 @@ export async function generateSkinTypes() {
 export async function generateTextures() {
   try {
     const { data } = await invokeAnthropicProxy({
-      max_tokens: 300,
+      max_tokens: 1024,
       messages: [{ role: 'user', content: 'Generate exactly 12 descriptive cosmetic product textures or format preferences (e.g. "Water-light gels", "Heavy occlusives", "Silicone-free serums", "Powder cleansers"). Return ONLY a valid JSON array of strings.' }]
     });
     if (data?.content?.[0]?.text) {
@@ -164,7 +164,7 @@ export async function extractIngredients(text) {
   const apiKey = localStorage.getItem('al_anthropic_key') || '';
   try {
     const { data, error } = await invokeAnthropicProxy({
-        max_tokens: 512,
+        max_tokens: 1024,
         messages: [{ role: 'user', content: `Extract the skincare ingredients from the following text and return them as a JSON array of strings. Text: "${text}"` }]
     });
     if (error) throw error;
@@ -182,7 +182,7 @@ export async function evaluateTolerance(history) {
   const apiKey = localStorage.getItem('al_anthropic_key') || '';
   try {
     const { data, error } = await invokeAnthropicProxy({
-        max_tokens: 512,
+        max_tokens: 1024,
         messages: [{ role: 'user', content: `Evaluate the user's tolerance based on this history: ${JSON.stringify(history)}. Return a JSON object with "status" (tolerated, irritated, escalating) and "suggestion" (string).` }]
     });
     if (error) throw error;
@@ -215,7 +215,7 @@ Based on this, suggest any items that should be explicitly added to the morning 
 Return ONLY a JSON array of item IDs that you recommend adding to the AM routine. No other text.
 `;
     const { data, error } = await invokeAnthropicProxy({
-        max_tokens: 512,
+        max_tokens: 1024,
         messages: [{ role: 'user', content: promptText }]
     });
     
@@ -246,7 +246,7 @@ Otherwise, reply sympathetically and ask a clarifying question. Keep responses t
     const msgs = history.map(h => ({ role: h.role, content: h.text }));
 
     const { data, error } = await invokeAnthropicProxy({
-        max_tokens: 256,
+        max_tokens: 1024,
         system: promptText,
         messages: msgs.length > 0 ? msgs : [{ role: 'user', content: 'I am ready to proceed.' }]
     });
@@ -294,7 +294,7 @@ Current profile: ${JSON.stringify(userProfile?.intake_answers || {})}
         : [{ role: 'user', content: 'I am ready for the reading.' }, ...rawMsgs];
 
     const { data, error } = await invokeAnthropicProxy({
-        max_tokens: 300,
+        max_tokens: 1024,
         system: promptText,
         messages: msgs
     });

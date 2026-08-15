@@ -44,6 +44,7 @@ export default function Rootwork({ pose }) {
   const [echoInput, setEchoInput] = useState('');
   const [echoStatus, setEchoStatus] = useState('');
   const [echoResult, setEchoResult] = useState('');
+  const [echoMode, setEchoMode] = useState('photo');
 
   const handleAILookup = async () => {
     if (!seedForm.name.trim()) return;
@@ -240,26 +241,37 @@ export default function Rootwork({ pose }) {
   };
 
   const handleEchoPhotoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
     
-    setEchoStatus('Divining image...');
+    setEchoStatus(`Divining ${files.length} image(s)...`);
+    setEchoResult('');
     
     try {
-      const { parseProductImage, compressImage } = await import('../lib/ai-engine.js');
-      const dataUrl = await compressImage(file, 2048, 0.95);
-      const base64 = dataUrl.split(',')[1];
-      const mime = dataUrl.split(';')[0].split(':')[1];
+      const { parseProductImage, compressImage, evaluateScryingPool } = await import('../lib/ai-engine.js');
+      let combinedResults = '';
       
-      const details = await parseProductImage(base64, mime);
-        const formulaStr = `${details.brand || ''} ${details.name || ''} ${details.category || ''}`;
-        setEchoInput(formulaStr.trim());
-        setEchoStatus('Vision extracted. Divining...');
-        await handleEchoScry(formulaStr.trim());
-      } catch (err) {
-        console.error(err);
-        setEchoStatus('The vision was clouded. Offer image anew.');
+      for (let i = 0; i < files.length; i++) {
+        setEchoStatus(`Divining image ${i + 1} of ${files.length}...`);
+        const file = files[i];
+        const dataUrl = await compressImage(file, 2048, 0.95);
+        const base64 = dataUrl.split(',')[1];
+        const mime = dataUrl.split(';')[0].split(':')[1];
+        
+        const details = await parseProductImage(base64, mime);
+        const formulaStr = `${details.brand || ''} ${details.name || ''} ${details.category || ''}`.trim();
+        
+        setEchoStatus(`Vision extracted for ${formulaStr}. Divining resonance...`);
+        const reply = await evaluateScryingPool(formulaStr, profile?.intake_answers || {}, items, {});
+        
+        combinedResults += `**${formulaStr}**\n${reply}\n\n`;
+        setEchoResult(combinedResults);
       }
+      setEchoStatus('');
+    } catch (err) {
+      console.error(err);
+      setEchoStatus('The vision was clouded. Offer images anew.');
+    }
   };
 
 
@@ -549,18 +561,22 @@ export default function Rootwork({ pose }) {
     const match = reply.match(/\[BANISH_REASON:\s*(.*?)\]/);
     if (match) {
       const extractedReason = match[1];
-      setBanishState(prev => ({
-        ...prev, 
-        isTyping: false,
-        reason: extractedReason,
-        history: [...prev.history, { role: 'assistant', text: reply.replace(/\[BANISH_REASON:.*?\]/, '').trim() }]
-      }));
+      setBanishState(prev => {
+        return {
+          ...prev, 
+          isTyping: false,
+          reason: extractedReason,
+          history: [...prev.history, { role: 'assistant', text: reply.replace(/\[BANISH_REASON:.*?\]/, '').trim() }]
+        };
+      });
     } else {
-      setBanishState(prev => ({
-        ...prev, 
-        isTyping: false,
-        history: [...prev.history, { role: 'assistant', text: reply }]
-      }));
+      setBanishState(prev => {
+        return {
+          ...prev, 
+          isTyping: false,
+          history: [...prev.history, { role: 'assistant', text: reply }]
+        };
+      });
     }
   };
 
@@ -802,52 +818,55 @@ export default function Rootwork({ pose }) {
         </div>
       </div>
 
-      <div className="tome-grid mt-4" style={{ width: '100%' }}>
-        <div className="tome-main-col" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
+      <div className="tome-grid mt-4" style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        <div className="card mb-4" style={{ marginBottom: 0, width: '100%' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ justifyContent: 'center' }}>The Summoning Scroll <SpeakerButton text="The Summoning Scroll" /></h3>
-            <div className="mt mb-4" style={{ textAlign: 'center' }}>Items needing replenishment. Non-essential items wait for batches of 5.</div>
-            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {(() => {
-                if (ebbing.length === 0) return <div className="mt" style={{ textAlign: 'center' }}>No active summons.</div>;
-                
-                const essential = ebbing.filter(i => i.is_essential);
-                const nonEssential = ebbing.filter(i => !i.is_essential);
-                const readyNonEssential = nonEssential.length >= 5 ? nonEssential : [];
-                const pendingCount = nonEssential.length < 5 ? nonEssential.length : 0;
-                
-                const itemsToRender = [...essential, ...readyNonEssential];
-                
-                return (
-                  <>
-                    {itemsToRender.map(renderRow)}
-                    {pendingCount > 0 && (
-                      <div style={{ textAlign: 'center', color: 'var(--dim)', fontSize: '0.9rem', fontStyle: 'italic', marginTop: '1rem', padding: '1rem', borderTop: '1px dashed var(--border)' }}>
-                        {pendingCount} non-essential item{pendingCount > 1 ? 's are' : ' is'} ebbing and silently waiting for a batch of 5.
-                      </div>
-                    )}
-                    {itemsToRender.length === 0 && pendingCount === 0 && (
-                      <div className="mt" style={{ textAlign: 'center' }}>No active summons.</div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-          </div>
+            <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem' }}>The Echo <SpeakerButton text="The Echo" /></h3>
+            <div className="mt mb-4" style={{ textAlign: 'center' }}>Unveil the hidden resonance of the relic.</div>
+            
+            {echoMode === 'photo' && (
+              <div className="field" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', width: '100%', maxWidth: '300px'}}>
+                  <Icon name={G.tabPool} /> 
+                  <span style={{marginTop: '0.5rem', textAlign: 'center', fontSize: '0.9rem'}}>Offer Image(s)</span>
+                  <input type="file" multiple accept="image/*" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer'}} onChange={handleEchoPhotoUpload} />
+                </div>
+              </div>
+            )}
 
-          <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
-            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ justifyContent: 'center' }}>The Waning <SpeakerButton text="The Waning" /></h3>
-            <div className="mt mb-4" style={{ textAlign: 'center' }}>Relics nearing the end of their mortal potency.</div>
-            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {waningItems.length === 0 ? <div className="mt" style={{ textAlign: 'center' }}>All relics remain potent.</div> : waningItems.map(renderRow)}
+            {echoMode === 'manual' && (
+              <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
+                <div style={{ width: '100%' }}>
+                  <VoiceInput 
+                    isTextArea={true}
+                    placeholder="Speak the relic's true name..."
+                    value={echoInput}
+                    onChange={(e) => setEchoInput(e.target.value)}
+                    style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--plum)', fontSize: '1.1rem' }}
+                  />
+                </div>
+                <button className="btn plum" style={{ width: '100%' }} onClick={() => handleEchoScry(echoInput)} disabled={!echoInput}>
+                  Divine Resonance
+                </button>
+              </div>
+            )}
+            
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <button className="btn sm" onClick={() => setEchoMode(m => m === 'photo' ? 'manual' : 'photo')}>
+                {echoMode === 'photo' ? 'Divine by Hand' : 'Offer Image'}
+              </button>
             </div>
-          </div>
 
-          <div className="card mb-4" style={{ marginBottom: 0, alignSelf: 'start', width: '100%' }}>
+            {echoStatus && <div className="mt-2" style={{ color: 'var(--dim)', textAlign: 'center', fontStyle: 'italic' }}>{echoStatus}</div>}
+            {echoResult && (
+              <div style={{ marginTop: '1rem', fontSize: '1.1rem', lineHeight: 1.5, color: 'var(--plum)', whiteSpace: 'pre-wrap' }}>
+                {echoResult}
+              </div>
+            )}
+          </div>
+        <div className="card mb-4" style={{ marginBottom: 0, alignSelf: 'start', width: '100%' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ textAlign: 'center' }}>The Silver Toll <SpeakerButton text="The Silver Toll" /></h3>
+            <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem' }}>The Silver Toll <SpeakerButton text="The Silver Toll" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>The material cost of your active rituals, tied to frequency of devotion.</div>
             {(() => {
               const DOMAINS = ['Crown', 'Visage', 'Gaze', 'Grin', 'Vessel', 'Veil'];
@@ -901,45 +920,46 @@ export default function Rootwork({ pose }) {
               );
             })()}
           </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-          <div className="card mb-4" style={{ marginBottom: 0, width: '100%' }}>
+        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ justifyContent: 'center' }}>The Echo <SpeakerButton text="The Echo" /></h3>
-            <div className="mt mb-4" style={{ textAlign: 'center' }}>Unveil the hidden resonance of the relic.</div>
-            
-            <div className="field" style={{ marginBottom: '1rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <label>Divine by Visage</label>
-              <div style={{position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0.8rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', width: '200px'}}>
-                <Icon name={G.tabPool} /> 
-                <span style={{marginTop: '0.5rem', textAlign: 'center', fontSize: '0.9rem'}}>Offer an image</span>
-                <input type="file" accept="image/*" capture="environment" style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer'}} onChange={handleEchoPhotoUpload} />
-              </div>
-            </div>
-
-            <div className="field" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-              <div style={{ width: '100%' }}>
-                <VoiceInput 
-                  isTextArea={true}
-                  placeholder="Speak the relic's true name..."
-                  value={echoInput}
-                  onChange={(e) => setEchoInput(e.target.value)}
-                  style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--plum)', fontSize: '1.1rem' }}
-                />
-              </div>
-              <button className="btn plum" onClick={handleEchoScry} style={{ minWidth: '120px' }}>Divine</button>
-            </div>
-            <div style={{ marginTop: '0.5rem', fontSize: '1rem', color: 'var(--plum)', minHeight: '1rem', textAlign: 'center' }}>
-              {echoStatus}
-            </div>
-            <div style={{ marginTop: '1rem', fontSize: '1.1rem', lineHeight: 1.5, color: 'var(--plum)', whiteSpace: 'pre-wrap' }}>
-              {echoResult}
+            <h3 style={{ justifyContent: 'center' }}>The Summoning Scroll <SpeakerButton text="The Summoning Scroll" /></h3>
+            <div className="mt mb-4" style={{ textAlign: 'center' }}>Items needing replenishment. Non-essential items wait for batches of 5.</div>
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {(() => {
+                if (ebbing.length === 0) return <div className="mt" style={{ textAlign: 'center' }}>No active summons.</div>;
+                
+                const essential = ebbing.filter(i => i.is_essential);
+                const nonEssential = ebbing.filter(i => !i.is_essential);
+                const readyNonEssential = nonEssential.length >= 5 ? nonEssential : [];
+                const pendingCount = nonEssential.length < 5 ? nonEssential.length : 0;
+                
+                const itemsToRender = [...essential, ...readyNonEssential];
+                
+                return (
+                  <>
+                    {itemsToRender.map(renderRow)}
+                    {pendingCount > 0 && (
+                      <div style={{ textAlign: 'center', color: 'var(--dim)', fontSize: '0.9rem', fontStyle: 'italic', marginTop: '1rem', padding: '1rem', borderTop: '1px dashed var(--border)' }}>
+                        {pendingCount} non-essential item{pendingCount > 1 ? 's are' : ' is'} ebbing and silently waiting for a batch of 5.
+                      </div>
+                    )}
+                    {itemsToRender.length === 0 && pendingCount === 0 && (
+                      <div className="mt" style={{ textAlign: 'center' }}>No active summons.</div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
-        </div>
+        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <h3 style={{ justifyContent: 'center' }}>The Waning <SpeakerButton text="The Waning" /></h3>
+            <div className="mt mb-4" style={{ textAlign: 'center' }}>Relics nearing the end of their mortal potency.</div>
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {waningItems.length === 0 ? <div className="mt" style={{ textAlign: 'center' }}>All relics remain potent.</div> : waningItems.map(renderRow)}
+            </div>
+          </div>
       </div>
-
 
       {showAddModal && (
         <div className="modal">

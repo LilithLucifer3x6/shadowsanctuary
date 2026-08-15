@@ -197,11 +197,19 @@ export default function Rites({ pose }) {
       }
     } else {
       newChecked.delete(id);
+      const today = new Date().toISOString().split('T')[0];
       if (!id.startsWith('iso-')) {
-        const today = new Date().toISOString().split('T')[0];
         supabase.from('routine_history')
           .delete()
           .eq('step_name', id)
+          .eq('routine_type', rType)
+          .gte('completed_at', today)
+          .then();
+      } else {
+        supabase.from('isotretinoin_log').delete().eq('last_confirmed_date', today).then();
+        supabase.from('routine_history')
+          .delete()
+          .in('step_name', [id, 'iso-missed'])
           .eq('routine_type', rType)
           .gte('completed_at', today)
           .then();
@@ -389,7 +397,9 @@ export default function Rites({ pose }) {
           <div className="card" style={{ gridColumn: '1 / -1', border: '1px solid var(--plum)', background: (useAmLesserRite && usePmLesserRite) ? 'var(--card-bg)' : 'rgba(20, 15, 25, 0.8)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
-                <h3 style={{ margin: 0, color: 'var(--plum)' }}>The Lesser Rite is Recommended</h3>
+                <h3 style={{ margin: 0, color: 'var(--plum)', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.25rem' }}>
+                  <i className="ph-duotone ph-star" style={{fontSize: '1.2em'}}></i> The Lesser Rite is Recommended
+                </h3>
                 <div style={{ opacity: 0.8, marginTop: '0.5rem' }}>Your corporeal readiness is low today. The spirits advise rest.</div>
               </div>
               <button className={`btn ${(useAmLesserRite && usePmLesserRite) ? 'plum' : 'g'}`} onClick={() => {
@@ -407,7 +417,9 @@ export default function Rites({ pose }) {
         <div className="card">
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3>The Morning Invocation <SpeakerButton text='The Morning Invocation' /></h3>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.25rem' }}>
+              <i className="ph-duotone ph-sun"></i> The Morning Invocation <SpeakerButton text='The Morning Invocation' />
+            </h3>
             <button className={`btn ${useAmLesserRite ? 'plum' : 'g'}`} onClick={() => setUseAmLesserRite(!useAmLesserRite)} style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>
               {useAmLesserRite ? 'Full' : 'Lesser'}
             </button>
@@ -432,7 +444,9 @@ export default function Rites({ pose }) {
         {/* Center Column: The Long Hours */}
         <div className="card">
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-          <h3>The Long Hours <SpeakerButton text='The Long Hours' /></h3>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', fontSize: '1.25rem' }}>
+            <i className="ph-duotone ph-hourglass"></i> The Long Hours <SpeakerButton text='The Long Hours' />
+          </h3>
           <div style={{ margin: '0.5rem 0 1rem 0', textAlign: 'center' }}>
             <button 
               className={`btn ${scheduleSaved || ['The Awakening', 'The Morning Respite', 'The Midday Sustenance', 'The Afternoon Respite', 'The Descent'].every(i => scheduleChecked.has(i)) ? 'g' : 'plum'}`} 
@@ -456,7 +470,9 @@ export default function Rites({ pose }) {
         <div className="card">
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3>The Evening Invocation <SpeakerButton text='The Evening Invocation' /></h3>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.25rem' }}>
+              <i className="ph-duotone ph-moon"></i> The Evening Invocation <SpeakerButton text='The Evening Invocation' />
+            </h3>
             <button className={`btn ${usePmLesserRite ? 'plum' : 'g'}`} onClick={() => setUsePmLesserRite(!usePmLesserRite)} style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>
               {usePmLesserRite ? 'Full' : 'Lesser'}
             </button>
@@ -483,7 +499,9 @@ export default function Rites({ pose }) {
       {/* Keeper's Warning (Full Width Below) */}
       {conflicts.length > 0 && (
         <div className="card mt-4" style={{ background: 'var(--card-bg-alt, rgba(100,20,20,0.5))', borderColor: '#882222' }}>
-          <h3 style={{ color: 'var(--plum)' }}>The Keeper's Warning <SpeakerButton text="The Keeper's Warning" /></h3>
+          <h3 style={{ color: 'var(--plum)', display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', fontSize: '1.25rem' }}>
+            <i className="ph-duotone ph-warning"></i> The Keeper's Warning <SpeakerButton text="The Keeper's Warning" />
+          </h3>
           <ul style={{ marginTop: '0.5rem', color: 'var(--plum)', paddingLeft: '1.5rem' }}>
             {conflicts.map((c, idx) => (
               <li key={idx}>

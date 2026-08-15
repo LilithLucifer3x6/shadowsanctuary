@@ -549,7 +549,7 @@ export default function Grimoire({ pose }) {
       </div>
       
       {overrideModal.show && (
-        <div className="modal" style={{ display: 'block' }}>
+        <div className="modal">
           <div className="modal-content card" style={{ maxWidth: '400px' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ color: 'var(--plum)' }}>Rewrite Fate</h3>
@@ -571,7 +571,7 @@ export default function Grimoire({ pose }) {
       )}
 
       {showScrying && (
-        <div className="modal" style={{display: 'block'}}>
+        <div className="modal">
           <div className="modal-content" style={{maxWidth: '550px', background: 'transparent', border: 'none', padding: 0}}>
             <VisualInscription 
               onSkip={() => setShowScrying(false)}
@@ -594,7 +594,7 @@ export default function Grimoire({ pose }) {
       )}
 
       {scryingMessage && (
-        <div className="modal" style={{display: 'block'}}>
+        <div className="modal">
           <div className="modal-content card" style={{maxWidth: '400px', textAlign: 'center'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <Icon name="ph-eye" style={{fontSize: '3rem', color: 'var(--plum)', marginBottom: '1rem'}} />
@@ -606,7 +606,7 @@ export default function Grimoire({ pose }) {
       )}
 
       {readingState && (
-        <div className="modal" style={{display: 'block'}}>
+        <div className="modal">
           <div className="modal-content card" style={{maxWidth: '550px'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>

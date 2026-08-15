@@ -15,11 +15,11 @@ const buildPayload = (id, rType) => ({
 
 const ALTARS = [
   { id: 'crown', name: 'Crown', icon: G.crown },
+  { id: 'visage', name: 'Visage', icon: G.visage },
   { id: 'gaze', name: 'Gaze', icon: G.gaze },
   { id: 'grin', name: 'Grin', icon: G.grin },
-  { id: 'visage', name: 'Visage', icon: G.visage },
-  { id: 'vessel', name: 'Vessel', icon: G.vessel },
   { id: 'veil', name: 'Veil', icon: G.veil },
+  { id: 'vessel', name: 'Vessel', icon: G.vessel },
 ];
 
 
@@ -241,23 +241,23 @@ export default function Altars({ pose }) {
 
   return (
     <div style={{ padding: '1rem', maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
-      <div className="sub" style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: '0.8rem', width: '100%' }}>
+      <div className="altars-nav-grid">
         {ALTARS.map(altar => (
           <button
             key={altar.id}
             className={`btn ${activeAltarId === altar.id ? 'active' : ''}`}
             onClick={() => handleTabClick(altar.id, altar.name)}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', width: '100%' }}
           >
             <Icon name={altar.icon} /> {`The ${altar.name}`}
           </button>
         ))}
       </div>
       
-      <div className="card" style={{ width: '100%', transition: 'opacity 0.3s ease', opacity, position: 'relative' }}>
+      <div className="card" style={{ width: '100%', maxWidth: '500px', transition: 'opacity 0.3s ease', opacity, position: 'relative' }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', width: '100%', minHeight: '32px', marginBottom: '0.5rem' }}>
-          <h3 style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', margin: 0, textAlign: 'center' }}>The {displayedAltar}</h3>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', minHeight: '32px', marginBottom: '1.5rem', gap: '0.8rem' }}>
+          <h3 style={{ margin: 0, textAlign: 'center' }}>The {displayedAltar}</h3>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <SpeakerButton text={`The ${displayedAltar}`} />
             <button

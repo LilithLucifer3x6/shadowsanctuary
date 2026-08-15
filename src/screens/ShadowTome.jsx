@@ -226,7 +226,7 @@ export default function ShadowTome({ pose }) {
     if (totalMlConsumed === 0) return;
 
     const mgConsumed = (activeAlch.calculated_final_mg_ml * totalMlConsumed).toFixed(2);
-    const note = `✨ Imbibed: ${parts.join(', ')} (${totalMlConsumed}ml) of ${activeAlch.name} (${mgConsumed}mg THC).`;
+    const note = `âœ¨ Imbibed: ${parts.join(', ')} (${totalMlConsumed}ml) of ${activeAlch.name} (${mgConsumed}mg THC).`;
 
     setEntryText(prev => prev ? prev + '\n\n' + note : note);
     alert('Added to today\'s journal entry');
@@ -405,27 +405,51 @@ export default function ShadowTome({ pose }) {
     console.log("Files:", files.length);
     if (!files.length) return;
     setIsDiviningTea(true);
+    let successCount = 0;
     try {
       const { compressImage } = await import('../lib/ai-engine.js');
-      const newImages = [];
-      for (const file of files) {
-        const dataUrl = await compressImage(file, 1024, 0.8);
+      
+      if (files.length === 1) {
+        // Single file: continue to use the review modal
+        const dataUrl = await compressImage(files[0], 1024, 0.8);
         const base64 = dataUrl.split(',')[1];
-        newImages.push({ base64, mediaType: file.type });
+        const details = await parseTeaImage([{ base64, mediaType: files[0].type }]);
+        setTeaForm(prev => ({
+          ...prev,
+          brand: details.brand || '',
+          name: details.name || '',
+          ingredients: Array.isArray(details.ingredients) ? details.ingredients.join(', ') : (details.ingredients || ''),
+          caffeine_content: details.caffeine_content || '',
+          steep_time: details.steep_time || '',
+          circadian_alignment: details.circadian_alignment || '',
+          category: 'Tea'
+        }));
+        setTeaModalState('confirm');
+        setShowTeaModal(true);
+      } else {
+        // Batch upload: directly stock them
+        for (const file of files) {
+          const dataUrl = await compressImage(file, 1024, 0.8);
+          const base64 = dataUrl.split(',')[1];
+          const details = await parseTeaImage([{ base64, mediaType: file.type }]);
+          
+          await supabase.from('items').insert([{
+            brand: details.brand || '',
+            name: details.name || 'Unknown Elixir',
+            domain: 'Herbal Elixirs',
+            category: 'Tea',
+            ingredients: JSON.stringify(Array.isArray(details.ingredients) ? details.ingredients : (details.ingredients || '').split(',').map(s=>s.trim()).filter(Boolean)),
+            item_type: 'consumable',
+            lifecycle_state: 'stocked',
+            elixir_caffeine: details.caffeine_content || '',
+            elixir_steep_time: details.steep_time || '',
+            elixir_circadian: details.circadian_alignment || ''
+          }]);
+          successCount++;
+        }
+        await alert(`Divined and stocked ${successCount} elixirs from your batch.`);
+        loadPantry();
       }
-      const details = await parseTeaImage(newImages);
-      setTeaForm(prev => ({
-        ...prev,
-        brand: details.brand || '',
-        name: details.name || '',
-        ingredients: Array.isArray(details.ingredients) ? details.ingredients.join(', ') : (details.ingredients || ''),
-        caffeine_content: details.caffeine_content || '',
-        steep_time: details.steep_time || '',
-        circadian_alignment: details.circadian_alignment || '',
-        category: 'Tea'
-      }));
-      setTeaModalState('confirm');
-      setShowTeaModal(true);
     } catch(err) {
       console.error(err);
       alert('Failed to divine tea: ' + err.message);
@@ -487,8 +511,15 @@ export default function ShadowTome({ pose }) {
 
   const handleSaveTea = async () => {
     if (!teaForm.name) return;
-    setIsSavingTea(true);
     
+    // Lavender Active Scan Alert
+    const allText = `${teaForm.name || ''} ${teaForm.brand || ''} ${teaForm.ingredients || ''}`;
+    if (/(lavender|lavandula|lavandin)/i.test(allText)) {
+      await alert(`LAVENDER DETECTED: This item contains Lavender (or a derivative) and is permanently banned from your routine. It must be sealed in the Crypt of Ashes.`);
+      return;
+    }
+
+    setIsSavingTea(true);
     try {
       let user_id = (await supabase.auth.getUser()).data.user?.id;
       
@@ -536,7 +567,7 @@ export default function ShadowTome({ pose }) {
       setBreathCircle({ transform: 'scale(1)', borderColor: 'var(--plum)', transition: 'all 2s ease-in-out' });
       
       const exerciseType = readiness === 'low' ? '4-4-4-4 Box Breathing' : '4-7-8 Spirit Calming';
-      const note = `✨ Meditation: Completed a session of ${exerciseType}.`;
+      const note = `âœ¨ Meditation: Completed a session of ${exerciseType}.`;
       
       setHistory(prev => [{ id: Date.now(), created_at: new Date().toISOString(), body_text: note, moods: [] }, ...prev]);
       await supabase.from('journal_entries').insert([{
@@ -611,7 +642,9 @@ export default function ShadowTome({ pose }) {
         <div className="tome-main-col">
           <div className="card" style={{ padding: '1.5rem' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ textAlign: 'center', justifyContent: 'center' }}>The Inner Sanctum <SpeakerButton text="The Inner Sanctum" /></h3>
+            <h3 style={{ textAlign: 'center', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <i className="ph-duotone ph-door-open"></i> The Inner Sanctum <SpeakerButton text="The Inner Sanctum" />
+            </h3>
             <div className="note mb-4" style={{ fontSize: '1.2rem', textAlign: 'center' }}>"The ink is your own."</div>
             
             {/* Ethereal Breath Button */}
@@ -664,7 +697,7 @@ export default function ShadowTome({ pose }) {
             </div>
             
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-              <button id="btn-save-tome" className="btn plum" onClick={handleSave}>
+              <button id="btn-save-tome" className="btn plum" onClick={handleSave} disabled={!entryText && selectedMoods.size === 0}>
                 Bind the Parchment
               </button>
             </div>
@@ -693,7 +726,7 @@ export default function ShadowTome({ pose }) {
                       {entry.moods.map(id => {
                         const found = moodsList.find(m => m.id === id);
                         return found ? found.label : id;
-                      }).join(' • ')}
+                      }).join(' â€¢ ')}
                     </div>
                   )}
                   <div style={{ fontSize: '1.1rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
@@ -711,7 +744,9 @@ export default function ShadowTome({ pose }) {
           {/* Row 1: Herbal Elixirs */}
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ fontSize: '1.5rem', textAlign: 'center' }}>The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" /></h3>
+            <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <i className="ph-duotone ph-flask"></i> The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" />
+            </h3>
             
             <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 1rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', marginTop: '1rem' }}>
               <Icon name="ph-camera" /> 
@@ -727,7 +762,9 @@ export default function ShadowTome({ pose }) {
           {/* Row 2: Botanical Trove */}
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ fontSize: '1.5rem', textAlign: 'center' }}>The Herbarium <SpeakerButton text="The Herbarium" /></h3>
+            <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <i className="ph-duotone ph-leaf"></i> The Herbarium <SpeakerButton text="The Herbarium" />
+            </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {pantry.length > 0 ? pantry.map(tea => (
@@ -758,7 +795,9 @@ export default function ShadowTome({ pose }) {
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <div>
-              <h3 style={{ fontSize: '1.5rem', textAlign: 'center' }}>The Stillroom</h3>
+              <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                <i className="ph-duotone ph-drop"></i> The Stillroom
+              </h3>
               <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Raw botanicals and carrier oils.</div>
               {stillroomItems.length === 0 ? (
                 <div className="empty" style={{ padding: '1rem' }}>The stillroom is bare.</div>
@@ -768,7 +807,7 @@ export default function ShadowTome({ pose }) {
                     <div key={item.id} className="act" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem' }}>
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ color: 'var(--plum)' }}>{item.name}</div>
-                        <div style={{ fontSize: '0.75rem' }}>{item.brand} • {item.category}</div>
+                        <div style={{ fontSize: '0.75rem' }}>{item.brand} â€¢ {item.category}</div>
                       </div>
                       <div style={{ color: 'var(--gold)' }}>{item.weight ? `${item.weight}g` : ''}</div>
                     </div>
@@ -781,7 +820,9 @@ export default function ShadowTome({ pose }) {
           {/* Row 3: Alchemies */}
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
               <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-              <h3 style={{ fontSize: '1.5rem', textAlign: 'center' }}>The Alchemies <SpeakerButton text="The Alchemies" /></h3>
+              <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                <i className="ph-duotone ph-magic-wand"></i> The Alchemies <SpeakerButton text="The Alchemies" />
+              </h3>
               
               <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {alchemies.map(alch => (
@@ -831,15 +872,15 @@ export default function ShadowTome({ pose }) {
                   <button className="btn plum" onClick={startNewAlchemy}>Ignite New Alchemy</button>
                 </div>
                 <div style={{ textAlign: 'center', marginTop: '1rem', borderTop: '1px dashed var(--border)', paddingTop: '1rem' }}>
-                  <h3 style={{ fontSize: '1.2rem', textAlign: 'center', margin: '0 0 1rem 0' }}>The Alchemist's Scale</h3>
+                  <h3 style={{ fontSize: '1.2rem', textAlign: 'center', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                    <i className="ph-duotone ph-scales"></i> The Alchemist's Scale
+                  </h3>
                   <button className="btn" style={{ fontSize: '0.8rem', padding: '0.3rem 0.6rem' }} onClick={() => setShowDramModal(true)}>
                     <Icon name="plus" /> Consecrate New Dram
                   </button>
                 </div>
               </div>
           </div>
-        </div>
-      </div>
 
       {/* Tea Scanner Modal */}
       {showTeaModal && (
@@ -923,7 +964,7 @@ export default function ShadowTome({ pose }) {
                   </div>
                 </div>
 
-                <button className="btn plum" onClick={handleSaveTea} disabled={isSavingTea}>
+                <button className="btn plum" onClick={handleSaveTea} disabled={isSavingTea || !teaForm.name}>
                   {isSavingTea ? 'Inscribing...' : 'Save to Herbarium'}
                 </button>
               </div>
@@ -990,7 +1031,7 @@ export default function ShadowTome({ pose }) {
 
                   <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
                     <button className="btn" onClick={cancelAlchemy}>Abandon</button>
-                    <button className="btn plum" onClick={handleSaveAlchemy}>Ignite the Alchemy</button>
+                    <button className="btn plum" onClick={handleSaveAlchemy} disabled={!alchemyForm.name || !alchemyForm.oil_reading_raw || !alchemyForm.oil_volume_ml || !alchemyForm.honey_volume_ml || !alchemyForm.lecithin_volume_ml}>Ignite the Alchemy</button>
                   </div>
                 </div>
           </div>
@@ -1030,6 +1071,8 @@ export default function ShadowTome({ pose }) {
           </div>
         </div>
       )}
+    </div>
+    </div>
     </div>
   );
 }

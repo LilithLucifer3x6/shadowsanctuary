@@ -28,7 +28,7 @@
     --fs:18px; --ff:'Elsie', cursive, -apple-system,'Segoe UI',Roboto,sans-serif;
   }
   *{box-sizing:border-box; font-weight: normal;}
-  body{margin:0;min-height:100vh;background-color:var(--bg);background-image:url('/assets/app_bg.jpg');background-position:center;background-size:cover;background-attachment:fixed;color:var(--plum);font-family:var(--ff);font-size:var(--fs);line-height:1.55;}
+  body{margin:0;min-height:100vh;background-color:var(--bg);color:var(--plum);font-family:var(--ff);font-size:var(--fs);line-height:1.55;}
   .screen{display:none;} .screen.on{display:block;}
   .sec{display:none;} .sec.on{display:block;}
   .script{}

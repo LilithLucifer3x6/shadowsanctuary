@@ -21,7 +21,7 @@ const fs = require('fs');
   await page.screenshot({ path: 'public/assets/avatar-tests/screenshot_landing.png' });
 
   // Click 'Enter the Sanctuary' (Landing -> App)
-  await page.click('.btn');
+  await page.waitForSelector('.btn'); await page.click('.btn');
     await new Promise(r => setTimeout(r, 1000));
   
   // Now in Rites

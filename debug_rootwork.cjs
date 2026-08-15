@@ -1,52 +1,44 @@
 const puppeteer = require('puppeteer');
-const wait = (ms) => new Promise(r => setTimeout(r, ms));
 (async () => {
   const browser = await puppeteer.launch({ headless: 'new' });
   const page = await browser.newPage();
-  await page.setViewport({ width: 1440, height: 900 });
-  await page.goto('http://localhost:5173/');
-  
-  // Login
-  await page.waitForSelector('input[type="email"]', { timeout: 10000 });
-  await page.type('input[type="email"]', 'test-automation@shadowsanctuary.local');
-  await page.type('input[type="password"]', 'TestPassword123!');
-  await page.evaluate(() => document.querySelector('form button').click());
-  await wait(3000);
-  
-  // Bypass
-  await page.evaluate(() => {
-      localStorage.setItem('avatar_config', JSON.stringify({ name: 'Automaton' }));
-      localStorage.setItem('intake_completed', 'true');
-      sessionStorage.setItem('al_currentScreen', 'app');
+  await page.evaluateOnNewDocument(() => {
+    sessionStorage.setItem('al_currentScreen', 'app');
+    localStorage.setItem('intake_completed', 'true');
+    localStorage.setItem('avatar_config', JSON.stringify({ name: "Test User", avatarVibe: "witchy", familiar: "cat", layers: {} }));
   });
-  await page.goto('http://localhost:5173/');
-  
-  console.log('Navigating to The Rootwork...');
-  try {
-    await page.waitForSelector('.tab', { timeout: 10000 });
-  } catch (e) {
-    await page.screenshot({ path: 'C:\\Users\\purpl\\.gemini\\antigravity\\brain\\0be76408-6bc5-4ff5-a2bb-20a516df3f62\\debug_stuck.png' });
-    throw e;
-  }
-  
+  const url = 'http://localhost:5173';
+  await page.goto(url, { waitUntil: 'networkidle0' });
+  console.log("Navigating to Rootwork...");
   await page.evaluate(() => {
-    const tabs = Array.from(document.querySelectorAll('.tab'));
-    const t = tabs.find(t => t.textContent.includes('The Rootwork'));
-    if (t) t.click();
+    const tabs = document.querySelectorAll('.tb');
+    for (let t of tabs) {
+      if (t.title && t.title.includes('Rootwork')) t.click();
+    }
   });
-  await wait(2000);
+  await new Promise(r => setTimeout(r, 1000));
   
-  console.log('Clicking Add Relic (+)...');
-  await page.evaluate(() => {
-    const btn = document.querySelector('button .ph-plus');
-    if (btn) btn.parentElement.click();
+  await page.screenshot({ path: 'rootwork-layout.png', fullPage: true });
+
+  console.log("Looking for Inscribe/Summon button...");
+  const btnClickResult = await page.evaluate(() => {
+    const btns = document.querySelectorAll('button');
+    let target = null;
+    for (let b of btns) {
+      if (b.textContent.includes('Inscribe') || b.textContent.includes('Summon')) {
+        target = b;
+        break;
+      }
+    }
+    if (target) {
+      target.click();
+      return "Clicked " + target.textContent;
+    }
+    return "Button not found";
   });
-  
-  await wait(2000);
-  const html = await page.content();
-  const fs = require('fs');
-  fs.writeFileSync('rootwork_modal_debug.html', html);
-  console.log('Saved debug HTML');
-  
+  console.log("Button action:", btnClickResult);
+
+  await new Promise(r => setTimeout(r, 2000));
+  await page.screenshot({ path: 'rootwork-modal.png' });
   await browser.close();
 })();
