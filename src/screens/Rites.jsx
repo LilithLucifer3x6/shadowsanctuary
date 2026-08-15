@@ -16,6 +16,7 @@ const buildPayload = (id, rType) => ({
 
 export default function Rites({ pose }) {
   const [items, setItems] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [amItems, setAmItems] = useState([]);
   const [pmItems, setPmItems] = useState([]);
@@ -74,6 +75,7 @@ export default function Rites({ pose }) {
       };
       
       const { data: userProfile } = await supabase.from('user_profile').select('*').maybeSingle();
+      if (userProfile) setProfile(userProfile);
       const { amItems: am, pmItems: pm } = await buildRoutines(itemsArr, userProfile || {}, realWearables);
       
       const { data: isoLogsArr } = await supabase.from('isotretinoin_log').select('*').order('last_confirmed_date', { ascending: false });
@@ -251,6 +253,13 @@ export default function Rites({ pose }) {
     setPmSaving(false);
   };
 
+  const handleToggleTravelMode = async () => {
+    if (!profile) return;
+    const newSettings = { ...(profile.settings || {}), travel_mode: !(profile.settings?.travel_mode) };
+    await supabase.from('user_profile').update({ settings: newSettings }).eq('id', profile.id);
+    setProfile({ ...profile, settings: newSettings });
+  };
+
   const handleCompleteAllLongHours = () => {
     setScheduleSaving(true);
     const LONG_HOURS_KEYS = ['The Awakening', 'The Morning Respite', 'The Midday Sustenance', 'The Afternoon Respite', 'The Descent'];
@@ -385,6 +394,18 @@ export default function Rites({ pose }) {
 
   return (
     <div style={{ padding: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.8rem' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--dim)', fontSize: '1rem', cursor: 'pointer' }}>
+          <span>Travel / Disruption Mode</span>
+          <input 
+            type="checkbox" 
+            checked={profile?.settings?.travel_mode || false}
+            onChange={handleToggleTravelMode}
+            style={{ accentColor: 'var(--plum)', width: '1.2rem', height: '1.2rem' }}
+          />
+        </label>
+      </div>
+
       {healthStaleness && (
         <div style={{ textAlign: 'center', color: 'var(--silver)', opacity: 0.8, fontSize: '0.9rem', marginBottom: '1rem' }}>
           Corporeal Data as of: {healthStaleness}

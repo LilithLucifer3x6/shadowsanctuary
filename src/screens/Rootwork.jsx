@@ -927,6 +927,36 @@ export default function Rootwork({ pose }) {
               );
             })()}
           </div>
+          <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '1' }}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <h3 style={{ justifyContent: 'center' }}>The Waning <SpeakerButton text="The Waning" /></h3>
+            <div className="mt mb-4" style={{ textAlign: 'center' }}>Relics nearing the end of their mortal potency.</div>
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {waningItems.length === 0 ? <div className="mt" style={{ textAlign: 'center' }}>All relics remain potent.</div> : waningItems.map(renderRow)}
+            </div>
+          </div>
+          <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '2' }}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <h3 style={{ justifyContent: 'center', color: 'var(--alert)' }}>The Crypt of Ashes <SpeakerButton text="The Crypt of Ashes" /></h3>
+            <div className="mt mb-4" style={{ textAlign: 'center' }}>Banished Relics (The Forgotten-Word Path).</div>
+            <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {banished.length === 0 ? <div className="mt" style={{ textAlign: 'center' }}>The crypt is empty.</div> : banished.map(item => (
+                <div className="row" key={item.id || item.name}>
+                  <div className="tg"><Icon name={item.glyph || G.tabRoot} /></div>
+                  <div style={{flex: 1}}>
+                    <div className="nm" style={{ color: 'var(--dim)' }}>{item.name}</div>
+                    <div className="mt" style={{ fontStyle: 'italic' }}>Banished: {item.banish_reason || 'Unknown'}</div>
+                  </div>
+                  <div className="acts">
+                    <button className="btn sm plum" onClick={async () => {
+                      await supabase.from('items').update({ lifecycle_state: 'stocked', banish_reason: null }).eq('id', item.id);
+                      fetchItems();
+                    }}>Restore</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '1' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ justifyContent: 'center' }}>The Summoning Scroll <SpeakerButton text="The Summoning Scroll" /></h3>

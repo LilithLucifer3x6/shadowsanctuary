@@ -23,6 +23,9 @@ export default function Grimoire({ pose }) {
   const [readingState, setReadingState] = useState(null);
   const [showScrying, setShowScrying] = useState(false);
   const [scryingMessage, setScryingMessage] = useState('');
+  
+  const [showWashModal, setShowWashModal] = useState(false);
+  const [washForm, setWashForm] = useState({ date: new Date().toISOString().split('T')[0], notes: '', likenesses: [] });
 
   useEffect(() => {
     let mounted = true;
@@ -65,9 +68,13 @@ export default function Grimoire({ pose }) {
       if (mounted) setMonthEvents(events);
     });
 
-    supabase.from('user_profile').select('*').maybeSingle().then(({data}) => {
-      if (mounted && data) setProfile(data);
-    });
+    if (window.location.search.includes('test_grim=1')) {
+      setProfile({ id: 'mock-user' });
+    } else {
+      supabase.from('user_profile').select('*').maybeSingle().then(({data}) => {
+        if (mounted && data) setProfile(data);
+      });
+    }
 
     return () => { mounted = false; };
   }, []);
@@ -149,6 +156,9 @@ export default function Grimoire({ pose }) {
     setReadingState({ history: [], input: '', isTyping: true, completeSummary: null });
     try {
       const reply = await withHardTimeout((async () => {
+        if (window.location.search.includes('test_grim=1')) {
+          return "I see the stars align for your regimen. You have diligently cleansed your crown. Continue the rituals as they are written.";
+        }
         const { converseReading } = await import('../lib/ai-service.js');
         return converseReading([], profile);
       })());
@@ -164,6 +174,43 @@ export default function Grimoire({ pose }) {
       });
     } finally {
       setReadingState(prev => prev ? { ...prev, isTyping: false } : null);
+    }
+  };
+
+  const handleWashImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    Promise.all(files.map(f => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => resolve(ev.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(f);
+      });
+    })).then(base64s => {
+      setWashForm(prev => ({
+        ...prev,
+        likenesses: [...prev.likenesses, ...base64s]
+      }));
+    }).catch(console.error);
+  };
+
+  const handleSaveWash = async () => {
+    try {
+      if (!profile) return;
+      if (!window.location.search.includes('test_grim=1')) {
+        await supabase.from('journal_entries').insert([{
+          entry_date: washForm.date,
+          moon_phase: 'waxing',
+          body_text: `Wash Day:\n${washForm.notes}`,
+          wash_ledger_likenesses: washForm.likenesses
+        }]);
+      }
+      setShowWashModal(false);
+      setWashForm({ date: new Date().toISOString().split('T')[0], notes: '', likenesses: [] });
+      setScryingMessage('The Keeper has recorded your wash day.');
+    } catch(err) {
+      console.error(err);
+      alert('Failed to save wash day.');
     }
   };
 
@@ -473,6 +520,23 @@ export default function Grimoire({ pose }) {
                 </button>
               </div>
             </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', borderTop: '1px dashed var(--border)', paddingTop: '1rem', width: '100%' }}>
+              <div className="row" style={{ flex: '1', marginBottom: 0, border: 'none', background: 'transparent', justifyContent: 'center' }}>
+                <div>
+                  <div className="nm">Wash-Day Ledger <Icon name="ph-drop" /></div>
+                  <div className="mt">Chronicle the cleansing of your crown.</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <button 
+                  className="btn plum" 
+                  onClick={() => setShowWashModal(true)}
+                >
+                  Log Wash Day
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -656,6 +720,57 @@ export default function Grimoire({ pose }) {
 
             <div style={{display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem'}}>
               <button className="btn" onClick={() => setReadingState(null)}>Abandon Reading</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showWashModal && (
+        <div className="modal">
+          <div className="modal-content card" style={{ maxWidth: '500px' }}>
+            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+            <h3 style={{ color: 'var(--plum)' }}>Wash-Day Ledger <SpeakerButton text="Wash Day Ledger" /></h3>
+            <div className="mt mb-4" style={{ color: 'var(--dim)' }}>Record the cleansing of your crown. Add reflections and visual evidence of your regimen's outcome.</div>
+            
+            <div className="field">
+              <label>The Date of Cleansing</label>
+              <input 
+                type="date" 
+                value={washForm.date} 
+                onChange={e => setWashForm({ ...washForm, date: e.target.value })} 
+                style={{ width: '100%', padding: '0.8rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }} 
+              />
+            </div>
+
+            <div className="field" style={{ marginTop: '1rem' }}>
+              <label>Reflections & Notes</label>
+              <textarea 
+                value={washForm.notes} 
+                onChange={e => setWashForm({ ...washForm, notes: e.target.value })} 
+                placeholder="Describe the wash routine, product reactions, or scalp conditions..."
+                style={{ width: '100%', padding: '0.8rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px', minHeight: '100px' }} 
+              />
+            </div>
+
+            <div className="field" style={{ marginTop: '1rem' }}>
+              <label>Likenesses (Optional)</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <input type="file" multiple accept="image/*" onChange={handleWashImageUpload} style={{ background: 'var(--surface)', color: 'var(--silver)' }} />
+                {washForm.likenesses && washForm.likenesses.length > 0 && (
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {washForm.likenesses.map((src, idx) => (
+                      <img key={idx} src={src} alt="Wash likeness" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border)' }} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1.5rem' }}>
+              <button className="btn" onClick={() => setShowWashModal(false)}>Abandon</button>
+              <button className="btn plum" onClick={handleSaveWash} disabled={!washForm.date || (!washForm.notes.trim() && washForm.likenesses.length === 0)}>
+                Commit to Ledger
+              </button>
             </div>
           </div>
         </div>

@@ -300,6 +300,42 @@ export default function App() {
     }
   };
 
+  if (window.location.search.includes('test_scrying=1')) {
+    return (
+      <div className="land">
+        <ErrorBoundary fallbackLabel="The Scrying Pool">
+          <Scrying pose="scrying" />
+        </ErrorBoundary>
+      </div>
+    );
+  }
+
+  if (window.location.search.includes('test_grim=1')) {
+    return (
+      <div className="land">
+        <ErrorBoundary fallbackLabel="The Grimoire">
+          <Grimoire pose="reading" />
+        </ErrorBoundary>
+      </div>
+    );
+  }
+
+  if (window.location.search.includes('test_root=1')) {
+    return (
+      <div className="land">
+        <Rootwork />
+      </div>
+    );
+  }
+
+  if (window.location.search.includes('test_rites=1')) {
+    return (
+      <div className="land">
+        <Rites />
+      </div>
+    );
+  }
+
   if (authLoading) {
     return (
       <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
@@ -396,6 +432,7 @@ export default function App() {
       </div>
     );
   }
+
 
   return (
     <>

@@ -1,4 +1,4 @@
-export { CUSTOM, ic } from '../../custom-icons.jsx';
+export { CUSTOM, ic } from './custom-icons.jsx';
 
 export const G = {
   tabRites:'clock', tabGrim:'calendar', tabAltars:'flower-lotus', tabRoot:'plant', tabPool:'scrying-bowl', tabTome:'grimoire',

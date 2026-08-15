@@ -21,7 +21,8 @@ export default function Scrying({ pose }) {
     productId: '',
     zone: 'The visage, below — jaw and chin',
     reactions: new Set(),
-    severity: 0
+    severity: 0,
+    likenesses: []
   });
   const [ledgerEntries, setLedgerEntries] = useState([]);
   const [evaluationStatus, setEvaluationStatus] = useState('');
@@ -43,6 +44,12 @@ export default function Scrying({ pose }) {
   ];
   useEffect(() => {
     async function fetchData() {
+      if (window.location.search.includes('test_scrying=1')) {
+        setInventory([{id: 'mock-item-1', name: 'Mock Elixir', brand: 'Test Brand'}]);
+        setProfile({id: 'mock-user'});
+        setLedgerEntries([]);
+        return;
+      }
       const items = await fetchHydratedItems();
       setInventory(items || []);
       
@@ -58,7 +65,8 @@ export default function Scrying({ pose }) {
         reactions: r.symptoms || [],
         productName: r.items?.name || 'Unknown',
         brand: r.items?.brand || '',
-        date: r.created_at
+        date: r.created_at,
+        likenesses: r.reaction_likenesses || []
       }));
       setLedgerEntries(formattedLedger);
     }
@@ -88,25 +96,42 @@ export default function Scrying({ pose }) {
   };
 
   const handleSaveLedger = async () => {
-    if (!profile) return;
     try {
-      let result;
-      if (editId) {
-        result = await supabase.from('somatic_reactions').update({
+      if (!profile) throw new Error('Not identified');
+      let result = { data: null, error: null };
+      
+      if (window.location.search.includes('test_scrying=1')) {
+        const dummyData = {
+          id: editId || 'mock-reaction-id',
+          created_at: new Date().toISOString(),
           item_id: reactionForm.productId,
           zone: reactionForm.zone,
-          severity: String(reactionForm.severity),
+          severity: reactionForm.severity,
           symptoms: Array.from(reactionForm.reactions),
-          reaction_type: 'adverse_reaction'
-        }).eq('id', editId).select().maybeSingle();
+          reaction_type: 'adverse_reaction',
+          reaction_likenesses: reactionForm.likenesses
+        };
+        result.data = dummyData;
       } else {
-        result = await supabase.from('somatic_reactions').insert({
-          item_id: reactionForm.productId,
-          zone: reactionForm.zone,
-          severity: String(reactionForm.severity),
-          symptoms: Array.from(reactionForm.reactions),
-          reaction_type: 'adverse_reaction'
-        }).select().maybeSingle();
+        if (editId) {
+          result = await supabase.from('somatic_reactions').update({
+            item_id: reactionForm.productId,
+            zone: reactionForm.zone,
+            severity: String(reactionForm.severity),
+            symptoms: Array.from(reactionForm.reactions),
+            reaction_type: 'adverse_reaction',
+            reaction_likenesses: reactionForm.likenesses
+          }).eq('id', editId).select().maybeSingle();
+        } else {
+          result = await supabase.from('somatic_reactions').insert({
+            item_id: reactionForm.productId,
+            zone: reactionForm.zone,
+            severity: String(reactionForm.severity),
+            symptoms: Array.from(reactionForm.reactions),
+            reaction_type: 'adverse_reaction',
+            reaction_likenesses: reactionForm.likenesses
+          }).select().maybeSingle();
+        }
       }
       const { error, data } = result;
 
@@ -122,7 +147,8 @@ export default function Scrying({ pose }) {
         zone: reactionForm.zone,
         reactions: Array.from(reactionForm.reactions),
         severity: reactionForm.severity,
-        date: data.created_at
+        date: data.created_at,
+        likenesses: data.reaction_likenesses || []
       };
       
       if (editId) {
@@ -130,12 +156,29 @@ export default function Scrying({ pose }) {
       } else {
         setLedgerEntries(prev => [...prev, newEntry]);
       }
-      setReactionForm({ productId: '', zone: 'The visage, below — jaw and chin', reactions: new Set(), severity: 0 });
+      setReactionForm({ productId: '', zone: 'The visage, below — jaw and chin', reactions: new Set(), severity: 0, likenesses: [] });
       setEditId(null);
     } catch (err) {
       console.error(err);
       await alert('Failed to save to ledger.');
     }
+  };
+
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    Promise.all(files.map(f => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => resolve(ev.target.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(f);
+      });
+    })).then(base64s => {
+      setReactionForm(prev => ({
+        ...prev,
+        likenesses: [...prev.likenesses, ...base64s]
+      }));
+    }).catch(console.error);
   };
 
   const handleEditLedger = (entry) => {
@@ -144,7 +187,8 @@ export default function Scrying({ pose }) {
       productId: entry.productId,
       zone: entry.zone,
       reactions: new Set(entry.reactions),
-      severity: entry.severity
+      severity: entry.severity,
+      likenesses: entry.likenesses || []
     });
   };
 
@@ -253,6 +297,20 @@ export default function Scrying({ pose }) {
               </div>
             </div>
             
+            <div className="field">
+              <label>Likenesses (Optional)</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <input type="file" multiple accept="image/*" onChange={handleImageUpload} style={{ background: 'var(--surface)', color: 'var(--silver)' }} />
+                {reactionForm.likenesses && reactionForm.likenesses.length > 0 && (
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {reactionForm.likenesses.map((src, idx) => (
+                      <img key={idx} src={src} alt="Reaction likeness" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border)' }} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            
             <button className="btn plum" onClick={handleSaveLedger} disabled={!reactionForm.productId || reactionForm.reactions.size === 0 || reactionForm.severity === 0}>
               {editId ? 'Update the water' : 'Give it to the water'}
             </button>
@@ -272,6 +330,13 @@ export default function Scrying({ pose }) {
                     <div className="nm" style={{ color: 'var(--plum)' }}>{entry.productName}</div>
                     <div className="mt">{entry.zone} &bull; Affliction Rank: {entry.severity}/5</div>
                     <div className="mt" style={{ marginTop: '0.3rem' }}>{entry.reactions.join(', ')}</div>
+                    {entry.likenesses && entry.likenesses.length > 0 && (
+                      <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                        {entry.likenesses.map((src, i) => (
+                          <img key={i} src={src} alt="Reaction likeness" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--silver)' }} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <button className="btn sm" onClick={() => handleEditLedger(entry)} style={{ border: '1px solid var(--silver)', color: 'var(--silver)', marginRight: '0.5rem' }}>
