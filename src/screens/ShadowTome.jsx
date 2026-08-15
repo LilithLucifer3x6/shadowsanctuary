@@ -11,7 +11,7 @@ import { useDialog } from '../components/Dialogs.jsx';
 import { getReadiness } from '../lib/health-connect.js';
 
 export default function ShadowTome({ pose }) {
-  const { alert, confirm } = useDialog();
+  const { alert, confirm, confirmDestructive } = useDialog();
   const [activeTab, setActiveTab] = useState('journal');
   const [moodsList, setMoodsList] = useState([]);
   const [selectedMoods, setSelectedMoods] = useState(new Set());
@@ -184,7 +184,7 @@ export default function ShadowTome({ pose }) {
   };
 
   const handleReleaseAlchemy = async (id) => {
-    if (await confirm("Release this Alchemy? This action cannot be undone.")) {
+    if (await confirmDestructive("Release this Alchemy? The batch record will be permanently destroyed.")) {
       await supabase.from('alchemy_batches').delete().eq('id', id);
       loadAlchemies();
     }
@@ -386,14 +386,14 @@ export default function ShadowTome({ pose }) {
   };
 
   const handleBanish = async (id) => {
-    if (await confirm("Unweave this spell from the tome? It cannot be recovered.")) {
+    if (await confirmDestructive("Unweave this spell from the tome? The entry will be permanently destroyed.")) {
       await supabase.from('journal_entries').delete().eq('id', id);
       loadHistory();
     }
   };
 
   const handleBanishTea = async (id, name) => {
-    if (await confirm(`Shatter the jar of ${name}? It cannot be recovered.`)) {
+    if (await confirmDestructive(`Shatter the jar of ${name}? This tea will be permanently banished.`)) {
       await supabase.from('items').update({ lifecycle_state: 'banished' }).eq('id', id);
       loadPantry();
     }

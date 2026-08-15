@@ -4,6 +4,7 @@ import { G, verifyGlyphs } from './lib/icons.jsx';
 import { useDialog } from './components/Dialogs.jsx';
 import { speak, getTtsEnabled, getTtsRate, getTtsPitch, getTtsVoiceURI, setTtsEnabled, setTtsRate, setTtsPitch, setTtsVoiceURI, getFeminineVoices } from './lib/tts.js';
 import Icon from './components/Icon.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { initGoogleCalendar, requestCalendarAccess } from './lib/gcal.js';
 import { syncWearableSnapshot } from './lib/health-connect.js';
 import { Capacitor } from '@capacitor/core';
@@ -37,7 +38,7 @@ function getSpellDate() {
 }
 
 export default function App() {
-  const { alert, confirm } = useDialog();
+  const { alert, confirm, confirmDestructive } = useDialog();
   const [currentScreen, setCurrentScreen] = useState(() => {
     if (!localStorage.getItem('avatar_config')) return 'landing';
     const stored = sessionStorage.getItem('al_currentScreen');
@@ -65,6 +66,9 @@ export default function App() {
   const [loginPassword, setLoginPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [loginSubmitting, setLoginSubmitting] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotStatus, setForgotStatus] = useState('');
   
   const [ttsOptions, setTtsOptions] = useState({
     voice: '',
@@ -96,6 +100,23 @@ export default function App() {
     setLoginSubmitting(false);
   };
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotStatus('');
+    if (!forgotEmail.trim()) {
+      setForgotStatus('Please enter your email address.');
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: window.location.origin
+    });
+    if (error) {
+      setForgotStatus(`Error: ${error.message}`);
+    } else {
+      setForgotStatus('A reset link has been dispatched to your email. Check your inbox.');
+    }
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     sessionStorage.clear();
@@ -106,9 +127,15 @@ export default function App() {
     if (currentScreen === 'landing' || currentScreen === 'avatar') {
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = 'var(--bg)';
+      document.body.style.backgroundSize = '';
+      document.body.style.backgroundPosition = '';
+      document.body.style.backgroundRepeat = '';
     } else if (currentScreen === 'intake') {
       document.body.style.backgroundImage = 'none';
       document.body.style.backgroundColor = 'var(--bg)';
+      document.body.style.backgroundSize = '';
+      document.body.style.backgroundPosition = '';
+      document.body.style.backgroundRepeat = '';
     }
   }, [currentScreen]);
 
@@ -131,6 +158,9 @@ export default function App() {
       }
 
       document.body.style.backgroundImage = `url('${bgUrl}')`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundPosition = 'center';
+      document.body.style.backgroundRepeat = 'no-repeat';
     }
   }, [activeTab, currentScreen]);
 
@@ -260,12 +290,12 @@ export default function App() {
     const pose = tab ? tab.pose : 'working';
     
     switch (activeTab) {
-      case 'rites': return <div><Rites pose={pose} /></div>;
-      case 'grim': return <div><Grimoire pose={pose} /></div>;
-      case 'altars': return <div><Altars pose={pose} /></div>;
-      case 'root': return <div><Rootwork pose={pose} /></div>;
-      case 'pool': return <div><Scrying pose={pose} /></div>;
-      case 'tome': return <div><ShadowTome pose={pose} /></div>;
+      case 'rites': return <ErrorBoundary fallbackLabel="The Mortal Rites"><Rites pose={pose} /></ErrorBoundary>;
+      case 'grim': return <ErrorBoundary fallbackLabel="The Grimoire"><Grimoire pose={pose} /></ErrorBoundary>;
+      case 'altars': return <ErrorBoundary fallbackLabel="The Altars"><Altars pose={pose} /></ErrorBoundary>;
+      case 'root': return <ErrorBoundary fallbackLabel="The Rootwork"><Rootwork pose={pose} /></ErrorBoundary>;
+      case 'pool': return <ErrorBoundary fallbackLabel="The Scrying Pool"><Scrying pose={pose} /></ErrorBoundary>;
+      case 'tome': return <ErrorBoundary fallbackLabel="The Shadow Tome"><ShadowTome pose={pose} /></ErrorBoundary>;
       default: return null;
     }
   };
@@ -319,6 +349,35 @@ export default function App() {
               {loginSubmitting ? 'Testing the Wards...' : 'Enter'}
             </button>
           </form>
+          <button
+            onClick={() => { setShowForgotPassword(true); setForgotEmail(loginEmail); setForgotStatus(''); }}
+            style={{ background: 'none', border: 'none', color: 'var(--plum)', cursor: 'pointer', fontSize: '0.85rem', marginTop: '1rem', textDecoration: 'underline', opacity: 0.8 }}
+          >
+            Lost your key to the Sanctuary?
+          </button>
+
+          {showForgotPassword && (
+            <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.6)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.9rem', color: 'var(--dim)', marginBottom: '0.75rem' }}>Enter your email and we will send a reset link.</div>
+              <form onSubmit={handleForgotPassword}>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={forgotEmail}
+                  onChange={e => setForgotEmail(e.target.value)}
+                  required
+                  style={{ width: '100%', marginBottom: '0.75rem', padding: '0.6rem', boxSizing: 'border-box', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--fg)', borderRadius: '6px' }}
+                />
+                {forgotStatus && (
+                  <p style={{ color: forgotStatus.startsWith('Error') ? 'var(--crimson-b)' : 'var(--plum)', marginBottom: '0.75rem', fontSize: '0.85rem' }}>{forgotStatus}</p>
+                )}
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button type="submit" className="btn plum" style={{ flex: 1 }}>Send Reset Link</button>
+                  <button type="button" className="btn" style={{ flex: 1 }} onClick={() => setShowForgotPassword(false)}>Cancel</button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -578,7 +637,7 @@ export default function App() {
 
 
                   <button onClick={async () => {
-                    if (await confirm("Do you truly wish to shatter the First Inscription? You will be cast back to the initial inquiry.")) {
+                    if (await confirmDestructive("Do you truly wish to shatter the First Inscription? You will be cast back to the initial inquiry.")) {
                       try {
                         const { data: profile, error: profileErr } = await supabase.from('user_profile').select('*').order('created_at', { ascending: false }).limit(1).maybeSingle();
                         if (profileErr) throw profileErr;
@@ -596,7 +655,7 @@ export default function App() {
                   }} className="btn g" style={{ width: '100%', marginBottom: '1rem' }}>Shatter the First Inscription</button>
 
                   <button onClick={async () => {
-                    if (await confirm("Do you truly wish to raze this Sanctuary to ash? All saved rites, items, and settings shall be lost to the void. This cannot be undone.", "Danger")) {
+                    if (await confirmDestructive("Do you truly wish to raze this Sanctuary to ash? All saved rites, items, and settings shall be lost to the void. This cannot be undone.")) {
                       try {
                         const { error: profileErr } = await supabase.from('user_profile').delete().not('id', 'is', null);
                         if (profileErr) throw profileErr;

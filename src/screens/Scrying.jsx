@@ -10,7 +10,7 @@ import { useDialog } from '../components/Dialogs.jsx';
 import SpeakerButton from '../components/SpeakerButton.jsx';
 
 export default function Scrying({ pose }) {
-  const { alert, confirm } = useDialog();
+  const { alert, confirm, confirmDestructive } = useDialog();
   const [inventory, setInventory] = useState([]);
   const [profile, setProfile] = useState(null);
   const [readiness, setReadiness] = useState(null);
@@ -149,7 +149,7 @@ export default function Scrying({ pose }) {
   };
 
   const handleDeleteLedger = async (id, index) => {
-    if (await confirm("Erase this affliction from the ledger?")) {
+    if (await confirmDestructive("Erase this affliction from the ledger? This reaction record will be permanently destroyed.")) {
       if (id) {
         await supabase.from('somatic_reactions').delete().eq('id', id);
       }

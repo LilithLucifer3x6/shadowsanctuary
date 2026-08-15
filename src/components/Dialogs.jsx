@@ -32,6 +32,10 @@ export function DialogProvider({ children }) {
     return showDialog('confirm', title, message);
   }, [showDialog]);
 
+  const confirmDestructive = useCallback((message, title = 'This Cannot Be Undone') => {
+    return showDialog('destructive', title, message);
+  }, [showDialog]);
+
   const closeDialog = (id, result) => {
     setDialogs(prev => {
       const d = prev.find(x => x.id === id);
@@ -41,20 +45,22 @@ export function DialogProvider({ children }) {
   };
 
   return (
-    <DialogContext.Provider value={{ alert, confirm }}>
+    <DialogContext.Provider value={{ alert, confirm, confirmDestructive }}>
       {children}
       {dialogs.map(d => (
         <div key={d.id} className="modal-backdrop" onClick={() => d.type === 'alert' ? closeDialog(d.id, true) : closeDialog(d.id, false)}>
-          <div className="card" style={{ maxWidth: '400px', width: '90%', margin: '0 auto', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+          <div className="card" style={{ maxWidth: '400px', width: '90%', margin: '0 auto', textAlign: 'center', borderColor: d.type === 'destructive' ? 'var(--crimson-b)' : undefined }} onClick={e => e.stopPropagation()}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ color: 'var(--plum)', marginTop: 0 }}>{d.title}</h3>
+            <h3 style={{ color: d.type === 'destructive' ? 'var(--crimson-b)' : 'var(--plum)', marginTop: 0 }}>{d.title}</h3>
             <p style={{ color: 'var(--text)', whiteSpace: 'pre-wrap', marginBottom: '2rem' }}>{d.message}</p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-              {d.type === 'confirm' && (
-                <button className="btn" onClick={() => closeDialog(d.id, false)}>Cancel</button>
+              {(d.type === 'confirm' || d.type === 'destructive') && (
+                <button className="btn" onClick={() => closeDialog(d.id, false)}>
+                  {d.type === 'destructive' ? 'Abandon' : 'Cancel'}
+                </button>
               )}
-              <button className="btn plum" onClick={() => closeDialog(d.id, true)}>
-                {d.type === 'confirm' ? 'Confirm' : 'OK'}
+              <button className={`btn ${d.type === 'destructive' ? 'g' : 'plum'}`} onClick={() => closeDialog(d.id, true)}>
+                {d.type === 'destructive' ? 'I understand, proceed' : d.type === 'confirm' ? 'Confirm' : 'OK'}
               </button>
             </div>
           </div>

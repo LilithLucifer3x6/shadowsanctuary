@@ -10,7 +10,7 @@ import { buildBaseRoutines, isShadowTomeItem } from '../lib/routine-engine.js';
 import SpeakerButton from '../components/SpeakerButton.jsx';
 
 export default function Rootwork({ pose }) {
-  const { alert, confirm } = useDialog();
+  const { alert, confirm, confirmDestructive } = useDialog();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
