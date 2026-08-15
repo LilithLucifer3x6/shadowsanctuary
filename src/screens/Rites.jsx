@@ -313,8 +313,8 @@ export default function Rites({ pose }) {
     const getGlyph = (item) => {
       if (item.glyph) return item.glyph;
       if (item.name === 'The Silk Thread') return 'ph-yarn';
-      if (item.name === 'The Purifying Stream') return 'ph-drop';
-      if (item.name === 'The Minted Draught') return 'ph-flask';
+      if (item.name === 'The Purifying Stream') return 'ph-waves';
+      if (item.name === 'The Minted Draught') return 'ph-test-tube';
       if (item.name === 'The Bristled Cleanse') return 'ph-tooth';
       if (item.name === 'The Cleansing Waters') return 'ph-shower';
       if (item.name === 'The Drying') return 'ph-towel';
@@ -397,7 +397,7 @@ export default function Rites({ pose }) {
           <div className="card" style={{ gridColumn: '1 / -1', border: '1px solid var(--plum)', background: (useAmLesserRite && usePmLesserRite) ? 'var(--card-bg)' : 'rgba(20, 15, 25, 0.8)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
-                <h3 style={{ margin: 0, color: 'var(--plum)', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.25rem' }}>
+                <h3 style={{ margin: 0, color: 'var(--plum)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <i className="ph-duotone ph-star" style={{fontSize: '1.2em'}}></i> The Lesser Rite is Recommended
                 </h3>
                 <div style={{ opacity: 0.8, marginTop: '0.5rem' }}>Your corporeal readiness is low today. The spirits advise rest.</div>
@@ -417,7 +417,7 @@ export default function Rites({ pose }) {
         <div className="card">
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.25rem' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <i className="ph-duotone ph-sun"></i> The Morning Invocation <SpeakerButton text='The Morning Invocation' />
             </h3>
             <button className={`btn ${useAmLesserRite ? 'plum' : 'g'}`} onClick={() => setUseAmLesserRite(!useAmLesserRite)} style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>
@@ -444,7 +444,7 @@ export default function Rites({ pose }) {
         {/* Center Column: The Long Hours */}
         <div className="card">
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', fontSize: '1.25rem' }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}>
             <i className="ph-duotone ph-hourglass"></i> The Long Hours <SpeakerButton text='The Long Hours' />
           </h3>
           <div style={{ margin: '0.5rem 0 1rem 0', textAlign: 'center' }}>
@@ -459,18 +459,18 @@ export default function Rites({ pose }) {
           </div>
           <div className="mt mb-4" style={{ textAlign: 'center' }}>The Order of the Day</div>
           
-          {renderScheduleStep('The Awakening', 'Allow 5 to 10 minutes for the veil of sleep to lift.', 'var(--crimson-b)', 'ph-sun')}
+          {renderScheduleStep('The Awakening', 'Allow 5 to 10 minutes for the veil of sleep to lift.', 'var(--crimson-b)', 'ph-cloud-sun')}
           {renderScheduleStep('The Morning Respite', 'A 15-minute sanctuary. Imbibe 16 ounces of pure water.', 'var(--plum)', 'ph-coffee')}
           {renderScheduleStep('The Midday Sustenance', 'A 45-minute pause for nourishment. Engage in gentle movement to stir stagnant energies.', 'var(--plum)', 'ph-fork-knife')}
-          {renderScheduleStep('The Afternoon Respite', 'A 15-minute sanctuary. Imbibe 16 ounces of pure water.', 'var(--plum)', 'ph-coffee')}
-          {renderScheduleStep('The Descent', 'The day\'s labors conclude. Begin the grounding process to sever ties with the work.', 'var(--plum)', 'ph-moon')}
+          {renderScheduleStep('The Afternoon Respite', 'A 15-minute sanctuary. Imbibe 16 ounces of pure water.', 'var(--plum)', 'ph-mug')}
+          {renderScheduleStep('The Descent', 'The day\'s labors conclude. Begin the grounding process to sever ties with the work.', 'var(--plum)', 'ph-bed')}
         </div>
 
         {/* Right Column: Evening Invocation */}
         <div className="card">
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.25rem' }}>
+            <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <i className="ph-duotone ph-moon"></i> The Evening Invocation <SpeakerButton text='The Evening Invocation' />
             </h3>
             <button className={`btn ${usePmLesserRite ? 'plum' : 'g'}`} onClick={() => setUsePmLesserRite(!usePmLesserRite)} style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}>
@@ -499,7 +499,7 @@ export default function Rites({ pose }) {
       {/* Keeper's Warning (Full Width Below) */}
       {conflicts.length > 0 && (
         <div className="card mt-4" style={{ background: 'var(--card-bg-alt, rgba(100,20,20,0.5))', borderColor: '#882222' }}>
-          <h3 style={{ color: 'var(--plum)', display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', fontSize: '1.25rem' }}>
+          <h3 style={{ color: 'var(--plum)', display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center' }}>
             <i className="ph-duotone ph-warning"></i> The Keeper's Warning <SpeakerButton text="The Keeper's Warning" />
           </h3>
           <ul style={{ marginTop: '0.5rem', color: 'var(--plum)', paddingLeft: '1.5rem' }}>

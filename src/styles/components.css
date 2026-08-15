@@ -315,7 +315,7 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
 
 
 .btn:active { transform: scale(0.98); opacity: 0.8; }
-.btn:disabled { opacity: 0.5; filter: grayscale(100%); cursor: not-allowed; border-color: var(--border); }
+.btn:disabled, .btn.plum:disabled { opacity: 0.3 !important; filter: grayscale(100%) !important; cursor: not-allowed !important; border-color: var(--dim) !important; color: var(--dim) !important; background: rgba(0, 0, 0, 0.2) !important; }
 
 
 /* Global Modal Fix */

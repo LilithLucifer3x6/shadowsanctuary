@@ -276,6 +276,13 @@ export default function Rootwork({ pose }) {
 
 
   const validateItemForSave = async (item) => {
+
+    // Lavender Ban Check
+    const allText = `${item.name || ''} ${item.brand || ''} ${Array.isArray(item.ingredients) ? item.ingredients.join(' ') : (item.ingredients || '')}`;
+    if (/(lavender|lavandula|lavandin)/i.test(allText)) {
+      await alert("LAVENDER DETECTED: This item contains Lavender (or a derivative) and is permanently banned from your routine. It must be sealed in the Crypt of Ashes.");
+      return false;
+    }
     // 0. Type Check
     if (!item.item_type || !['consumable', 'arsenal', 'composite'].includes(item.item_type)) {
       await alert(`Safety Block: ${item.name || 'An item'} is missing its Item Type.`);
@@ -818,8 +825,8 @@ export default function Rootwork({ pose }) {
         </div>
       </div>
 
-      <div className="rootwork-grid mt-4" style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-        <div className="card mb-4" style={{ marginBottom: 0, width: '100%' }}>
+      <div className="rootwork-grid mt-4" style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
+        <div className="card mb-4" style={{ marginBottom: 0, width: '100%', gridColumn: '1', height: 'fit-content' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem' }}>The Echo <SpeakerButton text="The Echo" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>Unveil the hidden resonance of the relic.</div>
@@ -864,7 +871,7 @@ export default function Rootwork({ pose }) {
               </div>
             )}
           </div>
-        <div className="card mb-4" style={{ marginBottom: 0, alignSelf: 'start', width: '100%' }}>
+        <div className="card mb-4" style={{ marginBottom: 0, alignSelf: 'start', width: '100%', gridColumn: '2', gridRow: '1 / span 3' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem' }}>The Silver Toll <SpeakerButton text="The Silver Toll" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>The material cost of your active rituals, tied to frequency of devotion.</div>
@@ -920,7 +927,7 @@ export default function Rootwork({ pose }) {
               );
             })()}
           </div>
-        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
+        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '1' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ justifyContent: 'center' }}>The Summoning Scroll <SpeakerButton text="The Summoning Scroll" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>Items needing replenishment. Non-essential items wait for batches of 5.</div>
@@ -951,7 +958,7 @@ export default function Rootwork({ pose }) {
               })()}
             </div>
           </div>
-        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px' }}>
+        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '1' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ justifyContent: 'center' }}>The Waning <SpeakerButton text="The Waning" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>Relics nearing the end of their mortal potency.</div>

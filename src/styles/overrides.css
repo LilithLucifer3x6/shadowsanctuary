@@ -1,0 +1,40 @@
+/* Global Modal Fix */
+.modal { 
+  display: flex !important; 
+  position: fixed !important; 
+  inset: 0 !important; 
+  background: rgba(11, 9, 14, 0.9) !important;
+  z-index: 9000 !important; 
+  padding: 4rem 1.2rem !important; 
+  flex-direction: column !important; 
+  align-items: center !important; 
+  justify-content: center !important; 
+  overflow-y: auto !important; 
+}
+.modal::before, .modal::after { content: '' !important; margin: auto !important; flex: none !important; }
+.modal .card, .modal-content { margin: 0 auto !important; max-height: none !important; width: 100%; }
+
+/* Fix missing background for modal content */
+.modal-content.card {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 8px !important;
+  padding: 1.5rem !important;
+}
+
+/* Button disabled state */
+.btn:disabled, .btn.plum:disabled { 
+  opacity: 0.3 !important; 
+  filter: grayscale(100%) !important; 
+  cursor: not-allowed !important; 
+  border-color: var(--dim) !important; 
+  color: var(--dim) !important; 
+  background: rgba(0, 0, 0, 0.2) !important; 
+}
+
+/* Rootwork Layout */
+.rootwork-grid { display: grid !important; grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+@media (min-width: 900px) { .rootwork-grid { grid-template-columns: 1fr 1fr !important; } }
+
+/* Altars Layout Fix */
+.altars-nav-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 0.8rem !important; width: 100% !important; }

@@ -145,7 +145,13 @@ export default function ShadowTome({ pose }) {
   const cancelAlchemy = () => setAlchemyForm(null);
 
   const handleSaveAlchemy = async () => {
-    if (!alchemyForm.name || !alchemyForm.oil_reading_raw || !alchemyForm.oil_volume_ml || !alchemyForm.honey_volume_ml || !alchemyForm.lecithin_volume_ml) return;
+
+    // Lavender Check
+    if (/(lavender|lavandula|lavandin)/i.test(alchemyForm.name || '')) {
+      await alert("LAVENDER DETECTED: This alchemy contains Lavender and is permanently banned. It will not be crafted.");
+      return;
+    }
+      if (!alchemyForm.name || !alchemyForm.oil_reading_raw || !alchemyForm.oil_volume_ml || !alchemyForm.honey_volume_ml || !alchemyForm.lecithin_volume_ml) return;
     
     let rawReading = Number(alchemyForm.oil_reading_raw);
     let canonical_mg_per_ml = rawReading;
@@ -433,6 +439,13 @@ export default function ShadowTome({ pose }) {
           const base64 = dataUrl.split(',')[1];
           const details = await parseTeaImage([{ base64, mediaType: file.type }]);
           
+          // Lavender Check
+          const allText = `${details.name || ''} ${details.brand || ''} ${Array.isArray(details.ingredients) ? details.ingredients.join(', ') : (details.ingredients || '')}`;
+          if (/(lavender|lavandula|lavandin)/i.test(allText)) {
+            await alert(`LAVENDER DETECTED: ${details.name || 'An item'} contains Lavender (or a derivative) and is permanently banned. It will not be stocked.`);
+            continue;
+          }
+
           await supabase.from('items').insert([{
             brand: details.brand || '',
             name: details.name || 'Unknown Elixir',
@@ -745,7 +758,7 @@ export default function ShadowTome({ pose }) {
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-              <i className="ph-duotone ph-flask"></i> The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" />
+              <i className="ph-duotone ph-brandy"></i> The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" />
             </h3>
             
             <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 1rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', marginTop: '1rem' }}>
@@ -796,7 +809,7 @@ export default function ShadowTome({ pose }) {
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <div>
               <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-                <i className="ph-duotone ph-drop"></i> The Stillroom
+                <i className="ph-duotone ph-faucet"></i> The Stillroom
               </h3>
               <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Raw botanicals and carrier oils.</div>
               {stillroomItems.length === 0 ? (
