@@ -1,7 +1,0 @@
-  const [drams, setDrams] = useState([]);
-  const [showDramModal, setShowDramModal] = useState(false);
-  const [dramForm, setDramForm] = useState({ name: '', vessel_volume_ml: '' });
-  const [alchemies, setAlchemies] = useState([]);
-  const [alchemyForm, setAlchemyForm] = useState(null);
-  const [stagedDoses, setStagedDoses] = useState({});
-  const [isRollingDram, setIsRollingDram] = useState(false);
