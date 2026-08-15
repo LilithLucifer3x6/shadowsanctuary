@@ -158,7 +158,8 @@ export default function App() {
       }
 
       document.body.style.backgroundImage = `url('${bgUrl}')`;
-      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundSize = 'contain';
+      document.body.style.backgroundColor = 'var(--bg)';
       document.body.style.backgroundPosition = 'center';
       document.body.style.backgroundRepeat = 'no-repeat';
     }
@@ -338,7 +339,7 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'contain', backgroundColor: 'var(--bg)', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)' }} />
         <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
           <div className="tag" style={{ textShadow: '1px 1px 0 #0b090e, 0 4px 15px rgba(0,0,0,1)', color: 'var(--plum)', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)', padding: '0.6rem', display: 'inline-block' }}>Consulting the wards...</div>
@@ -349,7 +350,7 @@ export default function App() {
 
   if (window.location.search.includes('bypass') ? false : (!session?.user || session.user.id === 'dummy')) {
     return (
-      <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'contain', backgroundColor: 'var(--bg)', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }}></div>
         <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '2rem', maxWidth: '400px', width: '90%' }}>
           <h1 style={{ fontSize: 'clamp(2rem, 10vw, 3.5rem)', textShadow: '2px 2px 0 #0b090e, -1px -1px 0 #0b090e, 1px -1px 0 #0b090e, -1px 1px 0 #0b090e, 0 8px 30px rgba(0,0,0,1)', color: 'var(--plum)', margin: '0 0 0.5rem 0' }}>
