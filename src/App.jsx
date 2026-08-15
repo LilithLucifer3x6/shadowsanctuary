@@ -311,10 +311,6 @@ export default function App() {
     );
   }
 
-  if (window.location.search.includes('test_intake')) {
-    return <Intake onComplete={() => { localStorage.setItem('mock_intake_done', 'true'); }} />;
-  }
-
   if (window.location.search.includes('bypass') ? false : (!session?.user || session.user.id === 'dummy')) {
     return (
       <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
