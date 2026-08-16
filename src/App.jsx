@@ -8,6 +8,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 import { initGoogleCalendar, requestCalendarAccess } from './lib/gcal.js';
 import { syncWearableSnapshot } from './lib/health-connect.js';
 import { Capacitor } from '@capacitor/core';
+import { App as CapApp } from '@capacitor/app';
 import { initEngineRules } from './lib/routine-engine.js';
 
 import Landing from './screens/Landing.jsx';
@@ -19,6 +20,7 @@ import Altars from './screens/Altars.jsx';
 import Rootwork from './screens/Rootwork.jsx';
 import Scrying from './screens/Scrying.jsx';
 import ShadowTome from './screens/ShadowTome.jsx';
+import AppLock from './components/AppLock.jsx';
 
 const TABS = [
   { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bg: '/assets/avatar-tests/part5_169_action_mortal_rites.png', pose: 'working' },
@@ -51,6 +53,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [dateStr, setDateStr] = useState(getSpellDate());
   const [supabaseError, setSupabaseError] = useState(false);
+  const [isLocked, setIsLocked] = useState(!!localStorage.getItem('avatar_config')); // lock if user has finished onboarding
   
   // Settings state
   const [settings, setSettings] = useState({
@@ -138,6 +141,36 @@ export default function App() {
       document.body.style.backgroundRepeat = '';
     }
   }, [currentScreen]);
+
+  useEffect(() => {
+    const handleBackground = () => {
+      if (localStorage.getItem('avatar_config')) {
+        setIsLocked(true);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        handleBackground();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    let stateListener;
+    if (Capacitor.isNativePlatform()) {
+      CapApp.addListener('appStateChange', ({ isActive }) => {
+        if (!isActive) handleBackground();
+      }).then(listener => {
+        stateListener = listener;
+      });
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (stateListener) stateListener.remove();
+    };
+  }, []);
 
   useEffect(() => {
     sessionStorage.setItem('al_activeTab', activeTab);
@@ -752,6 +785,7 @@ export default function App() {
           </div>
         </div>
       )}
+      {isLocked && <AppLock onUnlock={() => setIsLocked(false)} />}
     </>
   );
 }
