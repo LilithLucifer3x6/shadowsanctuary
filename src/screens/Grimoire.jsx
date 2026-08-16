@@ -25,7 +25,15 @@ export default function Grimoire({ pose }) {
   const [scryingMessage, setScryingMessage] = useState('');
   
   const [showWashModal, setShowWashModal] = useState(false);
-  const [washForm, setWashForm] = useState({ date: new Date().toISOString().split('T')[0], notes: '', likenesses: [] });
+  const [washForm, setWashForm] = useState({ 
+    date: new Date().toISOString().split('T')[0], 
+    notes: '', 
+    likenesses: [], 
+    usedItemIds: [],
+    blotTestResult: '',
+    scratchTestResult: ''
+  });
+  const [availableWashItems, setAvailableWashItems] = useState([]);
 
   useEffect(() => {
     let mounted = true;
@@ -76,8 +84,18 @@ export default function Grimoire({ pose }) {
       });
     }
 
+    supabase.from('items').select('id, name, brand, category').in('lifecycle_state', ['stocked', 'ebbing']).then(({data}) => {
+      if (mounted && data) {
+        const washItems = data.filter(i => {
+           const c = (i.category || '').toLowerCase();
+           return c.includes('wash') || c.includes('shampoo') || c.includes('conditioner') || c.includes('cleanser');
+        });
+        setAvailableWashItems(washItems);
+      }
+    });
+
     return () => { mounted = false; };
-  }, []);
+  }, [profile?.id]);
 
   const d = new Date();
   const year = d.getFullYear();
@@ -202,10 +220,35 @@ export default function Grimoire({ pose }) {
         entry_date: washForm.date,
         moon_phase: 'waxing',
         notes: washForm.notes,
-        likenesses: washForm.likenesses
+        likenesses: washForm.likenesses,
+        used_item_ids: washForm.usedItemIds.length > 0 ? washForm.usedItemIds : null,
+        blot_test_result: washForm.blotTestResult || null,
+        scratch_test_result: washForm.scratchTestResult || null
       }]);
+
+      if (washForm.blotTestResult) {
+        // Inform user_profile.scalp_condition based on blot test
+        const newSettings = { ...(profile.settings || {}) };
+        const newIntake = { ...(profile.intake_answers || {}) };
+        
+        // Example mapping logic for blot test to scalp condition
+        let inferredScalp = '';
+        if (washForm.blotTestResult === 'heavy_oil') inferredScalp = 'Oily';
+        else if (washForm.blotTestResult === 'light_oil') inferredScalp = 'Balanced';
+        else if (washForm.blotTestResult === 'no_oil_flakes') inferredScalp = 'Dry/Flaky';
+        else if (washForm.blotTestResult === 'no_oil_clean') inferredScalp = 'Dry';
+
+        if (inferredScalp) {
+          // You could also save this into a dedicated "scalp_condition" column if it exists,
+          // but for now, store in intake_answers as a dynamic update
+          newIntake.inferredScalpCondition = inferredScalp;
+          await supabase.from('user_profile').update({ intake_answers: newIntake }).eq('id', profile.id);
+          setProfile(prev => ({ ...prev, intake_answers: newIntake }));
+        }
+      }
+
       setShowWashModal(false);
-      setWashForm({ date: new Date().toISOString().split('T')[0], notes: '', likenesses: [] });
+      setWashForm({ date: new Date().toISOString().split('T')[0], notes: '', likenesses: [], usedItemIds: [], blotTestResult: '', scratchTestResult: '' });
       setScryingMessage('The Keeper has recorded your wash day.');
     } catch(err) {
       console.error(err);
@@ -744,12 +787,67 @@ export default function Grimoire({ pose }) {
             </div>
 
             <div className="field" style={{ marginTop: '1rem' }}>
-              <label>Reflections & Notes</label>
+              <label>Inventory Used</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.5rem' }}>
+                {availableWashItems.length > 0 ? availableWashItems.map(item => (
+                  <label key={item.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--plum)' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={washForm.usedItemIds.includes(item.id)}
+                      onChange={(e) => {
+                        setWashForm(prev => {
+                          const newIds = e.target.checked 
+                            ? [...prev.usedItemIds, item.id] 
+                            : prev.usedItemIds.filter(id => id !== item.id);
+                          return { ...prev, usedItemIds: newIds };
+                        });
+                      }}
+                    />
+                    {item.brand ? `${item.brand} ` : ''}{item.name} <span style={{ color: 'var(--dim)', fontSize: '0.8rem' }}>({item.category})</span>
+                  </label>
+                )) : (
+                  <div style={{ color: 'var(--dim)' }}>No wash items found in active inventory.</div>
+                )}
+              </div>
+            </div>
+
+            <div className="field" style={{ marginTop: '1rem' }}>
+              <label>Blot Test Result</label>
+              <select 
+                value={washForm.blotTestResult} 
+                onChange={e => setWashForm({ ...washForm, blotTestResult: e.target.value })}
+                style={{ width: '100%', padding: '0.8rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }}
+              >
+                <option value="">-- Select Blot Test Result --</option>
+                <option value="heavy_oil">Heavy Oil (Saturated)</option>
+                <option value="light_oil">Light Oil (Translucent Spots)</option>
+                <option value="no_oil_clean">No Oil (Clean paper)</option>
+                <option value="no_oil_flakes">No Oil (Dry flakes visible)</option>
+              </select>
+            </div>
+
+            <div className="field" style={{ marginTop: '1rem' }}>
+              <label>Scratch Test Result</label>
+              <select 
+                value={washForm.scratchTestResult} 
+                onChange={e => setWashForm({ ...washForm, scratchTestResult: e.target.value })}
+                style={{ width: '100%', padding: '0.8rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px' }}
+              >
+                <option value="">-- Select Scratch Test Result --</option>
+                <option value="white_waxy">White waxy buildup</option>
+                <option value="dry_flakes">Dry white flakes (snow-like)</option>
+                <option value="yellow_flakes">Yellowish greasy flakes</option>
+                <option value="clean">Clean (No residue under nails)</option>
+              </select>
+            </div>
+
+            <div className="field" style={{ marginTop: '1rem' }}>
+              <label>Reflections & Notes (Optional)</label>
               <textarea 
                 value={washForm.notes} 
                 onChange={e => setWashForm({ ...washForm, notes: e.target.value })} 
-                placeholder="Describe the wash routine, product reactions, or scalp conditions..."
-                style={{ width: '100%', padding: '0.8rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px', minHeight: '100px' }} 
+                placeholder="Describe product reactions, sensations, or other observations..."
+                style={{ width: '100%', padding: '0.8rem', background: 'var(--card2)', border: '1px solid var(--border)', color: 'var(--plum)', borderRadius: '4px', minHeight: '80px' }} 
               />
             </div>
 
@@ -769,7 +867,7 @@ export default function Grimoire({ pose }) {
             
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1.5rem' }}>
               <button className="btn" onClick={() => setShowWashModal(false)}>Abandon</button>
-              <button className="btn plum" onClick={handleSaveWash} disabled={!washForm.date || (!washForm.notes.trim() && washForm.likenesses.length === 0)}>
+              <button className="btn plum" onClick={handleSaveWash} disabled={!washForm.date || (washForm.usedItemIds.length === 0 && !washForm.blotTestResult && !washForm.scratchTestResult && !washForm.notes.trim() && washForm.likenesses.length === 0)}>
                 Commit to Ledger
               </button>
             </div>

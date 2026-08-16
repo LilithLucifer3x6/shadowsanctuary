@@ -561,9 +561,7 @@ export default function Intake({ onComplete }) {
             </div>
           )}
         </div>
-      )}
 
-      {path === 'fast' && (
         <div id="fast-route-controls" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
           <button 
             className="btn" 
@@ -614,7 +612,6 @@ export default function Intake({ onComplete }) {
             {currentStep === totalSteps ? 'Enter the Sanctuary' : 'Step Deeper'}
           </button>
         </div>
-      )}
     </div>
   );
 }
