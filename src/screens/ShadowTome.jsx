@@ -673,7 +673,7 @@ export default function ShadowTome({ pose }) {
           <div className="card" style={{ padding: '1.5rem' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ textAlign: 'center', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <i className="ph-duotone ph-door-open"></i> The Inner Sanctum <SpeakerButton text="The Inner Sanctum" />
+              <i className="ph-duotone ph-book-open"></i> The Inner Sanctum <SpeakerButton text="The Inner Sanctum" />
             </h3>
             <div className="note mb-4" style={{ fontSize: '1.2rem', textAlign: 'center' }}>"The ink is your own."</div>
             
@@ -776,7 +776,7 @@ export default function ShadowTome({ pose }) {
                       {entry.moods.map(id => {
                         const found = moodsList.find(m => m.id === id);
                         return found ? found.label : id;
-                      }).join(' â€¢ ')}
+                      }).join(' • ')}
                     </div>
                   )}
                   <div style={{ fontSize: '1.1rem', lineHeight: '1.5', whiteSpace: 'pre-wrap' }}>
@@ -795,7 +795,7 @@ export default function ShadowTome({ pose }) {
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-              <i className="ph-duotone ph-brandy"></i> The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" />
+              <i className="ph-duotone ph-coffee"></i> The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" />
             </h3>
             
             <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 1rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', marginTop: '1rem' }}>
@@ -846,7 +846,7 @@ export default function ShadowTome({ pose }) {
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <div>
               <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-                <i className="ph-duotone ph-faucet"></i> The Stillroom
+                <i className="ph-duotone ph-plant"></i> The Stillroom
               </h3>
               <div style={{ color: 'var(--dim)', fontSize: '0.85rem', marginBottom: '1rem', textAlign: 'center' }}>Raw botanicals and carrier oils.</div>
               {stillroomItems.length === 0 ? (
@@ -857,7 +857,7 @@ export default function ShadowTome({ pose }) {
                     <div key={item.id} className="act" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem' }}>
                       <div style={{ textAlign: 'center' }}>
                         <div style={{ color: 'var(--plum)' }}>{item.name}</div>
-                        <div style={{ fontSize: '0.75rem' }}>{item.brand} â€¢ {item.category}</div>
+                        <div style={{ fontSize: '0.75rem' }}>{item.brand} • {item.category}</div>
                       </div>
                       <div style={{ color: 'var(--gold)' }}>{item.weight ? `${item.weight}g` : ''}</div>
                     </div>
@@ -1029,7 +1029,7 @@ export default function ShadowTome({ pose }) {
       
       {alchemyForm && (
         <div className="modal">
-          <div className="modal-content card" style={{maxWidth: '400px', maxHeight: '90vh', overflowY: 'auto', margin: 'auto'}}>
+          <div className="modal-content card" style={{maxWidth: '400px', maxHeight: "90vh", overflowY: "auto", overflowY: 'auto', margin: 'auto'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Ignite New Alchemy</h3>
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>

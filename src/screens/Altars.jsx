@@ -245,7 +245,7 @@ export default function Altars({ pose }) {
         {ALTARS.map(altar => (
           <button
             key={altar.id}
-            className={`btn ${activeAltarId === altar.id ? 'active' : ''}`}
+            className={`btn sm ${activeAltarId === altar.id ? 'active' : ''}`}
             onClick={() => handleTabClick(altar.id, altar.name)}
             style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', width: '100%' }}
           >
@@ -257,11 +257,14 @@ export default function Altars({ pose }) {
       <div className="card" style={{ width: '100%', maxWidth: '500px', transition: 'opacity 0.3s ease', opacity, position: 'relative' }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', minHeight: '32px', marginBottom: '1.5rem', gap: '0.8rem' }}>
-          <h3 style={{ margin: 0, textAlign: 'center' }}>The {displayedAltar}</h3>
+          <h3 style={{ margin: 0, textAlign: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Icon name={ALTARS.find(a => a.name === displayedAltar)?.icon} />
+            The {displayedAltar}
+          </h3>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <SpeakerButton text={`The ${displayedAltar}`} />
             <button
-              className={`btn ${lesserRites[activeAltarId] ? 'plum' : 'g'}`}
+              className={`btn sm ${lesserRites[activeAltarId] ? 'plum' : 'g'}`}
               onClick={() => setLesserRites(prev => ({...prev, [activeAltarId]: !prev[activeAltarId]}))}
               style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem' }}
             >

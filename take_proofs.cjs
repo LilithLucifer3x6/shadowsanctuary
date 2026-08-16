@@ -114,5 +114,7 @@ const puppeteer = require('puppeteer');
     await page.screenshot({ path: 'docs/proofs/wave2-error.png', fullPage: true });
   } finally {
     await browser.close();
+    try { await require('./test_teardown.cjs')(); } catch (e) {}
   }
 })();
+

@@ -516,7 +516,8 @@ export default function Grimoire({ pose }) {
                   onClick={() => setShowScrying(true)}
                   style={{ background: 'var(--card2)', color: 'var(--plum)', borderColor: 'var(--plum)' }}
                 >
-                  Offer a Visage
+                  <Icon name="ph-camera" weight="duotone" size={20} />
+                  Offer a Testament
                 </button>
               </div>
             </div>
@@ -639,18 +640,18 @@ export default function Grimoire({ pose }) {
           <div className="modal-content" style={{maxWidth: '550px', background: 'transparent', border: 'none', padding: 0}}>
             <VisualInscription 
               onSkip={() => setShowScrying(false)}
-              onComplete={async (data) => {
+              onComplete={async (data, photoPreview) => {
                 if (data) {
                   const todayStr = new Date().toISOString().split('T')[0];
-                  // Append to today's journal
-                  await supabase.from('journal_entries').insert([{
-                    entry_date: todayStr,
-                    moon_phase: 'waxing',
-                    body_text: 'Visage Divination: ' + data
+                  // Append to testament_log
+                  await supabase.from('testament_log').insert([{
+                    user_id: profile.id,
+                    image_url: photoPreview,
+                    notes: 'Testament Recorded: ' + data
                   }]);
                 }
                 setShowScrying(false);
-                setScryingMessage('The Keeper has recorded your visage in the Shadow Tome.');
+                setScryingMessage('The Keeper has recorded your testament in your Records.');
               }}
             />
           </div>
@@ -659,12 +660,13 @@ export default function Grimoire({ pose }) {
 
       {scryingMessage && (
         <div className="modal">
-          <div className="modal-content card" style={{maxWidth: '400px', textAlign: 'center'}}>
+          <div className="modal-content" style={{maxWidth: '450px'}}>
+            <div className="card">
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <Icon name="ph-eye" style={{fontSize: '3rem', color: 'var(--plum)', marginBottom: '1rem'}} />
-            <h3 style={{color: 'var(--plum)', margin: '0 0 1rem 0'}}>Visage Recorded</h3>
-            <p style={{color: 'var(--dim)', marginBottom: '1.5rem'}}>{scryingMessage}</p>
+            <h3 style={{color: 'var(--plum)', margin: '0 0 1rem 0'}}>The Testament Recorded</h3>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>{scryingMessage}</div>
             <button className="btn plum" onClick={() => setScryingMessage('')} style={{width: '100%'}}>Return</button>
+            </div>
           </div>
         </div>
       )}
