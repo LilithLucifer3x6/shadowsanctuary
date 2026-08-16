@@ -1324,10 +1324,10 @@ export default function Rootwork({ pose }) {
                       <label style={{display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--plum)', cursor: 'pointer', marginBottom: addForm.is_prescription ? '1rem' : '0'}}>
                         <input type="checkbox" checked={addForm.is_prescription} style={{ marginTop: '0.2rem', accentColor: 'var(--plum)' }}
                           onChange={e => setAddForm({...addForm, is_prescription: e.target.checked})} />
-                        <span>Pharmacy Prescription (Rx)</span>
+                        <span>Pharmacy Formula (Rx)</span>
                       </label>
                       {addForm.is_prescription && (
-                        <VoiceInput isTextArea={true} placeholder="Prescription details, strength, and instructions..."
+                        <VoiceInput isTextArea={true} placeholder="Formula details, strength, and instructions..."
                           value={addForm.prescription_details}
                           onChange={e => setAddForm({...addForm, prescription_details: e.target.value})} />
                       )}

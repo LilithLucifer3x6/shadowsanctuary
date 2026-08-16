@@ -281,7 +281,7 @@ export default function Intake({ onComplete }) {
               {ans.rxList.map((rx, i) => (
                 <div key={i} style={{ borderLeft: '2px solid var(--gold)', paddingLeft: '1rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                    <span style={{ color: 'var(--plum)' }}>Prescription {i + 1}</span>
+                    <span style={{ color: 'var(--plum)' }}>Systemic {i + 1}</span>
                     <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: 0 }} onClick={() => {
                       const newList = [...ans.rxList];
                       newList.splice(i, 1);
