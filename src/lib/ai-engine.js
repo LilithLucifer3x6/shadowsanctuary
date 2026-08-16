@@ -170,7 +170,7 @@ export async function parseProductImage(base64Image, mediaType) {
           form: { type: 'string', enum: ['liquid', 'cream', 'gel', 'powder', 'solid'], description: 'Physical form of the product' },
           container_size: { type: 'string', description: 'Volume or weight (e.g. 50ml, 1.7oz, 30g)' },
           texture: { type: 'string', enum: ['liquid', 'gel', 'serum', 'lotion', 'mousse', 'cream', 'oil', 'balm', 'ointment', 'solid', 'powder'], description: 'Physical texture of the product' },
-          application_zones: { type: 'array', items: { type: 'string' }, description: 'Body zones where this is applied (e.g., Visage, Vessel, Crown, Grin, oral)' },
+          application_zones: { type: 'array', items: { type: 'string' }, description: 'Body zones where this is applied (e.g. Crown, Visage-above, Visage-midway, Visage-below, Gaze, Grin, Veil, Vessel-underarm, Vessel-chest/back, Vessel-arms/legs, Vessel-hands/feet, Vessel-general, or oral)' },
           period_after_opening_months: { type: 'number', description: 'PAO from the open jar icon (in months), if present' },
           unopened_shelf_life_months: { type: 'number', description: 'Unopened shelf life (in months), if explicitly stated' },
           manufacture_date: { type: 'string', description: 'Manufacture date (YYYY-MM-DD), if present' },
@@ -200,7 +200,7 @@ export async function parseProductImage(base64Image, mediaType) {
             },
             {
               type: 'text',
-              text: 'Extract the brand, product name, ingredients list, category (e.g. Cleanser, Moisturizer, Toner), and physical form of this product. Crucially, infer the application_zones (e.g. Visage, Vessel, Crown, Grin, or oral for pills), read the PAO (Period After Opening) jar icon if present, look for any printed manufacture/expiration dates, check if it is a pharmacy prescription (is_prescription), and classify its item_type (consumable for products, arsenal for physical tools/devices).'
+              text: 'Extract the brand, product name, ingredients list, category (e.g. Cleanser, Moisturizer, Toner), and physical form of this product. Crucially, infer the application_zones (e.g. Crown, Visage-above, Visage-midway, Visage-below, Gaze, Grin, Veil, Vessel-underarm, Vessel-chest/back, Vessel-arms/legs, Vessel-hands/feet, Vessel-general, or oral for pills), read the PAO (Period After Opening) jar icon if present, look for any printed manufacture/expiration dates, check if it is a pharmacy prescription (is_prescription), and classify its item_type (consumable for products, arsenal for physical tools/devices).'
             }
           ]
         }
@@ -262,7 +262,7 @@ export async function parseBatchProductImages(images) {
                 form: { type: 'string', enum: ['liquid', 'cream', 'gel', 'powder', 'solid'], description: 'Physical form of the product' },
                 container_size: { type: 'string', description: 'Volume or weight (e.g. 50ml, 1.7oz, 30g)' },
                 texture: { type: 'string', enum: ['liquid', 'gel', 'serum', 'lotion', 'mousse', 'cream', 'oil', 'balm', 'ointment', 'solid', 'powder'], description: 'Physical texture of the product' },
-                application_zones: { type: 'array', items: { type: 'string' }, description: 'Body zones where this is applied (e.g., Visage, Vessel, Crown, Grin, oral)' },
+                application_zones: { type: 'array', items: { type: 'string' }, description: 'Body zones where this is applied (e.g. Crown, Visage-above, Visage-midway, Visage-below, Gaze, Grin, Veil, Vessel-underarm, Vessel-chest/back, Vessel-arms/legs, Vessel-hands/feet, Vessel-general, or oral)' },
                 period_after_opening_months: { type: 'number', description: 'PAO from the open jar icon (in months), if present' },
                 unopened_shelf_life_months: { type: 'number', description: 'Unopened shelf life (in months), if explicitly stated' },
                 manufacture_date: { type: 'string', description: 'Manufacture date (YYYY-MM-DD), if present' },
@@ -793,7 +793,7 @@ export async function lookupProductDetails(brand, name, domain) {
             name:                        { type: 'string' },
             ingredients:                 { type: 'string', description: 'Comma-separated ingredient list' },
             category:                    { type: 'string', description: 'Human-readable product category, e.g. "Hair Oil", "Body Scrub", "Eye Serum"' },
-            application_zones:           { type: 'array', items: { type: 'string' }, description: 'Body areas this product is applied to, e.g. ["scalp", "hair", "face"]' },
+            application_zones:           { type: 'array', items: { type: 'string' }, description: 'Body areas this product is applied to, e.g. ["Crown", "Visage-midway", "oral"]' },
             period_after_opening_months: { type: 'number', description: 'Typical months until expiry after opening (PAO). Null if unknown.' },
             unopened_shelf_life_months:  { type: 'number', description: 'Typical unopened shelf life in months. Null if unknown.' },
             item_type:                   { type: 'string', enum: ['consumable', 'arsenal', 'composite'], description: '"consumable" for products, "arsenal" for tools/devices, "composite" for handmade mixes' },

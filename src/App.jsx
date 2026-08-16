@@ -309,6 +309,11 @@ export default function App() {
     setActiveTab(tabId);
   };
 
+  if (typeof window !== 'undefined') {
+    window.setCurrentScreen = setCurrentScreen;
+    window.handleTabClick = handleTabClick;
+  }
+
   const saveSettings = async (newSettings) => {
     setSettings(newSettings);
     localStorage.setItem('app_settings', JSON.stringify(newSettings));

@@ -61,7 +61,7 @@ export default function Intake({ onComplete }) {
   );
 
   return (
-    <div className="card" style={{ width: '100%', minHeight: '400px', margin: '2rem auto', display: 'flex', flexDirection: 'column' }}>
+    <div className="card" style={{ width: '100%', maxWidth: '960px', minHeight: '400px', margin: '2rem auto', display: 'flex', flexDirection: 'column' }}>
       <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
       
       <div style={{ flexShrink: 0 }}>

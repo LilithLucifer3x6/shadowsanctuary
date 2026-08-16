@@ -7,6 +7,9 @@ import '@phosphor-icons/web/regular';
 import './design-tokens.css';
 import './styles/overrides.css';
 
+import { buildBaseRoutines } from './lib/routine-engine.js';
+window.buildBaseRoutines = buildBaseRoutines;
+
 ReactDOM.createRoot(document.getElementById('app')).render(
   <React.StrictMode>
     <DialogProvider>
@@ -14,4 +17,3 @@ ReactDOM.createRoot(document.getElementById('app')).render(
     </DialogProvider>
   </React.StrictMode>
 );
-

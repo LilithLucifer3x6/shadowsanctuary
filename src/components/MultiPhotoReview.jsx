@@ -126,11 +126,13 @@ function DroppableGroup({ product, onUpdateField, imagesData }) {
                 </select>
               </div>
 
-              <VoiceInput 
-                value={(product.application_zones || []).join(', ')} 
-                onChange={e => onUpdateField(product.id, 'application_zones', e.target.value.split(',').map(s=>s.trim()).filter(Boolean))} 
-                placeholder="Application Zones (Required, comma separated)"
-              />
+              <div style={{ margin: '0.5rem 0' }}>
+                  <label style={{color: 'var(--plum)', fontSize: '0.9rem'}}>Application Zones</label>
+                  <ZoneSelector 
+                    selectedZones={product.application_zones || []} 
+                    onChange={zones => onUpdateField(product.id, 'application_zones', zones)} 
+                  />
+                </div>
 
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <label style={{display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', width: '100px'}}>

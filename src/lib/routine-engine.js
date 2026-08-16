@@ -123,8 +123,8 @@ export function buildBaseRoutines(items, userProfile = {}, wearables = {}) {
   if (algList.length > 0) {
     items = items.filter(item => {
       if (!item.ingredients) return true;
-      const ing = item.ingredients.toLowerCase();
-      const hasAllergen = algList.some(alg => ing.includes(alg));
+      const ingStr = Array.isArray(item.ingredients) ? item.ingredients.join(' ').toLowerCase() : String(item.ingredients).toLowerCase();
+      const hasAllergen = algList.some(alg => ingStr.includes(alg));
       return !hasAllergen;
     });
   }
@@ -265,10 +265,10 @@ export function buildBaseRoutines(items, userProfile = {}, wearables = {}) {
       
       if (isVitC || isAcid) {
         // Check zone overlap
-        const itemZone = (item.application_zone || 'full-face').toLowerCase();
+        const itemZoneArr = item.application_zones || (item.application_zone ? [item.application_zone] : ['Crown']);
         const overlaps = pmRetinoids.some(r => {
-          const rZone = (r.application_zone || 'full-face').toLowerCase();
-          return rZone === itemZone || rZone === 'full-face' || itemZone === 'full-face';
+          const rZoneArr = r.application_zones || (r.application_zone ? [r.application_zone] : ['Crown']);
+          return zonesOverlap(rZoneArr, itemZoneArr);
         });
         
         if (overlaps) {
@@ -456,9 +456,12 @@ export function checkConflicts(rawItemsList, userProfile = {}) {
   const zoneMap = {};
   items.forEach(rawItem => {
     const item = parseFlags(rawItem);
-    const zone = (item.application_zone || 'full-face').toLowerCase();
-    if (!zoneMap[zone]) zoneMap[zone] = [];
-    zoneMap[zone].push(item);
+    const zones = item.application_zones || (item.application_zone ? [item.application_zone] : ['Crown']);
+    zones.forEach(z => {
+      const zone = z.toLowerCase();
+      if (!zoneMap[zone]) zoneMap[zone] = [];
+      zoneMap[zone].push(item);
+    });
   });
 
   // DYNAMIC CONFLICT RULES
@@ -477,9 +480,9 @@ export function checkConflicts(rawItemsList, userProfile = {}) {
       for (const a of itemsA) {
         for (const b of itemsB) {
           if (a.id === b.id) continue;
-          if (zonesOverlap([a.application_zone || 'full-face'], [b.application_zone || 'full-face'])) {
+          if (zonesOverlap(a.application_zones || (a.application_zone ? [a.application_zone] : ['Crown']), b.application_zones || (b.application_zone ? [b.application_zone] : ['Crown']))) {
             zonalConflictDetected = true;
-            conflicts.push(`Zonal Conflict [${a.application_zone} / ${b.application_zone}]: ${rule.description || 'Mixing these components is not advised.'}`);
+            conflicts.push(`Zonal Conflict [${(a.application_zones || [a.application_zone]).join(',')} / ${(b.application_zones || [b.application_zone]).join(',') || 'Crown'}]: ${rule.description || 'Mixing these components is not advised.'}`);
             break;
           }
         }
