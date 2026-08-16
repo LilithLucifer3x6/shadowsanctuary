@@ -549,9 +549,9 @@ export default function App() {
             <div className="corner bl"></div><div className="corner br"></div>
             
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <h2>Sanctuary Tuning</h2>
-                <div className="mt mb-4">Adjust the chamber's atmosphere.</div>
+              <div style={{ flex: 1, textAlign: 'center' }}>
+                <h2 style={{ textAlign: 'center' }}>Sanctuary Tuning</h2>
+                <div className="mt mb-4" style={{ textAlign: 'center' }}>Adjust the chamber's atmosphere.</div>
               </div>
               <button className="btn sm" onClick={() => setShowSettings(false)}>X</button>
             </div>
@@ -562,7 +562,7 @@ export default function App() {
                 <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', textAlign: 'center' }}>Sanctuary Tuning</h3>
                 
                 <div className="field" style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>Inscription Scale ({settings.fontSize}px)</label>
+                  <label style={{ display: 'block', marginBottom: '0.5rem' }}>Inscription Scale: {settings.fontSize}px</label>
                   <input type="range" min="12" max="32" value={settings.fontSize} 
                          onChange={e => setSettings({...settings, fontSize: e.target.value})} />
                 </div>
@@ -581,7 +581,7 @@ export default function App() {
                     <option value="Parisienne">Parisienne</option>
                     <option value="Allura">Allura</option>
                     <option value="Great Vibes">Great Vibes</option>
-                    <option value="system-ui">Mortal Script (System)</option>
+                    <option value="system-ui">Mortal Script</option>
                   </select>
                 </div>
                 
@@ -602,9 +602,7 @@ export default function App() {
                     borderRadius: '8px',
                     border: '1px solid var(--border)'
                   }}>
-                    As above, so below. By ink and intent, this sanctuary is bound to my will. The ephemeral made concrete. 
-                    <br/><br/>
-                    1234567890
+                    As above, so below. The ephemeral made concrete. 1234567890
                   </div>
                 </div>
 
@@ -676,7 +674,7 @@ export default function App() {
                           } else {
                             setSettings({...settings, health: false});
                           }
-                        }} /> <span style={{ color: 'var(--text)' }}>Corporeal Sensors (RingConn, Renpho, Samsung)</span>
+                        }} /> <span style={{ color: 'var(--text)' }}>Corporeal Sensors</span>
                       </label>
                       
                       {settings.health && (
@@ -696,7 +694,7 @@ export default function App() {
 
                     <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--crimson)' }}>
                       <input type="checkbox" style={{ marginTop: '0.2rem' }} checked={settings.travel_mode || false} onChange={e => setSettings({...settings, travel_mode: e.target.checked})} />
-                      Travel / Disruption Mode (Suppress Non-Essential Notifications)
+                      Travel or Disruption Mode: Suppress Non-Essential Notifications
                     </label>
                     
                     <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--crimson)' }}>
@@ -727,7 +725,7 @@ export default function App() {
                     if (await confirm("Leave the Sanctuary? You'll need to sign in again to return.")) {
                       await handleLogout();
                     }
-                  }} className="btn" style={{ width: '100%', marginBottom: '0', background: 'var(--card2)', borderColor: 'var(--crimson)', color: 'var(--crimson)' }}>Leave the Sanctuary (Log Out)</button>
+                  }} className="btn" style={{ width: '100%', marginBottom: '0', background: 'var(--card2)', borderColor: 'var(--crimson)', color: 'var(--crimson)' }}>Leave the Sanctuary</button>
                 </div>
                 
                 <h3 style={{ borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '2rem', color: 'var(--crimson)', textAlign: 'center' }}>Danger Zone</h3>
@@ -778,9 +776,9 @@ export default function App() {
                 </div>
                 
               </div>
-              <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <button onClick={() => saveSettings(settings)} className="btn full plum" style={{ marginTop: '0', padding: '1rem', fontSize: '1.2rem' }}>Bind the Runes of Power</button>
-              </div>
+                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', width: '100%' }}>
+                <button onClick={() => saveSettings(settings)} className="btn plum" style={{ marginTop: '0', padding: '1rem', fontSize: '1.2rem' }}>Bind the Runes of Power</button>
+                </div>
             </div>
           </div>
         </div>

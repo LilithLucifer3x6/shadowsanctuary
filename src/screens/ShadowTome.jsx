@@ -721,7 +721,7 @@ export default function ShadowTome({ pose }) {
                 <div>
                   <input type="file" multiple accept="image/*" style={{ display: 'none' }} id="tome-batch" onChange={handleBatchPhoto} />
                   <label htmlFor="tome-batch" className="btn sm">
-                    <Icon name="ph-camera" /> Scry (Upload Photo)
+                    <Icon name="ph-camera" /> Scry by Photo
                   </label>
                 </div>
               </div>
@@ -813,7 +813,7 @@ export default function ShadowTome({ pose }) {
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-              <Icon name="ph-teapot" /> The Herbarium <SpeakerButton text="The Herbarium" />
+              <Icon name="teapot" /> The Herbarium <SpeakerButton text="The Herbarium" />
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -959,7 +959,7 @@ export default function ShadowTome({ pose }) {
 
             {teaModalState === 'candidates' && (
               <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                <div style={{color: 'var(--plum)'}}>Visions from the collective memory (Open Food Facts):</div>
+                <div style={{color: 'var(--plum)'}}>Visions from the collective memory:</div>
                 {teaCandidates.length === 0 ? (
                   <div style={{color: 'var(--dim)', textAlign: 'center'}}>No matching visions found.</div>
                 ) : (
@@ -1029,12 +1029,12 @@ export default function ShadowTome({ pose }) {
       
       {alchemyForm && (
         <div className="modal">
-          <div className="modal-content card" style={{maxWidth: '400px', maxHeight: "90vh", overflowY: 'auto', margin: 'auto'}}>
+          <div className="modal-content card" style={{maxWidth: '400px', margin: 'auto'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Ignite New Alchemy</h3>
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>
                   <div style={{ marginBottom: '1rem', paddingBottom: '1rem', borderBottom: '1px dashed var(--border)' }}>
-                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. The Transmutation (Oil Infusion)</div>
+                    <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>1. The Transmutation: Oil Infusion</div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <div className="field" style={{ flex: 1 }}>
                         <label>Potency</label>
@@ -1051,7 +1051,7 @@ export default function ShadowTome({ pose }) {
                       </div>
                     </div>
                     <button className="btn sm mt-2" onClick={() => tcheckInputRef.current?.click()} disabled={isScanningTCheck}>
-                      <Icon name="ph-camera" /> {isScanningTCheck ? 'Divining...' : 'Divine Reading (tCheck)'}
+                      <Icon name="ph-camera" /> {isScanningTCheck ? 'Divining...' : 'Divine Reading: tCheck'}
                     </button>
                     <input type="file" accept="image/*" capture="environment" ref={tcheckInputRef} style={{ display: 'none' }} onChange={handleScanTCheck} />
                   </div>
@@ -1060,15 +1060,15 @@ export default function ShadowTome({ pose }) {
                     <div style={{ color: 'var(--plum)', marginBottom: '0.5rem', fontWeight: 'bold' }}>2. The Final Binding</div>
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <div className="field" style={{ flex: 1 }}>
-                        <label>Oil (ml)</label>
+                        <label>Oil ml</label>
                         <input type="number" value={alchemyForm.oil_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, oil_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
                       </div>
                       <div className="field" style={{ flex: 1 }}>
-                        <label>Honey (ml)</label>
+                        <label>Honey ml</label>
                         <input type="number" value={alchemyForm.honey_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, honey_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
                       </div>
                       <div className="field" style={{ flex: 1 }}>
-                        <label>Lecithin (ml)</label>
+                        <label>Lecithin ml</label>
                         <input type="number" value={alchemyForm.lecithin_volume_ml} onChange={e => setAlchemyForm({...alchemyForm, lecithin_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)' }} />
                       </div>
                     </div>
@@ -1094,7 +1094,7 @@ export default function ShadowTome({ pose }) {
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             
             <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Register a Dram</h3>
-            <div className="mt mb-4" style={{color: 'var(--plum)', textAlign: 'center'}}>Name the dram and declare its true volume (ml).</div>
+            <div className="mt mb-4" style={{color: 'var(--plum)', textAlign: 'center'}}>Name the dram and declare its true volume in ml.</div>
             
             <div className="field">
               <label>Name</label>
@@ -1107,7 +1107,7 @@ export default function ShadowTome({ pose }) {
             </div>
             
             <div className="field mt-3">
-              <label>Volume Capacity (ml)</label>
+              <label>Volume Capacity in ml</label>
               <input type="number" step="0.1" value={dramForm.vessel_volume_ml} onChange={e => setDramForm({...dramForm, vessel_volume_ml: e.target.value})} style={{ background: 'var(--card2)', color: 'var(--plum)', width: '100%', padding: '0.5rem' }} />
             </div>
             

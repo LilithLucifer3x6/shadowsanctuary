@@ -319,9 +319,9 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
 
 
 /* Global Modal Fix */
-.modal { position: fixed !important; inset: 0 !important; z-index: 9000 !important; padding: 4rem 1.2rem !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: flex-start !important; overflow-y: auto !important; }
+.modal { position: fixed !important; inset: 0 !important; z-index: 9000 !important; padding: 1.2rem !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; overflow-y: auto !important; }
 .modal::before, .modal::after { content: '' !important; margin: auto !important; flex: none !important; }
-.modal .card, .modal-content { margin: 0 auto !important; max-height: none !important; }
+.modal .card, .modal-content { margin: auto !important; max-height: none !important; }
 
 
 
@@ -332,5 +332,5 @@ input:focus, select:focus, textarea:focus { outline: none; border-color: var(--p
 .rootwork-grid .card { height: 100% !important; margin: 0 !important; }
 
 
-.altars-nav-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 0.8rem !important; width: 100% !important; }
+.altars-nav-grid { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 0.8rem !important; width: 100% !important; }
 

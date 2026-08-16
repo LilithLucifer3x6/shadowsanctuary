@@ -409,7 +409,6 @@ export default function Grimoire({ pose }) {
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
         <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Icon name="ph-clock" /> The Appointed Times{' '}
-          <Icon name="ph-calendar" />{' '}
           <SpeakerButton text="The Appointed Times" />
         </h3>
         
@@ -434,8 +433,7 @@ export default function Grimoire({ pose }) {
           <div className="corner tl"></div><div className="corner tr"></div>
           <div className="corner bl"></div><div className="corner br"></div>
           <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Icon name="ph-calendar" /> The Appointed Days{' '}
-            <Icon name="ph-calendar-star" />{' '}
+            <Icon name="ph-calendar-star" /> The Appointed Days{' '}
             <SpeakerButton text='The Appointed Days' />
           </h3>
           <div className="mt mb-4">Rites that occur sparingly.</div>
@@ -535,16 +533,15 @@ export default function Grimoire({ pose }) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'stretch' }}>
-        <div className="card" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
-          <div className="corner tl"></div><div className="corner tr"></div>
-          <div className="corner bl"></div><div className="corner br"></div>
-          <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Icon name="ph-arrows-clockwise" /> The Weekly Wheel{' '}
-            <Icon name="ph-arrows-clockwise" />{' '}
-            <SpeakerButton text='The Weekly Wheel' />
-          </h3>
-          <div className="mb-2" style={{ marginTop: '-0.2rem', textAlign: 'center' }}>Rhythms and cycles.</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'flex-start' }}>
+          <div className="card" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
+            <div className="corner tl"></div><div className="corner tr"></div>
+            <div className="corner bl"></div><div className="corner br"></div>
+            <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Icon name="ph-calendar-plus" /> The Weekly Wheel{' '}
+              <SpeakerButton text='The Weekly Wheel' />
+            </h3>
+            <div className="mt" style={{ textAlign: 'center' }}>Rhythms and cycles.</div>
           
           <div className="wheel-container">
             <div className="wheel">
@@ -582,30 +579,29 @@ export default function Grimoire({ pose }) {
           </div>
         </div>
 
-        <div className="card" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
+        </div>
+      </div>
+
+      <div className="card" style={{ margin: '1.5rem 0 0 0', maxWidth: 'none', width: '100%', display: 'flex', flexDirection: 'column' }}>
         <div className="corner tl"></div><div className="corner tr"></div>
         <div className="corner bl"></div><div className="corner br"></div>
-          <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Icon name="ph-moon-stars" /> The Ephemeris{' '}
-            <Icon name="ph-planet" />{' '}
-            <SpeakerButton text='The Ephemeris' />
-          </h3>
-        <div className="mb-2" style={{ marginTop: '-0.2rem', textAlign: 'center' }}>The long count.</div>
+        <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Icon name="ph-planet" /> The Ephemeris{' '}
+          <SpeakerButton text='The Ephemeris' />
+        </h3>
+        <div className="mt" style={{ textAlign: 'center' }}>The long count.</div>
         
-        <h2 style={{ fontSize: '2.5rem', color: 'var(--plum)', textAlign: 'center', margin: '1rem 0' }}>
+        <h2 style={{ fontSize: '2.5rem', color: 'var(--plum)', textAlign: 'center', margin: '0.5rem 0' }}>
           {new Date(year, month).toLocaleString('default', { month: 'long', year: 'numeric' })}
         </h2>
         
-        <div className="cal">
+        <div className="cal" style={{ padding: '0 0.5rem 1rem 0.5rem' }}>
           <div className="ch">S</div><div className="ch">M</div><div className="ch">T</div>
           <div className="ch">W</div><div className="ch">T</div><div className="ch">F</div>
           <div className="ch">S</div>
           {emptyDays}
           {calDays}
         </div>
-      </div>
-
-      </div>
       </div>
       
       {overrideModal.show && (
