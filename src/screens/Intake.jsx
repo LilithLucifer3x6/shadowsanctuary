@@ -11,7 +11,6 @@ import { SkinQuiz, ScalpQuiz, PorosityQuiz } from '../components/AssessmentQuizz
 import VoiceInput from '../components/VoiceInput.jsx';
 
 export default function Intake({ onComplete }) {
-  const [path, setPath] = useState('ai');
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 11;
 
@@ -46,15 +45,6 @@ export default function Intake({ onComplete }) {
   const [prescriptionStartDate, setPrescriptionStartDate] = useState('');
   const [noAlg, setNoAlg] = useState(false);
 
-  // AI Path State
-  const [isReady, setIsReady] = useState(true);
-  const [aiStatus, setAiStatus] = useState('');
-  const [chatHistory, setChatHistory] = useState([
-    { role: 'assistant', content: 'Greetings. I am the Keeper of The Lounge. Let us prepare your chamber. What brings you to this place?' }
-  ]);
-  const [chatInput, setChatInput] = useState('');
-  const chatLogRef = useRef(null);
-
   useEffect(() => {
     supabase.from('user_profile').select('intake_answers, intake_completed').maybeSingle().then(({ data }) => {
       if (data) {
@@ -82,7 +72,6 @@ export default function Intake({ onComplete }) {
         
         // If they already completed it but are just missing the date, jump to step 4
         if (ans.oralList && ans.oralList.some(m => m.name && m.name.toLowerCase().includes('isotretinoin') || m.name && m.name.toLowerCase().includes('accutane')) && !ans.prescription_start_date) {
-            setPath('fast');
             setCurrentStep(6);
         }
         }
@@ -100,54 +89,7 @@ export default function Intake({ onComplete }) {
     AI.generateTraditions().then(setTraditionsOptions);
   }, []);
 
-  useEffect(() => {
-    if (chatLogRef.current) {
-      chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight;
-    }
-  }, [chatHistory]);
 
-
-
-  const sendChatMessage = async () => {
-    const text = chatInput.trim();
-    if (!text) return;
-    
-    setChatInput('');
-    const newHistory = [...chatHistory, { role: 'user', content: text }];
-    setChatHistory(newHistory);
-    setAiStatus('The Keeper is listening...');
-    
-    try {
-      const { conductIntake } = await import('../lib/ai-engine.js');
-      const { reply, extractedData } = await conductIntake(newHistory);
-      
-      setAiStatus('');
-      setChatHistory(prev => [...prev, { role: 'assistant', content: reply }]);
-      
-      if (extractedData) {
-        setAiStatus('The Keeper has finished divining your answers.');
-        const avatarConfig = JSON.parse(localStorage.getItem('avatar_config') || '{}');
-        const { data: existing } = await supabase.from('user_profile').select('id').maybeSingle();
-        const profileData = {
-          intake_completed: true,
-          intake_answers: { ...extractedData, prescription_start_date: prescriptionStartDate },
-          avatar_config: avatarConfig
-        };
-        if (existing) {
-          await supabase.from('user_profile').update(profileData).eq('id', existing.id);
-        } else {
-          await supabase.from('user_profile').insert([profileData]);
-        }
-        localStorage.setItem('intake_completed', 'true');
-        setTimeout(() => {
-          onComplete();
-        }, 2000);
-      }
-    } catch (err) {
-      setAiStatus('Error: ' + err.message);
-      setChatHistory(prev => prev.slice(0, -1));
-    }
-  };
 
   const handleFinishFastRoute = async () => {
     const concerns = selectedConcerns;
@@ -262,89 +204,13 @@ export default function Intake({ onComplete }) {
       
       <div style={{ flexShrink: 0 }}>
         <h2 style={{ textAlign: 'center', fontSize: '2.5rem', color: 'var(--plum)' }}>
-          <Icon name={G.sparkles || 'sparkles'} /> The First Inscription
+          <Icon name={G.sparkles || 'sparkles'} /> The Rite of Naming
         </h2>
-        
-        <div id="path-toggle" style={{ textAlign: 'center', marginBottom: '1rem', display: 'flex', justifyContent: 'center', gap: '1rem' }}>
-          <button 
-            className="btn" 
-            onClick={() => setPath('ai')}
-            style={{ 
-              background: path === 'ai' ? 'rgba(0,0,0,0.4)' : 'transparent', 
-              color: path === 'ai' ? 'var(--plum)' : 'var(--silver)', 
-              border: path === 'ai' ? '1px solid var(--plum)' : '1px solid var(--border)',
-              fontSize: '1.3rem',
-              padding: '0.6rem 1.2rem'
-            }}
-          >
-            The Guardian's Inquiry
-          </button>
-          <button 
-            className="btn" 
-            onClick={() => setPath('fast')}
-            style={{ 
-              background: path === 'fast' ? 'rgba(0,0,0,0.4)' : 'transparent', 
-              color: path === 'fast' ? 'var(--plum)' : 'var(--silver)',
-              border: path === 'fast' ? '1px solid var(--plum)' : '1px solid var(--border)',
-              fontSize: '1.3rem',
-              padding: '0.6rem 1.2rem'
-            }}
-          >
-            The Swift Invocation
-          </button>
-        </div>
       </div>
 
-      {path === 'ai' && (
-        <div id="ai-path" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-          <div 
-            id="ai-chat-log" 
-            ref={chatLogRef}
-            style={{ 
-              flex: 1, 
-              overflowY: 'auto', 
-              border: '1px solid var(--border)', 
-              padding: '1rem', 
-              marginBottom: '1rem', 
-              background: 'rgba(0,0,0,0.1)', 
-              borderRadius: '4px', 
-              fontSize: '1.1rem', 
-              lineHeight: '1.5' 
-            }}
-          >
-            {chatHistory.map((msg, idx) => (
-              <div 
-                key={idx} 
-                className={`msg ${msg.role === 'assistant' ? 'ai' : 'user'}`} 
-                style={{ 
-                  color: msg.role === 'assistant' ? 'var(--silver)' : 'var(--plum)', 
-                  marginBottom: '1rem',
-                  textAlign: msg.role === 'user' ? 'right' : 'left'
-                }}
-              >
-                {msg.content}
-              </div>
-            ))}
-          </div>
-          <div className="field" style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-end', flexShrink: 0 }}>
-            <div className="ip mic" style={{ flex: 1 }}>
-              <VoiceInput 
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && sendChatMessage()}
-                placeholder="Speak your mind..." 
-              />
-            </div>
-            <button className="btn plum" onClick={sendChatMessage}>Whisper</button>
-          </div>
-          <div id="ai-status" style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: 'var(--plum)', minHeight: '1.5rem', flexShrink: 0 }}>
-            {aiStatus}
-          </div>
-        </div>
-      )}
 
-      {path === 'fast' && (
-        <div id="ins-steps" style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }}>
+
+      <div id="ins-steps" style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }}>
           {currentStep === 1 && (
             <div className="ins-step">
               {renderTitle('The Foundation of the Vessel')}
@@ -437,9 +303,9 @@ export default function Intake({ onComplete }) {
                     className={`chip ${selectedConcerns.includes(c.id) ? 'on' : ''} ${primaryConcern === c.id ? 'primary-concern-chip' : ''}`}
                     style={{ border: primaryConcern === c.id ? '2px solid var(--gold)' : '' }}
                     onClick={() => {
-                      if (selectedConcerns.includes('relaxation') || selectedConcerns.includes('na')) {
-                        setSelectedConcerns([c.id]);
-                        setPrimaryConcern('');
+                      if (c.id === 'na') {
+                        setSelectedConcerns(prev => prev.includes('na') ? [] : ['na']);
+                        setPrimaryConcern(prev => prev === 'na' ? '' : 'na');
                       } else {
                         toggleSelection(setSelectedConcerns, c.id);
                         if (primaryConcern === c.id) setPrimaryConcern('');
@@ -482,7 +348,7 @@ export default function Intake({ onComplete }) {
               <div className="chips" style={{ marginTop: '1rem' }}>
                 <div 
                   className={`chip ${selectedConditions.includes('na') ? 'on' : ''}`}
-                  onClick={() => setSelectedConditions(['na'])}
+                  onClick={() => setSelectedConditions(prev => prev.includes('na') ? [] : ['na'])}
                 >
                   Not Applicable
                 </div>
@@ -512,7 +378,7 @@ export default function Intake({ onComplete }) {
               <div className="chips" style={{ marginTop: '1rem' }}>
                 <div 
                   className={`chip ${selectedTextures.includes('na') ? 'on' : ''}`}
-                  onClick={() => setSelectedTextures(['na'])}
+                  onClick={() => setSelectedTextures(prev => prev.includes('na') ? [] : ['na'])}
                 >
                   I have no preference
                 </div>
@@ -665,7 +531,7 @@ export default function Intake({ onComplete }) {
               <div className="chips">
                 <div 
                   className={`chip ${selectedTraditions.includes('na') ? 'on' : ''}`}
-                  onClick={() => setSelectedTraditions(['na'])}
+                  onClick={() => setSelectedTraditions(prev => prev.includes('na') ? [] : ['na'])}
                 >
                   Not Applicable
                 </div>
