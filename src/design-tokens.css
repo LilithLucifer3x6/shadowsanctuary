@@ -1,3 +1,16 @@
+@font-face {
+  font-family: 'Elsie';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/assets/Elsie-Regular.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Elsie';
+  font-style: normal;
+  font-weight: 900;
+  src: url('/assets/Elsie-Black.ttf') format('truetype');
+}
+
 /* Shadow & Sanctuary ÔÇö design tokens and component styles.
    Committed from the approved mockup. USE THIS FILE VERBATIM.
    Do not reinterpret, restyle, or 'improve' these values. If a component
