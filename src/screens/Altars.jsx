@@ -27,6 +27,7 @@ const ALTARS = [
 export default function Altars({ pose }) {
   const [activeAltarId, setActiveAltarId] = useState('crown');
   const [displayedAltar, setDisplayedAltar] = useState('Crown');
+  const [profile, setProfile] = useState(null);
   const [opacity, setOpacity] = useState(1);
   const [items, setItems] = useState([]);
   const [checkedIds, setCheckedIds] = useState(new Set());
@@ -131,7 +132,7 @@ export default function Altars({ pose }) {
 
   const renderAltarContent = () => {
     // Sort items by weight using engine logic
-    const { getWeight } = buildBaseRoutines(items, {});
+    const { getWeight } = buildBaseRoutines(items, profile || {});
     let domainItems = items
       .filter(i => {
         const d = (i.domain || '').toLowerCase();

@@ -197,14 +197,13 @@ export default function Grimoire({ pose }) {
   const handleSaveWash = async () => {
     try {
       if (!profile) return;
-      if (!window.location.search.includes('test_grim=1')) {
-        await supabase.from('journal_entries').insert([{
-          entry_date: washForm.date,
-          moon_phase: 'waxing',
-          body_text: `Wash Day:\n${washForm.notes}`,
-          wash_ledger_likenesses: washForm.likenesses
-        }]);
-      }
+      await supabase.from('wash_day_log').insert([{
+        user_id: profile.id,
+        entry_date: washForm.date,
+        moon_phase: 'waxing',
+        notes: washForm.notes,
+        likenesses: washForm.likenesses
+      }]);
       setShowWashModal(false);
       setWashForm({ date: new Date().toISOString().split('T')[0], notes: '', likenesses: [] });
       setScryingMessage('The Keeper has recorded your wash day.');

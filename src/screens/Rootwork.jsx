@@ -889,7 +889,7 @@ export default function Rootwork({ pose }) {
             <div className="mt mb-4" style={{ textAlign: 'center' }}>The material cost of your active rituals, tied to frequency of devotion.</div>
             {(() => {
               const DOMAINS = ['Crown', 'Visage', 'Gaze', 'Grin', 'Vessel', 'Veil'];
-              const { amItems, pmItems } = buildBaseRoutines(items, {}, {});
+              const { amItems, pmItems } = buildBaseRoutines(items, profile || {}, {});
               const activeIds = new Set([...amItems.map(i => i.id), ...pmItems.map(i => i.id)]);
               const activeItems = items.filter(i => activeIds.has(i.id));
 

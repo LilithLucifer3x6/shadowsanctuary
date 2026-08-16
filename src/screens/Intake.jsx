@@ -73,7 +73,7 @@ export default function Intake({ onComplete }) {
         if (ans.textures) setSelectedTextures(ans.textures);
         if (ans.traditions) setSelectedTraditions(ans.traditions);
         if (ans.rxList) setRxList(ans.rxList);
-        if (ans.oralList) setOralList(ans.oralList);
+        if (ans.oralList) setOralList(ans.oralList.map(o => typeof o === 'string' ? { name: o, type: 'prescription' } : o));
         if (ans.algList) setAlgList(ans.algList);
         if (ans.noRx) setNoRx(ans.noRx);
         if (ans.noOral) setNoOral(ans.noOral);
@@ -81,7 +81,7 @@ export default function Intake({ onComplete }) {
         if (ans.prescription_start_date) setPrescriptionStartDate(ans.prescription_start_date);
         
         // If they already completed it but are just missing the date, jump to step 4
-        if (ans.oralList && ans.oralList.some(m => m.toLowerCase().includes('isotretinoin') || m.toLowerCase().includes('accutane')) && !ans.prescription_start_date) {
+        if (ans.oralList && ans.oralList.some(m => m.name && m.name.toLowerCase().includes('isotretinoin') || m.name && m.name.toLowerCase().includes('accutane')) && !ans.prescription_start_date) {
             setPath('fast');
             setCurrentStep(6);
         }
@@ -155,7 +155,7 @@ export default function Intake({ onComplete }) {
     const traditions = selectedTraditions;
 
     const filteredRxList = noRx ? [] : rxList.filter(rx => rx.name && rx.name.trim() !== '');
-    const filteredOralList = noOral ? [] : oralList.filter(o => o && o.trim() !== '');
+    const filteredOralList = noOral ? [] : oralList.filter(o => o && o.name && o.name.trim() !== '');
     const filteredAlgList = noAlg ? [] : algList.filter(a => a && a.trim() !== '');
 
     const avatarConfig = JSON.parse(localStorage.getItem('avatar_config') || '{}');
@@ -200,7 +200,7 @@ export default function Intake({ onComplete }) {
     if (currentStep === 6) return selectedConditions.length > 0;
     if (currentStep === 7) return selectedTextures.length > 0;
     if (currentStep === 8) return noRx || rxList.some(r => r.name.trim() !== '');
-    if (currentStep === 9) return noOral || oralList.some(o => o.trim() !== '');
+    if (currentStep === 9) return noOral || oralList.some(o => o.name && o.name.trim() !== '');
     if (currentStep === 10) return noAlg || algList.length > 0 || newAlg.trim() !== '';
     if (currentStep === 11) return selectedTraditions.length > 0;
     return true;
@@ -227,14 +227,14 @@ export default function Intake({ onComplete }) {
     setRxList(newList);
   };
 
-  const updateOral = (index, value) => {
+  const updateOral = (index, field, value) => {
     const newList = [...oralList];
-    newList[index] = value;
+    newList[index][field] = value;
     setOralList(newList);
   };
   
   const addOral = () => {
-    setOralList([...oralList, '']);
+    setOralList([...oralList, { name: '', type: 'prescription' }]);
   };
 
   const removeOral = (index) => {
@@ -537,11 +537,11 @@ export default function Intake({ onComplete }) {
 
           {currentStep === 8 && (
             <div className="ins-step">
-              {renderTitle('Sacred Healing Directives (Topical Decrees)')}
+              {renderTitle('Medical Directives (Topical)')}
               <div className="mt mb-4">Potent formulas prescribed by healers. These take priority in all routines.</div>
               
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--plum)' }}>
-                <input type="checkbox" checked={noRx} onChange={e => { setNoRx(e.target.checked); if(e.target.checked) setRxList([]); }} /> I am burdened by no topical prescriptions.
+                <input type="checkbox" checked={noRx} onChange={e => { setNoRx(e.target.checked); if(e.target.checked) setRxList([]); }} /> I hold no topical measures.
               </label>
 
               {!noRx && (
@@ -572,7 +572,7 @@ export default function Intake({ onComplete }) {
                       </div>
                     </div>
                   ))}
-                  <button className="btn" onClick={addRx} style={{ width: 'fit-content', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="plus" /> Summon Topical Prescription</button>
+                  <button className="btn" onClick={addRx} style={{ width: 'fit-content', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="plus" /> Summon Topical Measure</button>
                 </div>
               )}
             </div>
@@ -590,16 +590,29 @@ export default function Intake({ onComplete }) {
 {!noOral && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {oralList.map((med, i) => (
-                    <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                      <div style={{ flex: 1 }}>
-                        <VoiceInput value={med} onChange={e => updateOral(i, e.target.value)} placeholder="" />
+                    <div key={i} style={{ borderLeft: '2px solid var(--gold)', paddingLeft: '1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <span style={{ color: 'var(--plum)' }}>Systemic {i + 1}</span>
+                        <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: 0 }} onClick={() => removeOral(i)}>Shatter</button>
                       </div>
-                      <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: '0.5rem' }} onClick={() => removeOral(i)}>Shatter</button>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                        <div className="field">
+                          <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Name</label>
+                          <VoiceInput value={med.name} onChange={e => updateOral(i, 'name', e.target.value)} placeholder="" />
+                        </div>
+                        <div className="field">
+                          <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Type</label>
+                          <select value={med.type} onChange={e => updateOral(i, 'type', e.target.value)} style={{ width: '100%', padding: '0.85rem', background: 'var(--bg)', color: 'var(--silver)', border: '1px solid var(--border)', borderRadius: '4px' }}>
+                            <option value="prescription">Prescription</option>
+                            <option value="otc">Over-the-Counter</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
                   ))}
                   <button className="btn" onClick={addOral} style={{ width: 'fit-content', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="plus" /> Summon Systemic Measure</button>
                   
-                  {oralList.some(m => m.toLowerCase().includes('isotretinoin') || m.toLowerCase().includes('accutane')) && (
+                  {oralList.some(m => m.name && m.name.toLowerCase().includes('isotretinoin') || m.name && m.name.toLowerCase().includes('accutane')) && (
                     <div className="field mt-4" style={{ padding: '1rem', border: '1px solid var(--crimson)', borderRadius: '8px' }}>
                       <label style={{ color: 'var(--plum)', display: 'block', marginBottom: '0.5rem' }}>When did you begin this systemic regimen?</label>
                       <input type="date" value={prescriptionStartDate} onChange={e => setPrescriptionStartDate(e.target.value)} style={{ padding: '0.5rem', background: 'var(--bg)', color: 'var(--silver)', border: '1px solid var(--border)', borderRadius: '4px' }} />
