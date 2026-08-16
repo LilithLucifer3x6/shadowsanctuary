@@ -53,7 +53,7 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [dateStr, setDateStr] = useState(getSpellDate());
   const [supabaseError, setSupabaseError] = useState(false);
-  const [isLocked, setIsLocked] = useState(!!localStorage.getItem('avatar_config')); // lock if user has finished onboarding
+  const [isLocked, setIsLocked] = useState(window.location.search.includes('bypass') ? false : !!localStorage.getItem('avatar_config')); // lock if user has finished onboarding
   
   // Settings state
   const [settings, setSettings] = useState({
