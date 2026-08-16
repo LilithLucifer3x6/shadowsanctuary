@@ -5,6 +5,7 @@
  */
 
 import { supabase } from './supabase.js';
+import { ZONES, zonesOverlap } from '../safety/zone-resolver.js';
 
 let cachedCodex = [];
 let cachedConflicts = [];
@@ -132,16 +133,41 @@ export function buildBaseRoutines(items, userProfile = {}, wearables = {}) {
   const userConditions = intake.conditions || [];
   const userTextures = intake.textures || [];
   
+  const has4CHair = (intake.hairType || '').includes('4');
+  const isSensitized = (intake.sensitivity || '').includes('Sensitized');
+  const prefersUnscented = (intake.fragrance || '').includes('unscented');
+  const hasAcne = userConditions.includes('Acne Vulgaris');
+  const hasRosacea = userConditions.includes('Rosacea');
+  const hasEczema = userConditions.includes('Eczema / Atopic Dermatitis');
+  
+  if (prefersUnscented) {
+    items = items.filter(item => {
+      const ing = Array.isArray(item.ingredients) ? item.ingredients.join(' ').toLowerCase() : (item.ingredients || '').toLowerCase();
+      return !ing.includes('fragrance') && !ing.includes('parfum');
+    });
+  }
+  
+  const porosity = (intake.porosity || '').toLowerCase();
+  const scalpOil = (intake.scalpOil || '').toLowerCase();
+  const sweat = (intake.sweat || '').toLowerCase();
+  
   items = items.map(item => {
-    const ing = (item.ingredients || '').toLowerCase();
+    const ing = Array.isArray(item.ingredients) ? item.ingredients.join(' ').toLowerCase() : (item.ingredients || '').toLowerCase();
     let weightMod = 0;
     
-
+    // Texture/Condition logic
+    if (isSensitized && (item.risk_flags?.exfoliant || item.risk_flags?.acid)) weightMod += 2;
+    if (hasAcne && (ing.includes('coconut oil') || ing.includes('isopropyl myristate'))) weightMod += 3;
+    if (hasRosacea && (item.risk_flags?.acid || ing.includes('witch hazel') || ing.includes('alcohol'))) weightMod += 3;
+    if (hasEczema && ing.includes('sodium lauryl sulfate')) weightMod += 2;
     
-    // Texture logic: If they hate heavy/greasy, and it's a heavy cream, maybe we don't change weight, but we could.
-    // We just wire them in as requested.
+    if (porosity.includes('low') && ing.includes('shea butter')) weightMod += 2;
+    if (porosity.includes('high') && ing.includes('shea butter')) weightMod -= 1;
     
-    if (weightMod > 0) {
+    if (scalpOil.includes('oily') && (item.category||'').includes('oil')) weightMod += 2;
+    if (sweat.includes('daily') && (item.category||'').includes('ointment')) weightMod += 2;
+    
+    if (weightMod > 0 || weightMod < 0) {
       item = { ...item, behavior_flags: { ...item.behavior_flags, layering_weight: (item.behavior_flags?.layering_weight || 5) + weightMod } };
     }
     return item;
@@ -444,10 +470,20 @@ export function checkConflicts(rawItemsList, userProfile = {}) {
     const hasB = (itemList) => itemList.some(i => (i.risk_flags && i.risk_flags[ingB]) || checkIngredients(i.ingredients, [ingB]) || i.name.toLowerCase().includes(ingB));
     
     if (rule.zone_specific) {
-      for (const [zone, zoneItems] of Object.entries(zoneMap)) {
-        if (hasA(zoneItems) && hasB(zoneItems)) {
-          conflicts.push(`Zonal Conflict [${zone}]: ${rule.description || 'Mixing these components is not advised.'}`);
+      const itemsA = items.filter(i => (i.risk_flags && i.risk_flags[ingA]) || checkIngredients(i.ingredients, [ingA]) || i.name.toLowerCase().includes(ingA));
+      const itemsB = items.filter(i => (i.risk_flags && i.risk_flags[ingB]) || checkIngredients(i.ingredients, [ingB]) || i.name.toLowerCase().includes(ingB));
+      
+      let zonalConflictDetected = false;
+      for (const a of itemsA) {
+        for (const b of itemsB) {
+          if (a.id === b.id) continue;
+          if (zonesOverlap([a.application_zone || 'full-face'], [b.application_zone || 'full-face'])) {
+            zonalConflictDetected = true;
+            conflicts.push(`Zonal Conflict [${a.application_zone} / ${b.application_zone}]: ${rule.description || 'Mixing these components is not advised.'}`);
+            break;
+          }
         }
+        if (zonalConflictDetected) break;
       }
     } else {
       if (hasA(items) && hasB(items)) {
@@ -456,16 +492,12 @@ export function checkConflicts(rawItemsList, userProfile = {}) {
     }
   });
 
-  // ZONAL CONFLICT RESOLUTION (Melanin Ward only, acids/retinoids handled dynamically above)
-  for (const [zone, zoneItems] of Object.entries(zoneMap)) {
-    
-    // MELANIN WARD (Methotrexate is heavily photosensitizing)
-    const photosensitizers = zoneItems.filter(i => i.risk_flags.photosensitizer || checkIngredients(i.ingredients, MELANIN_TRIGGERS));
-    if (hasMethotrexate || photosensitizers.length > 0) {
-      if (!items.some(i => i.category.toLowerCase().includes('spf') || i.category.toLowerCase().includes('sunscreen'))) {
-        let source = hasMethotrexate ? "Oral Methotrexate" : photosensitizers.map(i=>i.name).join(', ');
-        conflicts.push(`Melanin Ward Warning: ${source} increases photosensitivity. Sun protection is load-bearing. Add SPF to your routine!`);
-      }
+  // MELANIN WARD (Methotrexate is heavily photosensitizing)
+  const photosensitizers = items.filter(i => i.risk_flags?.photosensitizer || checkIngredients(i.ingredients, MELANIN_TRIGGERS));
+  if (hasMethotrexate || photosensitizers.length > 0) {
+    if (!items.some(i => i.category.toLowerCase().includes('spf') || i.category.toLowerCase().includes('sunscreen'))) {
+      let source = hasMethotrexate ? "Oral Methotrexate" : photosensitizers.map(i=>i.name).join(', ');
+      conflicts.push(`Melanin Ward Warning: ${source} increases photosensitivity. Sun protection is load-bearing. Add SPF to your routine!`);
     }
   }
 
@@ -475,10 +507,14 @@ export function checkConflicts(rawItemsList, userProfile = {}) {
     conflicts.push("CRITICAL HAZARD: Oral Isotretinoin detected. Concomitant use of topical retinoids or exfoliating acids causes severe chemical burns and barrier damage. They have been suspended from all Rites.");
   }
 
+  const has4CHair = (intake.hairType || '').includes('4');
+  const isSensitized = (intake.sensitivity || '').includes('Sensitized');
+  const prefersUnscented = (intake.fragrance || '').includes('unscented');
+  
   // 4C HAIR & INTIMATE WARDS
   const crownItems = items.filter(i => (i.domain || '').toLowerCase() === 'crown');
-  if (crownItems.some(i => checkIngredients(i.ingredients, HAIR_4C_BUILDUP))) {
-    conflicts.push("4C Crown Ward: Heavy waxes or non-soluble silicones detected. Risk of buildup in microlocs.");
+  if (has4CHair && crownItems.some(i => checkIngredients(i.ingredients, HAIR_4C_BUILDUP))) {
+    conflicts.push("4C Crown Ward: Heavy waxes or non-soluble silicones detected. Risk of buildup in microlocs/coils.");
   }
 
   const vesselItems = items.filter(i => (i.domain || '').toLowerCase() === 'vessel');
@@ -486,10 +522,13 @@ export function checkConflicts(rawItemsList, userProfile = {}) {
     conflicts.push("Intimate Care Ward: pH disruptors or fragrance detected. Risk to microbiome.");
   }
   
-  // SENSITIVE SKIN (Depilatories)
+  // SENSITIVE SKIN (Depilatories & Exfoliants)
   const depilatories = items.filter(i => checkIngredients(i.ingredients, DEPILATORY_CAUTIONS) || (i.category||'').toLowerCase().includes('depilatory'));
   if (depilatories.length > 0) {
     conflicts.push(`Sensitive Ward: Depilatory (${depilatories.map(i=>i.name).join(', ')}) requires a low-pH cleanse post-care to neutralize alkaline burns.`);
+  }
+  if (isSensitized && items.some(i => i.risk_flags.exfoliant || i.risk_flags.acid)) {
+    conflicts.push("Sensitive Ward Warning: Barrier is sensitized, but harsh exfoliants are in rotation. Consider suspending them.");
   }
 
   // DRYSOL HARD RULE
