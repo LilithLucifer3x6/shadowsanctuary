@@ -16,6 +16,7 @@
     "@capacitor/app": "^8.1.1",
     "@capacitor/core": "^8.0.0",
     "@capgo/capacitor-health": "^8.10.0",
+    "@capgo/capacitor-native-biometric": "^8.6.6",
     "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
@@ -38,7 +39,7 @@
     "@capacitor/cli": "^8.0.0",
     "@playwright/test": "^1.62.1",
     "dotenv": "^17.4.2",
-    "puppeteer": "^25.6.0",
+    "puppeteer": "^25.7.0",
     "vite": "^6.3.0"
   },
   "overrides": {

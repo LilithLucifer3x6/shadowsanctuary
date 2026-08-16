@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Icon from './Icon.jsx';
+import { NativeBiometric } from '@capgo/capacitor-native-biometric';
 
 export default function AppLock({ onUnlock }) {
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
   
   // Quick setup: If no PIN is set, allow them to set one.
   const [isSettingPin, setIsSettingPin] = useState(false);
@@ -12,8 +14,33 @@ export default function AppLock({ onUnlock }) {
   useEffect(() => {
     if (!existingPin) {
       setIsSettingPin(true);
+    } else {
+      checkAndPromptBiometric();
     }
   }, [existingPin]);
+
+  const checkAndPromptBiometric = async () => {
+    try {
+      const result = await NativeBiometric.isAvailable();
+      if (result.isAvailable) {
+        setBiometricAvailable(true);
+        try {
+          await NativeBiometric.verifyIdentity({
+            reason: "Unseal the Sanctuary",
+            title: "Sanctuary Gate",
+            subtitle: "Present your ward",
+            description: "Touch the sensor to unseal the gate"
+          });
+          onUnlock();
+        } catch (authErr) {
+          // User cancelled or failed auth, fallback to PIN
+          console.log("Biometric auth failed or cancelled", authErr);
+        }
+      }
+    } catch (e) {
+      console.log("Biometrics not available", e);
+    }
+  };
 
   const handleDigit = (d) => {
     setError('');
@@ -62,7 +89,11 @@ export default function AppLock({ onUnlock }) {
         {[1,2,3,4,5,6,7,8,9].map(d => (
           <button key={d} className="btn" style={{ padding: '1.5rem', fontSize: '1.5rem', borderRadius: '50%', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => handleDigit(d.toString())}>{d}</button>
         ))}
-        <div></div>
+        {biometricAvailable && !isSettingPin ? (
+          <button className="btn" style={{ padding: '1.5rem', fontSize: '1.5rem', borderRadius: '50%', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', color: 'var(--plum)' }} onClick={checkAndPromptBiometric}><Icon name="ph-fingerprint" /></button>
+        ) : (
+          <div></div>
+        )}
         <button className="btn" style={{ padding: '1.5rem', fontSize: '1.5rem', borderRadius: '50%', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => handleDigit('0')}>0</button>
         <button className="btn" style={{ padding: '1.5rem', fontSize: '1.2rem', borderRadius: '50%', width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', color: 'var(--dim)' }} onClick={handleClear}><Icon name="ph-backspace" /></button>
       </div>

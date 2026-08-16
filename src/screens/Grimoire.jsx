@@ -4,7 +4,7 @@ import { G } from '../lib/icons.jsx';
 import Icon from '../components/Icon.jsx';
 import { fetchTodayEvents, fetchMonthEvents } from '../lib/gcal.js';
 import SpeakerButton from '../components/SpeakerButton.jsx';
-
+import TheReadingQuiz from '../components/TheReadingQuiz.jsx';
 
 import VoiceInput from '../components/VoiceInput.jsx';
 import VisualInscription from '../components/VisualInscription.jsx';
@@ -20,7 +20,9 @@ export default function Grimoire({ pose }) {
   const [overrideModal, setOverrideModal] = useState({ show: false, type: '', date: '' });
   const [isoLogs, setIsoLogs] = useState([]);
   
-  const [readingState, setReadingState] = useState(null);
+  const [showReadingQuiz, setShowReadingQuiz] = useState(false);
+  const [readingContext, setReadingContext] = useState({ reactions: [], banished: [], waning: [] });
+  
   const [showScrying, setShowScrying] = useState(false);
   const [scryingMessage, setScryingMessage] = useState('');
   
@@ -170,35 +172,16 @@ export default function Grimoire({ pose }) {
   };
 
   const handleStartReading = async () => {
-    if (readingState && readingState.isTyping) return;
-    setReadingState({ history: [], input: '', isTyping: true, completeSummary: null });
     try {
-      const reply = await withHardTimeout((async () => {
-        if (window.location.search.includes('test_grim=1')) {
-          return "I see the stars align for your regimen. You have diligently cleansed your crown. Continue the rituals as they are written.";
-        }
-        
-        // Fetch context data
-        const { data: reactions } = await supabase.from('somatic_reactions').select('*, items(name, brand)').order('created_at', { ascending: false }).limit(5);
-        const { data: items } = await supabase.from('items').select('name, category, lifecycle_state');
-        const banished = (items || []).filter(i => i.lifecycle_state === 'banished').map(i => i.name);
-        const waning = (items || []).filter(i => i.lifecycle_state === 'waning' || i.lifecycle_state === 'ebbing').map(i => i.name);
-        
-        const { converseReading } = await import('../lib/ai-service.js');
-        return converseReading([], profile, { reactions: reactions || [], banished, waning });
-      })());
-      setReadingState(prev => {
-        if (!prev) return null;
-        return { ...prev, history: [{ role: 'assistant', text: reply }] };
-      });
+      const { data: reactions } = await supabase.from('somatic_reactions').select('*, items(name, brand)').order('created_at', { ascending: false }).limit(5);
+      const { data: items } = await supabase.from('items').select('name, category, lifecycle_state');
+      const banished = (items || []).filter(i => i.lifecycle_state === 'banished').map(i => i.name);
+      const waning = (items || []).filter(i => i.lifecycle_state === 'waning' || i.lifecycle_state === 'ebbing').map(i => i.name);
+      
+      setReadingContext({ reactions: reactions || [], banished, waning });
+      setShowReadingQuiz(true);
     } catch (err) {
       console.error("Failed to start reading:", err);
-      setReadingState(prev => {
-        if (!prev) return null;
-        return { ...prev, history: [{ role: 'assistant', text: "The stars are obscured. I cannot commune right now." }] };
-      });
-    } finally {
-      setReadingState(prev => prev ? { ...prev, isTyping: false } : null);
     }
   };
 
@@ -263,75 +246,26 @@ export default function Grimoire({ pose }) {
     }
   };
 
-  const handleSendReading = async () => {
-    if (!readingState || !readingState.input.trim()) return;
-    const userText = readingState.input.trim();
-    
-    setReadingState(prev => {
-      const newHist = [...prev.history, { role: 'user', text: userText }];
-      return { ...prev, history: newHist, input: '', isTyping: true };
-    });
-    
-    try {
-      const currentHist = [...readingState.history, { role: 'user', text: userText }];
-      const reply = await withHardTimeout((async () => {
-        // Fetch context data
-        const { data: reactions } = await supabase.from('somatic_reactions').select('*, items(name, brand)').order('created_at', { ascending: false }).limit(5);
-        const { data: items } = await supabase.from('items').select('name, category, lifecycle_state');
-        const banished = (items || []).filter(i => i.lifecycle_state === 'banished').map(i => i.name);
-        const waning = (items || []).filter(i => i.lifecycle_state === 'waning' || i.lifecycle_state === 'ebbing').map(i => i.name);
-        
-        const { converseReading } = await import('../lib/ai-service.js');
-        return converseReading(currentHist, profile, { reactions: reactions || [], banished, waning });
-      })()) || "";
-      
-      const match = reply.match(/\[READING_COMPLETE:\s*(.*?)\]/);
-      // Hard cap: even with the stronger prompt instruction, don't depend
-      // 100% on the model actually including the marker. If we're well past
-      // a reasonable conversation length and it still didn't conclude,
-      // force it client-side rather than let the reading run forever.
-      const userTurnCount = currentHist.filter(h => h.role === 'user').length;
-      if (match) {
-        const summary = match[1];
-        setReadingState(prev => ({
-          ...prev, 
-          completeSummary: summary,
-          history: [...prev.history, { role: 'assistant', text: reply.replace(/\[READING_COMPLETE:.*?\]/, '').trim() }]
-        }));
-      } else if (userTurnCount >= 4) {
-        setReadingState(prev => ({
-          ...prev,
-          completeSummary: 'Reading concluded.',
-          history: [...prev.history, { role: 'assistant', text: reply }]
-        }));
-      } else {
-        setReadingState(prev => ({
-          ...prev, 
-          history: [...prev.history, { role: 'assistant', text: reply }]
-        }));
-      }
-    } catch (err) {
-      console.error("Failed to send reading:", err);
-      setReadingState(prev => ({
-        ...prev,
-        history: [...prev.history, { role: 'assistant', text: "A sudden storm clouds my vision. Try speaking your truth once more." }]
-      }));
-    } finally {
-      setReadingState(prev => prev ? { ...prev, isTyping: false } : null);
-    }
-  };
 
-  const finishReading = async () => {
-    if (!readingState || !profile) return;
+
+  const finishReading = async (answers) => {
+    if (!profile) return;
     try {
+      const summaryParts = [];
+      if (answers.shiftInForm !== 'No Change') summaryParts.push(`Shift in Form: ${answers.shiftInForm}`);
+      if (answers.emergingShadows.length > 0) summaryParts.push(`New Concerns: ${answers.emergingShadows.join(', ')}`);
+      if (answers.textureTouch.length > 0) summaryParts.push(`Texture Needs: ${answers.textureTouch.join(', ')}`);
+      if (answers.rhythms.length > 0) summaryParts.push(`Lifestyle Rhythms: ${answers.rhythms.join(', ')}`);
+      
+      const summary = summaryParts.length > 0 ? summaryParts.join(' | ') : 'No changes noted.';
+
       const settings = profile.settings || {};
       settings.last_reading_date = new Date().toISOString();
-      if (readingState.completeSummary) {
-         settings.last_reading_summary = readingState.completeSummary;
-      }
+      settings.last_reading_summary = summary;
+      
       await supabase.from('user_profile').update({ settings }).eq('id', profile.id);
       setProfile(prev => ({ ...prev, settings }));
-      setReadingState(null);
+      setShowReadingQuiz(false);
     } catch (e) {
       console.error(e);
     }
@@ -567,7 +501,6 @@ export default function Grimoire({ pose }) {
                   <button 
                     className="btn plum" 
                     onClick={handleStartReading}
-                    disabled={readingState?.isTyping}
                   >
                     Commune
                 </button>
@@ -733,60 +666,13 @@ export default function Grimoire({ pose }) {
         </div>
       )}
 
-      {readingState && (
-        <div className="modal">
-          <div className="modal-content card" style={{maxWidth: '550px'}}>
-            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <h3 style={{color: 'var(--plum)', margin: 0}}>The Reading <SpeakerButton text="The Reading" /></h3>
-              <button className="spk" onClick={() => setReadingState(null)} title="Abandon Reading" style={{ fontSize: '1.2rem', padding: '0.2rem' }}>
-                <i className="ph-duotone ph-x"></i>
-              </button>
-            </div>
-            <div className="mt mb-4">Reflect on the past 30 days of your rituals.</div>
-            
-            <div style={{ maxHeight: '350px', overflowY: 'auto', marginBottom: '1rem', marginTop: '1rem', paddingRight: '0.5rem' }}>
-              {readingState.history.map((msg, idx) => (
-                <div key={idx} className={msg.role === 'assistant' ? 'msg-bot' : 'msg-user'} style={{ 
-                  textAlign: msg.role === 'user' ? 'right' : 'left', 
-                  marginBottom: '1rem',
-                  color: msg.role === 'user' ? 'var(--text)' : 'var(--plum)'
-                }}>
-                  <div style={{ display: 'inline-block', background: msg.role === 'user' ? 'rgba(255,255,255,0.1)' : 'transparent', padding: msg.role === 'user' ? '0.5rem 1rem' : '0', borderRadius: '8px' }}>
-                    {msg.text} {msg.role === 'assistant' && <SpeakerButton text={msg.text} style={{marginLeft: '0.4rem'}} />}
-                  </div>
-                </div>
-              ))}
-              {readingState.isTyping && <div style={{ color: 'var(--dim)', fontStyle: 'italic' }}>The Keeper consults the stars...</div>}
-            </div>
-
-            {!readingState.completeSummary ? (
-              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
-                <div style={{ flex: 1 }}>
-                  <VoiceInput 
-                    isTextArea={true}
-                    placeholder="Speak your truth..."
-                    value={readingState.input}
-                    onChange={(e) => setReadingState({...readingState, input: e.target.value})}
-                    style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--plum)', fontSize: '1rem', minHeight: '60px' }}
-                  />
-                </div>
-                <button className="btn plum" onClick={handleSendReading} disabled={readingState.isTyping || !readingState.input.trim()} style={{ width: 'fit-content', maxWidth: '120px', whiteSpace: 'normal', padding: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', lineHeight: '1.2' }}>Deliver unto the Keeper</button>
-              </div>
-            ) : (
-              <div style={{ textAlign: 'center', marginTop: '1rem', padding: '1rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
-                <div style={{ color: 'var(--plum)', fontSize: '1.1rem', marginBottom: '1rem' }}>
-                  The Reading is complete. Changes noted: <br/><strong>{readingState.completeSummary}</strong>
-                </div>
-                <button className="btn plum" onClick={finishReading} style={{ width: '100%' }}>Consecrate The Reading</button>
-              </div>
-            )}
-
-            <div style={{display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem'}}>
-              <button className="btn" onClick={() => setReadingState(null)}>Abandon Reading</button>
-            </div>
-          </div>
-        </div>
+      {showReadingQuiz && (
+        <TheReadingQuiz 
+          profile={profile}
+          contextData={readingContext}
+          onComplete={finishReading}
+          onAbandon={() => setShowReadingQuiz(false)}
+        />
       )}
 
       {showWashModal && (
