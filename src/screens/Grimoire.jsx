@@ -473,8 +473,8 @@ export default function Grimoire({ pose }) {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="card" style={{ marginTop: 0 }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-        <h3 style={{ justifyContent: 'center' }}>
-          The Appointed Times{' '}
+        <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <Icon name="ph-clock" /> The Appointed Times{' '}
           <Icon name="ph-calendar" />{' '}
           <SpeakerButton text="The Appointed Times" />
         </h3>
@@ -499,8 +499,8 @@ export default function Grimoire({ pose }) {
         <div className="card mt-4" style={{ alignSelf: 'flex-start' }}>
           <div className="corner tl"></div><div className="corner tr"></div>
           <div className="corner bl"></div><div className="corner br"></div>
-          <h3 style={{ justifyContent: 'center' }}>
-            The Appointed Days{' '}
+          <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Icon name="ph-calendar" /> The Appointed Days{' '}
             <Icon name="ph-calendar-star" />{' '}
             <SpeakerButton text='The Appointed Days' />
           </h3>
@@ -606,8 +606,8 @@ export default function Grimoire({ pose }) {
         <div className="card" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
           <div className="corner tl"></div><div className="corner tr"></div>
           <div className="corner bl"></div><div className="corner br"></div>
-          <h3 style={{ justifyContent: 'center' }}>
-            The Weekly Wheel{' '}
+          <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Icon name="ph-arrows-clockwise" /> The Weekly Wheel{' '}
             <Icon name="ph-arrows-clockwise" />{' '}
             <SpeakerButton text='The Weekly Wheel' />
           </h3>
@@ -652,8 +652,8 @@ export default function Grimoire({ pose }) {
         <div className="card" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
         <div className="corner tl"></div><div className="corner tr"></div>
         <div className="corner bl"></div><div className="corner br"></div>
-          <h3 style={{ justifyContent: 'center' }}>
-            The Ephemeris{' '}
+          <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Icon name="ph-moon-stars" /> The Ephemeris{' '}
             <Icon name="ph-planet" />{' '}
             <SpeakerButton text='The Ephemeris' />
           </h3>

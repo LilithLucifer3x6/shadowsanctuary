@@ -338,7 +338,7 @@ export default function Rites({ pose }) {
       if (item.isRx) return 'rx-tube';
       if (dom === 'vessel') return 'body-vessel';
       if (dom === 'visage') return 'visage-face';
-    if (dom === 'herbal elixirs' || dom === 'measure') return 'leaf';
+    if (dom === 'herbal elixirs' || dom === 'measure') return 'tea-bag';
       return 'sparkles'; 
     };
     
@@ -473,7 +473,7 @@ export default function Rites({ pose }) {
           <div className="mt mb-4" style={{ textAlign: 'center' }}>The Order of the Day</div>
           
           {renderScheduleStep('The Awakening', 'Allow 5 to 10 minutes for the veil of sleep to lift.', 'var(--crimson-b)', 'ph-cloud-sun')}
-          {renderScheduleStep('The Morning Respite', 'A 15-minute sanctuary. Imbibe 16 ounces of pure water.', 'var(--plum)', 'ph-coffee')}
+          {renderScheduleStep('The Morning Respite', 'A 15-minute sanctuary. Imbibe 16 ounces of pure water.', 'var(--plum)', 'water-glass')}
           {renderScheduleStep('The Midday Sustenance', 'A 45-minute pause for nourishment. Engage in gentle movement to stir stagnant energies.', 'var(--plum)', 'ph-fork-knife')}
           {renderScheduleStep('The Afternoon Respite', 'A 15-minute sanctuary. Imbibe 16 ounces of pure water.', 'var(--plum)', 'ph-mug')}
           {renderScheduleStep('The Descent', 'The day\'s labors conclude. Begin the grounding process to sever ties with the work.', 'var(--plum)', 'ph-bed')}

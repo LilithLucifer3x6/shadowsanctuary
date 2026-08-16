@@ -754,7 +754,7 @@ export default function Rootwork({ pose }) {
       <div className="card mb-4">
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', marginBottom: '1rem' }}>
-          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}><i className="ph-duotone ph-flask"></i> The Apothecary <SpeakerButton text="The Apothecary" /></h3>
+          <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="apothecary" /> The Apothecary <SpeakerButton text="The Apothecary" /></h3>
           <div style={{ position: 'absolute', right: 0, display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <button className="btn plum" onClick={() => {
               setAddForm({ brand: '', name: '', domain: 'Crown', category: '', ingredients: '', weight: '5', period_after_opening_months: '', unopened_shelf_life_months: '', manufacture_date: '', purchase_date: '', price: '', is_essential: false, is_composite: false, item_type: 'consumable', is_opened: false, opened_date: '', application_zones: [], is_prescription: false, prescription_details: '', selectedComponents: [], measured_potency_mg_ml: '', inferred_potency_mg_ml: '', potency_source: '', levo_material_qty: '', levo_temperature: '', levo_duration: '', levo_carrier_oil: '' });
@@ -777,7 +777,7 @@ export default function Rootwork({ pose }) {
 
       <div className="card mb-4">
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-        <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><i className="ph-duotone ph-toolbox"></i> The Reliquary <SpeakerButton text="The Reliquary" /></h3>
+        <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="arsenal" /> The Reliquary <SpeakerButton text="The Reliquary" /></h3>
         <div className="mt mb-4" style={{ textAlign: 'center' }}>Your instruments of ritual and restorative tools.</div>
         <div style={{display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '600px', overflowY: 'auto', paddingRight: '0.5rem'}}>
           {arsenal.length > 0 ? arsenal.map(renderRow) : <div className="empty">Your Reliquary contains no instruments.</div>}
@@ -839,7 +839,7 @@ export default function Rootwork({ pose }) {
           </div>
         <div className="card mb-4" style={{ marginBottom: 0, alignSelf: 'start', width: '100%', gridColumn: '2', gridRow: '1' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'break-word' }}>The Silver Toll <SpeakerButton text="The Silver Toll" /></h3>
+            <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'break-word' }}><Icon name="silver-coin" /> The Silver Toll <SpeakerButton text="The Silver Toll" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>The material cost of your active rituals, tied to frequency of devotion.</div>
             {(() => {
               const DOMAINS = ['Crown', 'Visage', 'Gaze', 'Grin', 'Vessel', 'Veil'];
@@ -895,7 +895,7 @@ export default function Rootwork({ pose }) {
           </div>
           <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '1 / span 2', order: 99 }}>
               <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-              <h3 style={{ justifyContent: 'center', color: 'var(--alert)' }}>The Crypt of Ashes <SpeakerButton text="The Crypt of Ashes" /></h3>
+              <h3 style={{ justifyContent: 'center', color: 'var(--alert)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="ph-trash" style={{color: 'var(--alert)'}} /> The Crypt of Ashes <SpeakerButton text="The Crypt of Ashes" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>Banished Relics (The Forgotten-Word Path).</div>
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {banished.length === 0 ? <div className="mt" style={{ textAlign: 'center' }}>The crypt is empty.</div> : banished.map(item => (
@@ -917,7 +917,7 @@ export default function Rootwork({ pose }) {
           </div>
         <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '1', gridRow: '2' }}>
               <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-              <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><i className="ph-duotone ph-scroll"></i> The Summoning Scroll <SpeakerButton text="The Summoning Scroll" /></h3>
+              <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="ph-scroll" /> The Summoning Scroll <SpeakerButton text="The Summoning Scroll" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>Items needing replenishment. Non-essential items wait for batches of 5.</div>
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {(() => {
@@ -948,7 +948,7 @@ export default function Rootwork({ pose }) {
           </div>
         <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '2', gridRow: '2' }}>
               <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-              <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><i className="ph-duotone ph-hourglass"></i> The Waning <SpeakerButton text="The Waning" /></h3>
+              <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="waning" /> The Waning <SpeakerButton text="The Waning" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>Relics nearing the end of their mortal potency.</div>
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {waningItems.length === 0 ? <div className="mt" style={{ textAlign: 'center' }}>All relics remain potent.</div> : waningItems.map(renderRow)}

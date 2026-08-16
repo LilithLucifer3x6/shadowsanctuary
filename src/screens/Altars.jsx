@@ -103,7 +103,7 @@ export default function Altars({ pose }) {
     if (dom === 'vessel') return 'body-vessel';
     if (dom === 'visage') return 'visage-face';
     if (dom === 'crown') return 'crown';
-    if (dom === 'herbal elixirs') return 'leaf';
+    if (dom === 'herbal elixirs') return 'tea-bag';
     if (dom === 'measure') return 'leaf'; // Using leaf or sparkles as fallback for now
     return 'sparkles'; 
   };
