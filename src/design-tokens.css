@@ -221,4 +221,4 @@
 body.tts-disabled .spk { display: none !important; }
 
 .card h3 + div { text-align: center; }
-.altars-nav-grid { display: grid; grid-template-columns: auto auto; justify-content: center; gap: 1rem; }
+.altars-nav-grid { display: grid; grid-template-columns: repeat(3, 1fr); justify-content: center; gap: 1rem; }
