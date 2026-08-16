@@ -14,6 +14,14 @@ async function getHealth() {
  * Integrates Android Health Connect via Capacitor native plugins, falling back to snapshots on Web.
  */
 
+// Helper to prevent native plugins from hanging the app indefinitely
+const withTimeout = (promise, ms = 2000) => {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('Health Connect query timed out')), ms))
+  ]);
+};
+
 export async function requestHealthPermissions() {
   const Health = await getHealth();
   if (Health) {
@@ -76,11 +84,11 @@ export async function getReadiness() {
       const end = new Date();
       const start = new Date(end.getTime() - (24 * 60 * 60 * 1000));
       
-      const hrData = await Health.query({
+      const hrData = await withTimeout(Health.query({
         sampleType: 'heartRate',
         startDate: start.toISOString(),
         endDate: end.toISOString()
-      });
+      }));
 
       const sleepDurationHours = parseFloat(await getSleepDuration());
       let score = 50; 
@@ -130,11 +138,11 @@ export async function getHeavySweat() {
     try {
       const end = new Date();
       const start = new Date(end.getTime() - (24 * 60 * 60 * 1000));
-      const workoutData = await Health.query({
+      const workoutData = await withTimeout(Health.query({
         sampleType: 'workouts',
         startDate: start.toISOString(),
         endDate: end.toISOString()
-      });
+      }));
       return workoutData && workoutData.samples && workoutData.samples.length > 0;
     } catch (e) {
       console.error('Health Connect query error:', e);
@@ -152,11 +160,11 @@ export async function getSleepDuration() {
     try {
       const end = new Date();
       const start = new Date(end.getTime() - (24 * 60 * 60 * 1000));
-      const sleepData = await Health.query({
+      const sleepData = await withTimeout(Health.query({
         sampleType: 'sleepAnalysis',
         startDate: start.toISOString(),
         endDate: end.toISOString()
-      });
+      }));
       if (sleepData && sleepData.samples && sleepData.samples.length > 0) {
         const totalMs = sleepData.samples.reduce((acc, sample) => {
           return acc + (new Date(sample.endDate).getTime() - new Date(sample.startDate).getTime());

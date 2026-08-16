@@ -460,7 +460,11 @@ export default function Grimoire({ pose }) {
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="card" style={{ marginTop: 0 }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-        <h3 style={{ justifyContent: 'center' }}>The Appointed Times <SpeakerButton text="The Appointed Times" /></h3>
+        <h3 style={{ justifyContent: 'center' }}>
+          The Appointed Times{' '}
+          <Icon name="ph-calendar" />{' '}
+          <SpeakerButton text="The Appointed Times" />
+        </h3>
         
         {realEvents.length > 0 ? realEvents.map((ev, i) => (
           <div key={i} className="step">
@@ -484,6 +488,7 @@ export default function Grimoire({ pose }) {
           <div className="corner bl"></div><div className="corner br"></div>
           <h3 style={{ justifyContent: 'center' }}>
             The Appointed Days{' '}
+            <Icon name="ph-calendar-star" />{' '}
             <SpeakerButton text='The Appointed Days' />
           </h3>
           <div className="mt mb-4">Rites that occur sparingly.</div>
@@ -590,6 +595,7 @@ export default function Grimoire({ pose }) {
           <div className="corner bl"></div><div className="corner br"></div>
           <h3 style={{ justifyContent: 'center' }}>
             The Weekly Wheel{' '}
+            <Icon name="ph-arrows-clockwise" />{' '}
             <SpeakerButton text='The Weekly Wheel' />
           </h3>
           <div className="mb-2" style={{ marginTop: '-0.2rem', textAlign: 'center' }}>Rhythms and cycles.</div>
@@ -633,10 +639,11 @@ export default function Grimoire({ pose }) {
         <div className="card" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
         <div className="corner tl"></div><div className="corner tr"></div>
         <div className="corner bl"></div><div className="corner br"></div>
-        <h3 style={{ justifyContent: 'center' }}>
-          The Ephemeris{' '}
-          <SpeakerButton text='The Ephemeris' />
-        </h3>
+          <h3 style={{ justifyContent: 'center' }}>
+            The Ephemeris{' '}
+            <Icon name="ph-planet" />{' '}
+            <SpeakerButton text='The Ephemeris' />
+          </h3>
         <div className="mb-2" style={{ marginTop: '-0.2rem', textAlign: 'center' }}>The long count.</div>
         
         <h2 style={{ fontSize: '2.5rem', color: 'var(--plum)', textAlign: 'center', margin: '1rem 0' }}>

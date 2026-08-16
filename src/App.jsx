@@ -158,7 +158,7 @@ export default function App() {
       }
 
       document.body.style.backgroundImage = `url('${bgUrl}')`;
-      document.body.style.backgroundSize = 'contain';
+      document.body.style.backgroundSize = 'cover';
       document.body.style.backgroundColor = 'var(--bg)';
       document.body.style.backgroundPosition = 'center';
       document.body.style.backgroundRepeat = 'no-repeat';
@@ -341,7 +341,7 @@ export default function App() {
 
   if (authLoading) {
     return (
-      <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'contain', backgroundColor: 'var(--bg)', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+      <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'cover', backgroundColor: 'var(--bg)', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
         <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)' }} />
         <div style={{ position: 'relative', zIndex: 10, textAlign: 'center' }}>
           <div className="tag" style={{ textShadow: '1px 1px 0 #0b090e, 0 4px 15px rgba(0,0,0,1)', color: 'var(--plum)', background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 40%, transparent 70%)', padding: '0.6rem', display: 'inline-block' }}>Consulting the wards...</div>
@@ -352,7 +352,7 @@ export default function App() {
 
   if (window.location.search.includes('bypass') ? false : (!session?.user || session.user.id === 'dummy')) {
     return (
-      <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'contain', backgroundColor: 'var(--bg)', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+      <div className="land" style={{ backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")', backgroundSize: 'cover', backgroundColor: 'var(--bg)', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }}></div>
         <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '2rem', maxWidth: '400px', width: '90%' }}>
           <h1 style={{ fontSize: 'clamp(2rem, 10vw, 3.5rem)', textShadow: '2px 2px 0 #0b090e, -1px -1px 0 #0b090e, 1px -1px 0 #0b090e, -1px 1px 0 #0b090e, 0 8px 30px rgba(0,0,0,1)', color: 'var(--plum)', margin: '0 0 0.5rem 0' }}>
@@ -624,20 +624,46 @@ export default function App() {
                       </div>
                     )}
 
-                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
-                      <input type="checkbox" style={{ marginTop: '0.2rem' }} checked={settings.health} onChange={async (e) => {
-                        const checked = e.target.checked;
-                        if (checked) {
-                          const { requestHealthPermissions, syncWearableSnapshot } = await import('./lib/health-connect.js');
-                          const granted = await requestHealthPermissions();
-                          if (granted) {
-                            setSettings({...settings, health: true});
-                            syncWearableSnapshot();
+                    <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                        <input type="checkbox" style={{ marginTop: '0.2rem' }} checked={settings.health} onChange={async (e) => {
+                          const checked = e.target.checked;
+                          if (checked) {
+                            const { requestHealthPermissions, syncWearableSnapshot } = await import('./lib/health-connect.js');
+                            const granted = await requestHealthPermissions();
+                            if (granted) {
+                              setSettings({...settings, health: true});
+                              syncWearableSnapshot();
+                            }
+                          } else {
+                            setSettings({...settings, health: checked});
                           }
-                        } else {
-                          setSettings({...settings, health: checked});
-                        }
-                      }} /> Corporeal Sensors (RingConn, Renpho, Samsung)
+                        }} /> Corporeal Sensors (RingConn, Renpho, Samsung)
+                      </label>
+                      
+                      {settings.health && (
+                        <div style={{ marginLeft: '1.5rem', marginBottom: '1rem' }}>
+                          <button className="btn sm g" onClick={async (e) => {
+                            const btn = e.target;
+                            const originalText = btn.innerText;
+                            btn.innerText = "Syncing...";
+                            btn.disabled = true;
+                            try {
+                              const { syncWearableSnapshot } = await import('./lib/health-connect.js');
+                              await syncWearableSnapshot();
+                              btn.innerText = "Sync Complete";
+                            } catch (err) {
+                              btn.innerText = "Sync Failed";
+                            }
+                            setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                          }}>Sync Now</button>
+                        </div>
+                      )}
+                    </label>
+
+                    <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--crimson)' }}>
+                      <input type="checkbox" style={{ marginTop: '0.2rem' }} checked={settings.travel_mode || false} onChange={e => setSettings({...settings, travel_mode: e.target.checked})} />
+                      Travel / Disruption Mode (Suppress Non-Essential Notifications)
                     </label>
                     
                     <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--crimson)' }}>
