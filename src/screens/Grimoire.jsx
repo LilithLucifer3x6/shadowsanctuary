@@ -177,8 +177,15 @@ export default function Grimoire({ pose }) {
         if (window.location.search.includes('test_grim=1')) {
           return "I see the stars align for your regimen. You have diligently cleansed your crown. Continue the rituals as they are written.";
         }
+        
+        // Fetch context data
+        const { data: reactions } = await supabase.from('somatic_reactions').select('*, items(name, brand)').order('created_at', { ascending: false }).limit(5);
+        const { data: items } = await supabase.from('items').select('name, category, lifecycle_state');
+        const banished = (items || []).filter(i => i.lifecycle_state === 'banished').map(i => i.name);
+        const waning = (items || []).filter(i => i.lifecycle_state === 'waning' || i.lifecycle_state === 'ebbing').map(i => i.name);
+        
         const { converseReading } = await import('../lib/ai-service.js');
-        return converseReading([], profile);
+        return converseReading([], profile, { reactions: reactions || [], banished, waning });
       })());
       setReadingState(prev => {
         if (!prev) return null;
@@ -268,8 +275,14 @@ export default function Grimoire({ pose }) {
     try {
       const currentHist = [...readingState.history, { role: 'user', text: userText }];
       const reply = await withHardTimeout((async () => {
+        // Fetch context data
+        const { data: reactions } = await supabase.from('somatic_reactions').select('*, items(name, brand)').order('created_at', { ascending: false }).limit(5);
+        const { data: items } = await supabase.from('items').select('name, category, lifecycle_state');
+        const banished = (items || []).filter(i => i.lifecycle_state === 'banished').map(i => i.name);
+        const waning = (items || []).filter(i => i.lifecycle_state === 'waning' || i.lifecycle_state === 'ebbing').map(i => i.name);
+        
         const { converseReading } = await import('../lib/ai-service.js');
-        return converseReading(currentHist, profile);
+        return converseReading(currentHist, profile, { reactions: reactions || [], banished, waning });
       })()) || "";
       
       const match = reply.match(/\[READING_COMPLETE:\s*(.*?)\]/);

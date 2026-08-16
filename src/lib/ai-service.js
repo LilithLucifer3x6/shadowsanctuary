@@ -303,7 +303,7 @@ Otherwise, reply sympathetically and ask a clarifying question. Keep responses t
   }
 }
 
-export async function converseReading(history, userProfile) {
+export async function converseReading(history, userProfile, contextData = {}) {
   const apiKey = localStorage.getItem('al_anthropic_key') || '';
   try {
     const userTurnCount = history.filter(h => h.role === 'user').length;
@@ -317,7 +317,13 @@ export async function converseReading(history, userProfile) {
 You are the Keeper of the Sanctuary, leading "The Reading", a monthly reflection on the user's wellness rituals.
 Goal: Have a short conversation to check if they are experiencing any new skin concerns (especially hyperpigmentation or breakouts), lifestyle changes (more stress, less sleep), or if any products are causing irritation.
 You MUST also re-evaluate their explicit skin type (e.g. "Has your skin shifted from oily to dry this season?") and check if their current product textures are still serving them or causing congestion.
-Ask one question at a time. Be empathetic, poetic, and concise (1-2 sentences).
+
+CRITICAL: DO NOT ASK ABOUT THE FOLLOWING IF ALREADY KNOWN:
+Recent Reactions: ${JSON.stringify(contextData.reactions || [])}
+Banished Items: ${JSON.stringify(contextData.banished || [])}
+Waning (Emptying) Items: ${JSON.stringify(contextData.waning || [])}
+
+Ask ONLY genuinely new questions based on gaps in this data. Ask one question at a time. Be empathetic, poetic, and concise (1-2 sentences).
 If the user's reply goes off-topic, gently and atmospherically redirect them back to the active question rather than following the tangent or ignoring it silently.
 ${mustConclude
   ? `This is your FINAL response, regardless of what has been discussed so far. You must end this response with exactly: "[READING_COMPLETE: <summary of changes or 'No changes'>]". Do not ask another question.`

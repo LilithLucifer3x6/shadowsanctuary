@@ -1,201 +1,63 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase.js';
-import VisualInscription from '../components/VisualInscription.jsx';
-import { attachVoice } from '../lib/voice.js';
-import SpeakerButton from '../components/SpeakerButton.jsx';
-import * as AI from '../lib/ai-service.js';
 import Icon from '../components/Icon.jsx';
 import { G } from '../lib/icons.jsx';
-import { SkinQuiz, ScalpQuiz, PorosityQuiz } from '../components/AssessmentQuizzes.jsx';
-
+import SpeakerButton from '../components/SpeakerButton.jsx';
 import VoiceInput from '../components/VoiceInput.jsx';
 
 export default function Intake({ onComplete }) {
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 11;
+  const totalSteps = 16;
+  const [ans, setAns] = useState({
+    sunExposure: '',
+    sensitivity: '',
+    fragrance: '',
+    hairType: '',
+    coilyDetails: [],
+    porosity: '',
+    scalpOil: '',
+    eyes: [],
+    mouth: [],
+    bodyHair: '',
+    nails: [],
+    makeup: '',
+    timeBudget: '',
+    sweat: '',
+    skinTone: '',
+    concerns: {},
+    rxList: [],
+    oralList: [],
+    algList: [],
+    conditions: []
+  });
 
-  // Fast Path State
-  const [skinTypesOptions, setSkinTypesOptions] = useState([]);
-  const [scalpTypesOptions, setScalpTypesOptions] = useState([]);
-  const [porosityOptions, setPorosityOptions] = useState([]);
-  const [concernsOptions, setConcernsOptions] = useState([]);
-  const [conditionsOptions, setConditionsOptions] = useState([]);
-  const [traditionsOptions, setTraditionsOptions] = useState([]);
-  const [texturesOptions, setTexturesOptions] = useState([]);
+  const updateAns = (k, v) => setAns(prev => ({ ...prev, [k]: v }));
   
-  const [selectedSkinType, setSelectedSkinType] = useState('');
-  const [selectedScalpType, setSelectedScalpType] = useState('');
-  const [selectedPorosity, setSelectedPorosity] = useState('');
-  const [showSkinQuiz, setShowSkinQuiz] = useState(false);
-  const [showScalpQuiz, setShowScalpQuiz] = useState(false);
-  const [showPorosityQuiz, setShowPorosityQuiz] = useState(false);
-  const [selectedConcerns, setSelectedConcerns] = useState([]);
-  const [primaryConcern, setPrimaryConcern] = useState('');
-  const [selectedConditions, setSelectedConditions] = useState([]);
-  const [selectedTextures, setSelectedTextures] = useState([]);
-  const [selectedTraditions, setSelectedTraditions] = useState([]);
-  
-  const [rxList, setRxList] = useState([]);
-  const [oralList, setOralList] = useState([]);
-  const [algList, setAlgList] = useState([]);
-  const [newAlg, setNewAlg] = useState('');
-  
-  const [noRx, setNoRx] = useState(false);
-  const [noOral, setNoOral] = useState(false);
-  const [prescriptionStartDate, setPrescriptionStartDate] = useState('');
-  const [noAlg, setNoAlg] = useState(false);
-
-  useEffect(() => {
-    supabase.from('user_profile').select('intake_answers, intake_completed').maybeSingle().then(({ data }) => {
-      if (data) {
-        if (data.intake_completed) {
-          onComplete(); // Defend against accidental re-entry bugs
-          return;
-        }
-        if (data.intake_answers) {
-          const ans = data.intake_answers;
-        if (ans.skinType) setSelectedSkinType(ans.skinType);
-        if (ans.scalpType) setSelectedScalpType(ans.scalpType);
-        if (ans.hairPorosity) setSelectedPorosity(ans.hairPorosity);
-        if (ans.concerns) setSelectedConcerns(ans.concerns);
-        if (ans.primaryConcern) setPrimaryConcern(ans.primaryConcern);
-        if (ans.conditions) setSelectedConditions(ans.conditions);
-        if (ans.textures) setSelectedTextures(ans.textures);
-        if (ans.traditions) setSelectedTraditions(ans.traditions);
-        if (ans.rxList) setRxList(ans.rxList);
-        if (ans.oralList) setOralList(ans.oralList.map(o => typeof o === 'string' ? { name: o, type: 'prescription' } : o));
-        if (ans.algList) setAlgList(ans.algList);
-        if (ans.noRx) setNoRx(ans.noRx);
-        if (ans.noOral) setNoOral(ans.noOral);
-        if (ans.noAlg) setNoAlg(ans.noAlg);
-        if (ans.prescription_start_date) setPrescriptionStartDate(ans.prescription_start_date);
-        
-        // If they already completed it but are just missing the date, jump to step 4
-        if (ans.oralList && ans.oralList.some(m => m.name && m.name.toLowerCase().includes('isotretinoin') || m.name && m.name.toLowerCase().includes('accutane')) && !ans.prescription_start_date) {
-            setCurrentStep(6);
-        }
-        }
-      }
+  const toggleMulti = (k, val) => {
+    setAns(prev => {
+      const arr = prev[k] || [];
+      if (arr.includes(val)) return { ...prev, [k]: arr.filter(x => x !== val) };
+      return { ...prev, [k]: [...arr, val] };
     });
-  }, []);
+  };
 
-  useEffect(() => {
-    AI.generateSkinTypes().then(setSkinTypesOptions);
-    AI.generateScalpTypes().then(setScalpTypesOptions);
-    AI.generatePorosity().then(setPorosityOptions);
-    AI.generateConcerns().then(setConcernsOptions);
-    AI.generateConditions().then(setConditionsOptions);
-    AI.generateTextures().then(setTexturesOptions);
-    AI.generateTraditions().then(setTraditionsOptions);
-  }, []);
-
-
-
-  const handleFinishFastRoute = async () => {
-    const concerns = selectedConcerns;
-    const conditions = selectedConditions;
-    const traditions = selectedTraditions;
-
-    const filteredRxList = noRx ? [] : rxList.filter(rx => rx.name && rx.name.trim() !== '');
-    const filteredOralList = noOral ? [] : oralList.filter(o => o && o.name && o.name.trim() !== '');
-    const filteredAlgList = noAlg ? [] : algList.filter(a => a && a.trim() !== '');
-
+  const handleFinish = async () => {
     const avatarConfig = JSON.parse(localStorage.getItem('avatar_config') || '{}');
     const { data: existing } = await supabase.from('user_profile').select('id').maybeSingle();
     const profileData = {
       intake_completed: true,
-      intake_answers: { 
-        skinType: selectedSkinType,
-        scalpType: selectedScalpType,
-        hairPorosity: selectedPorosity,
-        concerns: selectedConcerns, 
-        primaryConcern,
-        conditions: selectedConditions, 
-        textures: selectedTextures,
-        traditions: selectedTraditions, 
-        noRx, 
-        noOral, 
-        noAlg, 
-        rxList: filteredRxList, 
-        oralList: filteredOralList, 
-        algList: filteredAlgList, 
-        prescription_start_date: prescriptionStartDate 
-      },
+      intake_answers: ans,
       avatar_config: avatarConfig
     };
-    
-    if (existing) {
-      await supabase.from('user_profile').update(profileData).eq('id', existing.id);
-    } else {
-      await supabase.from('user_profile').insert([profileData]);
-    }
+    if (existing) await supabase.from('user_profile').update(profileData).eq('id', existing.id);
+    else await supabase.from('user_profile').insert([profileData]);
     
     localStorage.setItem('intake_completed', 'true');
     onComplete();
   };
 
-  const canProceed = () => {
-    if (currentStep === 1) return selectedSkinType !== '';
-    if (currentStep === 2) return selectedScalpType !== '';
-    if (currentStep === 3) return selectedPorosity !== '';
-    if (currentStep === 4) return selectedConcerns.length > 0 && (selectedConcerns.includes('relaxation') || selectedConcerns.includes('na') || primaryConcern !== '');
-    if (currentStep === 6) return selectedConditions.length > 0;
-    if (currentStep === 7) return selectedTextures.length > 0;
-    if (currentStep === 8) return noRx || rxList.some(r => r.name.trim() !== '');
-    if (currentStep === 9) return noOral || oralList.some(o => o.name && o.name.trim() !== '');
-    if (currentStep === 10) return noAlg || algList.length > 0 || newAlg.trim() !== '';
-    if (currentStep === 11) return selectedTraditions.length > 0;
-    return true;
-  };
-
-
-  const toggleSelection = (setter, item) => {
-    setter(prev => prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]);
-  };
-  
-  const updateRx = (index, field, value) => {
-    const newList = [...rxList];
-    newList[index][field] = value;
-    setRxList(newList);
-  };
-  
-  const addRx = () => {
-    setRxList([...rxList, { name: '', strength: '', zone: '', frequency: '' }]);
-  };
-
-  const removeRx = (index) => {
-    const newList = [...rxList];
-    newList.splice(index, 1);
-    setRxList(newList);
-  };
-
-  const updateOral = (index, field, value) => {
-    const newList = [...oralList];
-    newList[index][field] = value;
-    setOralList(newList);
-  };
-  
-  const addOral = () => {
-    setOralList([...oralList, { name: '', type: 'prescription' }]);
-  };
-
-  const removeOral = (index) => {
-    const newList = [...oralList];
-    newList.splice(index, 1);
-    setOralList(newList);
-  };
-
-  const addAlg = () => {
-    if (newAlg.trim()) {
-      setAlgList([...algList, newAlg.trim()]);
-      setNewAlg('');
-    }
-  };
-
   const renderTitle = (titleText) => (
-    <h3>
-      {titleText} <SpeakerButton text={titleText} />
-    </h3>
+    <h3>{titleText} <SpeakerButton text={titleText} /></h3>
   );
 
   return (
@@ -208,411 +70,321 @@ export default function Intake({ onComplete }) {
         </h2>
       </div>
 
-
-
       <div id="ins-steps" style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem' }}>
-          {currentStep === 1 && (
-            <div className="ins-step">
-              {renderTitle('The Foundation of the Vessel')}
-              <div className="mt">Which best describes your skin\'s natural state?</div>
-              {showSkinQuiz ? (
-                <SkinQuiz onComplete={(res) => { setSelectedSkinType(res); setShowSkinQuiz(false); }} />
-              ) : (
-                <div className="chips">
-                  {skinTypesOptions.length > 0 ? skinTypesOptions.map(st => (
-                    <div 
-                      key={st.id}
-                      className={`chip ${selectedSkinType === st.id ? 'on' : ''}`}
-                      onClick={() => setSelectedSkinType(st.id)}
-                    >
-                      {st.label}
-                    </div>
-                  )) : <div style={{ opacity: 0.5 }}>Divining skin types...</div>}
-                  <div className="chip" style={{ borderStyle: 'dashed' }} onClick={() => setShowSkinQuiz(true)}>Help me divine this</div>
-                </div>
-              )}
+        {currentStep === 1 && (
+          <div className="ins-step">
+            {renderTitle('Sun & Environmental Exposure')}
+            <div className="mt">How much sun and elemental exposure do you face daily?</div>
+            <div className="chips mt-4">
+              {['Minimal (Mostly indoors)', 'Moderate (Commuting, short walks)', 'High (Outdoor work, sports)', 'Intense (Equatorial/High Altitude)'].map(opt => (
+                <div key={opt} className={`chip ${ans.sunExposure === opt ? 'on' : ''}`} onClick={() => updateAns('sunExposure', opt)}>{opt}</div>
+              ))}
             </div>
-          )}
-
-          {currentStep === 2 && (
-            <div className="ins-step">
-              {renderTitle('The Crown\'s Terrain')}
-              <div className="mt">How would you describe your scalp\'s natural state?</div>
-              {showScalpQuiz ? (
-                <ScalpQuiz onComplete={(res) => { setSelectedScalpType(res); setShowScalpQuiz(false); }} />
-              ) : (
-                <div className="chips">
-                  {scalpTypesOptions.length > 0 ? scalpTypesOptions.map(st => (
-                    <div 
-                      key={st.id}
-                      className={`chip ${selectedScalpType === st.id ? 'on' : ''}`}
-                      onClick={() => setSelectedScalpType(st.id)}
-                    >
-                      {st.label}
-                    </div>
-                  )) : <div style={{ opacity: 0.5 }}>Divining scalp types...</div>}
-                  <div className="chip" style={{ borderStyle: 'dashed' }} onClick={() => setShowScalpQuiz(true)}>Help me divine this</div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {currentStep === 3 && (
-            <div className="ins-step">
-              {renderTitle('The Thirst of the Strands')}
-              <div className="mt">What is your hair\'s porosity level?</div>
-              {showPorosityQuiz ? (
-                <PorosityQuiz onComplete={(res) => { setSelectedPorosity(res); setShowPorosityQuiz(false); }} />
-              ) : (
-                <div className="chips">
-                  {porosityOptions.length > 0 ? porosityOptions.map(st => (
-                    <div 
-                      key={st.id}
-                      className={`chip ${selectedPorosity === st.id ? 'on' : ''}`}
-                      onClick={() => setSelectedPorosity(st.id)}
-                    >
-                      {st.label}
-                    </div>
-                  )) : <div style={{ opacity: 0.5 }}>Divining porosity...</div>}
-                  <div className="chip" style={{ borderStyle: 'dashed' }} onClick={() => setShowPorosityQuiz(true)}>Help me divine this</div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {currentStep === 4 && (
-            <div className="ins-step">
-              {renderTitle('What brings you to this place?')}
-              <div className="mt mb-4">Select all that weigh upon you. <strong>Double-tap one to mark it as your Primary focus.</strong></div>
-              <div className="chips">
-                <div 
-                  className={`chip ${selectedConcerns.includes('relaxation') ? 'on' : ''}`}
-                  onClick={() => { setSelectedConcerns(['relaxation']); setPrimaryConcern('relaxation'); }}
-                >
-                  Relaxation, just for the sake of relaxation
-                </div>
-                <div 
-                  className={`chip ${selectedConcerns.includes('na') ? 'on' : ''}`}
-                  onClick={() => { setSelectedConcerns(['na']); setPrimaryConcern('na'); }}
-                >
-                  Not Applicable
-                </div>
-                {concernsOptions.length > 0 ? concernsOptions.map(c => (
-                  <div 
-                    key={c.id}
-                    className={`chip ${selectedConcerns.includes(c.id) ? 'on' : ''} ${primaryConcern === c.id ? 'primary-concern-chip' : ''}`}
-                    style={{ border: primaryConcern === c.id ? '2px solid var(--gold)' : '' }}
-                    onClick={() => {
-                      if (c.id === 'na') {
-                        setSelectedConcerns(prev => prev.includes('na') ? [] : ['na']);
-                        setPrimaryConcern(prev => prev === 'na' ? '' : 'na');
-                      } else {
-                        toggleSelection(setSelectedConcerns, c.id);
-                        if (primaryConcern === c.id) setPrimaryConcern('');
-                      }
-                    }}
-                    onDoubleClick={() => setPrimaryConcern(c.id)}
-                  >
-                    {c.label} {primaryConcern === c.id && <span style={{fontSize: '0.7rem', color: 'var(--gold)', marginLeft: '0.3rem'}}>(Primary)</span>}
-                  </div>
-                )) : <div style={{ opacity: 0.5 }}>Divining concerns...</div>}
-              </div>
-            </div>
-          )}
-
-          {currentStep === 5 && (
-            <div className="ins-step">
-              {renderTitle('The Visual Inscription')}
-              <VisualInscription 
-                inline={true} 
-                onSkip={() => setCurrentStep(4)} 
-                onComplete={(data) => {
-                  if (data) {
-                    // Because conditions are typically pre-defined, we just log it or add it to newAlg
-                    // but for now, we'll store it as a note or we could push a new custom chip.
-                    // The simplest approach is to push to selectedConditions if we allow custom.
-                    // But Intake currently only allows predefined condition chips + "na".
-                    // The prompt said "log it into the 5-domain JSON schema".
-                    // For now, advancing is fine.
-                  }
-                  setCurrentStep(4);
-                }} 
-              />
-            </div>
-          )}
-
-          {currentStep === 6 && (
-            <div className="ins-step">
-              {renderTitle('What must the Lounge protect?')}
-              <div className="mt">Conditions that shape how you care for yourself. Be sure to include systemic, scalp, or full-body conditions.</div>
-              <div className="chips" style={{ marginTop: '1rem' }}>
-                <div 
-                  className={`chip ${selectedConditions.includes('na') ? 'on' : ''}`}
-                  onClick={() => setSelectedConditions(prev => prev.includes('na') ? [] : ['na'])}
-                >
-                  Not Applicable
-                </div>
-                {conditionsOptions.length > 0 ? conditionsOptions.map(c => (
-                  <div 
-                    key={c.id} 
-                    className={`chip ${selectedConditions.includes(c.id) ? 'on' : ''}`}
-                    onClick={() => {
-                      if (selectedConditions.includes('na')) {
-                        setSelectedConditions([c.id]);
-                      } else {
-                        toggleSelection(setSelectedConditions, c.id);
-                      }
-                    }}
-                  >
-                    {c.label}
-                  </div>
-                )) : <div style={{ opacity: 0.5 }}>Divining conditions...</div>}
-              </div>
-            </div>
-          )}
-
-          {currentStep === 7 && (
-            <div className="ins-step">
-              {renderTitle('Sensory Preferences')}
-              <div className="mt">What product formats and textures do you prefer to apply?</div>
-              <div className="chips" style={{ marginTop: '1rem' }}>
-                <div 
-                  className={`chip ${selectedTextures.includes('na') ? 'on' : ''}`}
-                  onClick={() => setSelectedTextures(prev => prev.includes('na') ? [] : ['na'])}
-                >
-                  I have no preference
-                </div>
-                {texturesOptions.length > 0 ? texturesOptions.map(t => (
-                  <div 
-                    key={t.id} 
-                    className={`chip ${selectedTextures.includes(t.id) ? 'on' : ''}`}
-                    onClick={() => {
-                      if (selectedTextures.includes('na')) {
-                        setSelectedTextures([t.id]);
-                      } else {
-                        toggleSelection(setSelectedTextures, t.id);
-                      }
-                    }}
-                  >
-                    {t.label}
-                  </div>
-                )) : <div style={{ opacity: 0.5 }}>Divining textures...</div>}
-              </div>
-            </div>
-          )}
-
-          {currentStep === 8 && (
-            <div className="ins-step">
-              {renderTitle('Medical Directives (Topical)')}
-              <div className="mt mb-4">Potent formulas prescribed by healers. These take priority in all routines.</div>
-              
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--plum)' }}>
-                <input type="checkbox" checked={noRx} onChange={e => { setNoRx(e.target.checked); if(e.target.checked) setRxList([]); }} /> I hold no topical measures.
-              </label>
-
-              {!noRx && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                  {rxList.map((rx, i) => (
-                    <div key={i} style={{ borderLeft: '2px solid var(--gold)', paddingLeft: '1rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                        <span style={{ color: 'var(--plum)', }}>Prescription {i + 1}</span>
-                        <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: 0 }} onClick={() => removeRx(i)}>Shatter</button>
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="field">
-                          <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Name</label>
-                          <VoiceInput value={rx.name} onChange={e => updateRx(i, 'name', e.target.value)} placeholder="" />
-                        </div>
-                        <div className="field">
-                          <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Strength</label>
-                          <VoiceInput value={rx.strength} onChange={e => updateRx(i, 'strength', e.target.value)} placeholder="" />
-                        </div>
-                        <div className="field">
-                          <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Zone</label>
-                          <VoiceInput value={rx.zone} onChange={e => updateRx(i, 'zone', e.target.value)} placeholder="" />
-                        </div>
-                        <div className="field">
-                          <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Frequency</label>
-                          <VoiceInput value={rx.frequency} onChange={e => updateRx(i, 'frequency', e.target.value)} placeholder="" />
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <button className="btn" onClick={addRx} style={{ width: 'fit-content', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="plus" /> Summon Topical Measure</button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {currentStep === 9 && (
-            <div className="ins-step">
-              {renderTitle('Medical Directives (Oral)')}
-              <div className="mt mb-4">Internal remedies that may cause systemic shifts.</div>
-              
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--plum)' }}>
-                <input type="checkbox" checked={noOral} onChange={e => { setNoOral(e.target.checked); if(e.target.checked) setOralList([]); }} /> I consume no internal remedies that alter my vessel.
-              </label>
-
-{!noOral && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {oralList.map((med, i) => (
-                    <div key={i} style={{ borderLeft: '2px solid var(--gold)', paddingLeft: '1rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                        <span style={{ color: 'var(--plum)' }}>Systemic {i + 1}</span>
-                        <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: 0 }} onClick={() => removeOral(i)}>Shatter</button>
-                      </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                        <div className="field">
-                          <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Name</label>
-                          <VoiceInput value={med.name} onChange={e => updateOral(i, 'name', e.target.value)} placeholder="" />
-                        </div>
-                        <div className="field">
-                          <label style={{ color: 'var(--silver)', fontSize: '0.9rem', marginBottom: '0.3rem', display: 'block' }}>Type</label>
-                          <select value={med.type} onChange={e => updateOral(i, 'type', e.target.value)} style={{ width: '100%', padding: '0.85rem', background: 'var(--bg)', color: 'var(--silver)', border: '1px solid var(--border)', borderRadius: '4px' }}>
-                            <option value="prescription">Prescription</option>
-                            <option value="otc">Over-the-Counter</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <button className="btn" onClick={addOral} style={{ width: 'fit-content', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="plus" /> Summon Systemic Measure</button>
-                  
-                  {oralList.some(m => m.name && m.name.toLowerCase().includes('isotretinoin') || m.name && m.name.toLowerCase().includes('accutane')) && (
-                    <div className="field mt-4" style={{ padding: '1rem', border: '1px solid var(--crimson)', borderRadius: '8px' }}>
-                      <label style={{ color: 'var(--plum)', display: 'block', marginBottom: '0.5rem' }}>When did you begin this systemic regimen?</label>
-                      <input type="date" value={prescriptionStartDate} onChange={e => setPrescriptionStartDate(e.target.value)} style={{ padding: '0.5rem', background: 'var(--bg)', color: 'var(--silver)', border: '1px solid var(--border)', borderRadius: '4px' }} />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {currentStep === 10 && (
-            <div className="ins-step">
-              {renderTitle('The ingredients to never touch')}
-              <div className="mt mb-4">Allergies and sensitivities.</div>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem', color: 'var(--plum)' }}>
-                <input type="checkbox" checked={noAlg} onChange={e => { setNoAlg(e.target.checked); if(e.target.checked) setAlgList([]); }} /> I hold no other aversions.
-              </label>
-              {!noAlg && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  {algList.map((alg, i) => (
-                    <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                      <div style={{ flex: 1 }}>
-                        <VoiceInput 
-                          value={alg} 
-                          onChange={e => {
-                            const newList = [...algList];
-                            newList[i] = e.target.value;
-                            setAlgList(newList);
-                          }}
-                          placeholder="" 
-                        />
-                      </div>
-                      <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: '0.5rem' }} onClick={() => {
-                        const newList = [...algList];
-                        newList.splice(i, 1);
-                        setAlgList(newList);
-                      }}>Shatter</button>
-                    </div>
-                  ))}
-                  <button className="btn" onClick={() => setAlgList([...algList, ''])} style={{ width: 'fit-content', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><Icon name="plus" /> Summon Aversion</button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {currentStep === 11 && (
-            <div className="ins-step">
-              {renderTitle('Which traditions call to you?')}
-              <div className="mt">Your preferred approaches to care.</div>
-              <div className="chips">
-                <div 
-                  className={`chip ${selectedTraditions.includes('na') ? 'on' : ''}`}
-                  onClick={() => setSelectedTraditions(prev => prev.includes('na') ? [] : ['na'])}
-                >
-                  Not Applicable
-                </div>
-                {traditionsOptions.length > 0 ? traditionsOptions.map(c => (
-                  <div 
-                    key={c.id} 
-                    className={`chip ${selectedTraditions.includes(c.id) ? 'on' : ''}`}
-                    onClick={() => {
-                      if (selectedTraditions.includes('na')) {
-                        setSelectedTraditions([c.id]);
-                      } else {
-                        toggleSelection(setSelectedTraditions, c.id);
-                      }
-                    }}
-                  >
-                    {c.label}
-                  </div>
-                )) : <div style={{ opacity: 0.5 }}>Divining traditions...</div>}
-              </div>
-            </div>
-          )}
-
-          {currentStep === 11 && (
-            <div className="ins-step" style={{ textAlign: 'center', margin: 'auto' }}>
-              <h3 style={{ fontSize: '3rem', color: 'var(--plum)' }}>The First Inscription is consecrated</h3>
-              <div className="mt" style={{ fontSize: '1.2rem', marginTop: '2rem' }}>Your chamber awaits.</div>
-            </div>
-          )}
-        </div>
-
-        <div id="fast-route-controls" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
-          <button 
-            className="btn" 
-            onClick={() => {
-                if (currentStep === 7 && selectedConcerns.includes('relaxation')) {
-                  setCurrentStep(4);
-                } else {
-                setCurrentStep(prev => Math.max(1, prev - 1));
-              }
-            }}
-            style={{ visibility: currentStep === 1 ? 'hidden' : 'visible' }}
-          >
-            Step Backwards
-          </button>
-          
-          <div id="ins-dots" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            {Array.from({ length: totalSteps }).map((_, idx) => {
-              const i = idx + 1;
-              return (
-                <div 
-                  key={i} 
-                  className={`dot ${i === currentStep ? 'active' : ''}`} 
-                  style={{ 
-                    width: '8px', 
-                    height: '8px', 
-                    borderRadius: '50%', 
-                    background: i === currentStep ? 'var(--crimson)' : 'var(--border)' 
-                  }}
-                />
-              );
-            })}
           </div>
-          
-          <button 
-            className="btn plum" 
-            disabled={!canProceed()}
-            style={{ opacity: canProceed() ? 1 : 0.5, cursor: canProceed() ? 'pointer' : 'not-allowed' }}
-            onClick={() => {
-                if (currentStep === 4 && selectedConcerns.includes('relaxation')) {
-                  setCurrentStep(7); // Skip visual and conditions
-                } else if (currentStep < totalSteps) {
-                setCurrentStep(prev => prev + 1);
-              } else {
-                handleFinishFastRoute();
-              }
-            }}
-          >
-            {currentStep === totalSteps ? 'Enter the Sanctuary' : 'Step Deeper'}
-          </button>
+        )}
+
+        {currentStep === 2 && (
+          <div className="ins-step">
+            {renderTitle('Skin Sensitivity & Melanin')}
+            <div className="mt">How does your skin react to the elements and new products?</div>
+            <div className="chips mt-4">
+              {['Resilient (Rarely reacts)', 'Reactive (Redness, stinging)', 'Sensitized (Damaged barrier)', 'I don\'t know'].map(opt => (
+                <div key={opt} className={`chip ${ans.sensitivity === opt ? 'on' : ''}`} onClick={() => updateAns('sensitivity', opt)}>{opt}</div>
+              ))}
+            </div>
+            <div className="mt mt-4">What is your skin tone? (For melanin-specific wards)</div>
+            <div className="chips mt-4">
+              {['Type I-II (Fair/Light)', 'Type III-IV (Medium/Olive)', 'Type V-VI (Brown/Deep)'].map(opt => (
+                <div key={opt} className={`chip ${ans.skinTone === opt ? 'on' : ''}`} onClick={() => updateAns('skinTone', opt)}>{opt}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 3 && (
+          <div className="ins-step">
+            {renderTitle('Fragrance Preference')}
+            <div className="mt">Are you seeking aromatics, or strictly neutral formulations?</div>
+            <div className="chips mt-4">
+              {['I prefer fragrance', 'I prefer unscented/neutral', 'I have no preference'].map(opt => (
+                <div key={opt} className={`chip ${ans.fragrance === opt ? 'on' : ''}`} onClick={() => updateAns('fragrance', opt)}>{opt}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 4 && (
+          <div className="ins-step">
+            {renderTitle('The Crown: Hair Type')}
+            <div className="mt">How does your hair naturally fall?</div>
+            <div className="chips mt-4">
+              {['1A-1C (Straight)', '2A-2C (Wavy)', '3A-3C (Curly)', '4A-4C (Coily/Kinky)', 'I don\'t know'].map(opt => (
+                <div key={opt} className={`chip ${ans.hairType === opt ? 'on' : ''}`} onClick={() => updateAns('hairType', opt)}>{opt}</div>
+              ))}
+            </div>
+            {ans.hairType && ans.hairType.includes('4') && (
+              <div className="mt-4 p-4" style={{border: '1px solid var(--border)', borderRadius: '8px'}}>
+                <div className="mt">For Coily/Kinky textures: Are your coils...</div>
+                <div className="chips mt-4">
+                  {['High Density (Thick)', 'Low Density (Fine)', 'Locs', 'Protective Styles often'].map(opt => (
+                    <div key={opt} className={`chip ${ans.coilyDetails.includes(opt) ? 'on' : ''}`} onClick={() => toggleMulti('coilyDetails', opt)}>{opt}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {currentStep === 5 && (
+          <div className="ins-step">
+            {renderTitle('The Crown: Porosity & Scalp')}
+            <div className="mt">How does your hair drink moisture?</div>
+            <div className="chips mt-4">
+              {['Low (Repels water)', 'Medium (Absorbs normally)', 'High (Absorbs quickly, dries fast)', 'I don\'t know'].map(opt => (
+                <div key={opt} className={`chip ${ans.porosity === opt ? 'on' : ''}`} onClick={() => updateAns('porosity', opt)}>{opt}</div>
+              ))}
+            </div>
+            {ans.porosity === 'I don\'t know' && (
+              <div className="mt-4 p-4" style={{border: '1px solid var(--gold)', borderRadius: '8px', color: 'var(--silver)'}}>
+                <strong>The Spray/Mist Test:</strong> Mist a section of dry, clean hair with water. If it beads up and sits on top, it's Low. If it absorbs immediately, it's High.
+              </div>
+            )}
+            <div className="mt mt-4">How does your scalp fare?</div>
+            <div className="chips mt-4">
+              {['Dry / Flaky', 'Balanced', 'Oily', 'I don\'t know'].map(opt => (
+                <div key={opt} className={`chip ${ans.scalpOil === opt ? 'on' : ''}`} onClick={() => updateAns('scalpOil', opt)}>{opt}</div>
+              ))}
+            </div>
+            {ans.scalpOil === 'I don\'t know' && (
+              <div className="mt-4 p-4" style={{border: '1px solid var(--gold)', borderRadius: '8px', color: 'var(--silver)'}}>
+                <strong>The Blotting Paper Test:</strong> 24 hours after washing, press a blotting paper to your scalp. If it's translucent, you're Oily. If dry, you're Dry.
+              </div>
+            )}
+          </div>
+        )}
+
+        {currentStep === 6 && (
+          <div className="ins-step">
+            {renderTitle('Gaze & Grin: Eyes & Mouth')}
+            <div className="mt">What is the state of your Gaze? (Select all that apply)</div>
+            <div className="chips mt-4">
+              {['Dark Circles', 'Puffiness', 'Dryness / Irritation', 'Fine Lines', 'None'].map(opt => (
+                <div key={opt} className={`chip ${ans.eyes.includes(opt) ? 'on' : ''}`} onClick={() => toggleMulti('eyes', opt)}>{opt}</div>
+              ))}
+            </div>
+            <div className="mt mt-4">What is the state of your Grin? (Select all that apply)</div>
+            <div className="chips mt-4">
+              {['Chapped Lips', 'Enamel Sensitivity', 'Gums Bleed Easily', 'None'].map(opt => (
+                <div key={opt} className={`chip ${ans.mouth.includes(opt) ? 'on' : ''}`} onClick={() => toggleMulti('mouth', opt)}>{opt}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 7 && (
+          <div className="ins-step">
+            {renderTitle('Vessel: Body Hair & Nails')}
+            <div className="mt">What is your approach to body hair?</div>
+            <div className="chips mt-4">
+              {['Shave regularly', 'Wax/Sugaring', 'Depilatory creams', 'Laser/Electrolysis', 'Leave natural'].map(opt => (
+                <div key={opt} className={`chip ${ans.bodyHair === opt ? 'on' : ''}`} onClick={() => updateAns('bodyHair', opt)}>{opt}</div>
+              ))}
+            </div>
+            <div className="mt mt-4">What is the state of your Nails? (Select all that apply)</div>
+            <div className="chips mt-4">
+              {['Brittle/Peeling', 'Ridges', 'Cuticle Dryness', 'Acrylics/Gels Often', 'Healthy/Natural'].map(opt => (
+                <div key={opt} className={`chip ${ans.nails.includes(opt) ? 'on' : ''}`} onClick={() => toggleMulti('nails', opt)}>{opt}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 8 && (
+          <div className="ins-step">
+            {renderTitle('Habits: Makeup & Sweat')}
+            <div className="mt">How often do you wear the Veil (makeup)?</div>
+            <div className="chips mt-4">
+              {['Daily heavy makeup', 'Daily light/natural', 'Occasionally', 'Never'].map(opt => (
+                <div key={opt} className={`chip ${ans.makeup === opt ? 'on' : ''}`} onClick={() => updateAns('makeup', opt)}>{opt}</div>
+              ))}
+            </div>
+            <div className="mt mt-4">How frequently do you engage in heavy sweat/exercise?</div>
+            <div className="chips mt-4">
+              {['Daily', '3-4 times a week', 'Rarely', 'Never'].map(opt => (
+                <div key={opt} className={`chip ${ans.sweat === opt ? 'on' : ''}`} onClick={() => updateAns('sweat', opt)}>{opt}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 9 && (
+          <div className="ins-step">
+            {renderTitle('Time & Devotion')}
+            <div className="mt">What is your time budget for the Rites?</div>
+            <div className="chips mt-4">
+              {['Minimal (5 mins, absolute basics)', 'Moderate (10-15 mins, balanced)', 'Elaborate (20+ mins, full ritual)', 'Variable (Depends on the day)'].map(opt => (
+                <div key={opt} className={`chip ${ans.timeBudget === opt ? 'on' : ''}`} onClick={() => updateAns('timeBudget', opt)}>{opt}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 10 && (
+          <div className="ins-step">
+            {renderTitle('Aversions & Allergies')}
+            <div className="mt mb-4">Any ingredients you must avoid entirely.</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {ans.algList.map((alg, i) => (
+                <div key={i} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <div style={{ flex: 1 }}>
+                    <input 
+                      className="field"
+                      style={{width: '100%', padding: '0.85rem', background: 'var(--bg)', color: 'var(--silver)', border: '1px solid var(--border)', borderRadius: '4px'}}
+                      value={alg} 
+                      onChange={e => {
+                        const newList = [...ans.algList];
+                        newList[i] = e.target.value;
+                        updateAns('algList', newList);
+                      }}
+                      placeholder="Ingredient name..." 
+                    />
+                  </div>
+                  <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: '0.5rem' }} onClick={() => {
+                    const newList = [...ans.algList];
+                    newList.splice(i, 1);
+                    updateAns('algList', newList);
+                  }}>Remove</button>
+                </div>
+              ))}
+              <button className="btn" onClick={() => updateAns('algList', [...ans.algList, ''])} style={{ width: 'fit-content' }}>+ Add Aversion</button>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 11 && (
+          <div className="ins-step">
+            {renderTitle('Systemic Conditions')}
+            <div className="mt mb-4">Select all conditions that affect your routines.</div>
+            <div className="chips mt-4">
+              {['Eczema / Atopic Dermatitis', 'Psoriasis', 'Rosacea', 'Acne Vulgaris', 'Hyperhidrosis', 'PCOS', 'None'].map(opt => (
+                <div key={opt} className={`chip ${ans.conditions.includes(opt) ? 'on' : ''}`} onClick={() => toggleMulti('conditions', opt)}>{opt}</div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 12 && (
+          <div className="ins-step">
+            {renderTitle('Medical Directives (Topical)')}
+            <div className="mt mb-4">Add any prescribed topical treatments.</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {ans.rxList.map((rx, i) => (
+                <div key={i} style={{ borderLeft: '2px solid var(--gold)', paddingLeft: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ color: 'var(--plum)' }}>Prescription {i + 1}</span>
+                    <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: 0 }} onClick={() => {
+                      const newList = [...ans.rxList];
+                      newList.splice(i, 1);
+                      updateAns('rxList', newList);
+                    }}>Remove</button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <input className="field" style={{padding: '0.85rem', background: 'var(--bg)', color: 'var(--silver)', border: '1px solid var(--border)', borderRadius: '4px'}} value={rx.name} onChange={e => { const l = [...ans.rxList]; l[i].name = e.target.value; updateAns('rxList', l); }} placeholder="Name" />
+                    <input className="field" style={{padding: '0.85rem', background: 'var(--bg)', color: 'var(--silver)', border: '1px solid var(--border)', borderRadius: '4px'}} value={rx.zone} onChange={e => { const l = [...ans.rxList]; l[i].zone = e.target.value; updateAns('rxList', l); }} placeholder="Zone" />
+                  </div>
+                </div>
+              ))}
+              <button className="btn" onClick={() => updateAns('rxList', [...ans.rxList, { name: '', zone: '' }])} style={{ width: 'fit-content' }}>+ Add Topical</button>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 13 && (
+          <div className="ins-step">
+            {renderTitle('Medical Directives (Oral)')}
+            <div className="mt mb-4">Add any systemic internal remedies.</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {ans.oralList.map((med, i) => (
+                <div key={i} style={{ borderLeft: '2px solid var(--gold)', paddingLeft: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ color: 'var(--plum)' }}>Systemic {i + 1}</span>
+                    <button className="btn sm" style={{ background: 'transparent', color: 'var(--plum)', padding: 0 }} onClick={() => {
+                      const newList = [...ans.oralList];
+                      newList.splice(i, 1);
+                      updateAns('oralList', newList);
+                    }}>Remove</button>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <input className="field" style={{padding: '0.85rem', background: 'var(--bg)', color: 'var(--silver)', border: '1px solid var(--border)', borderRadius: '4px'}} value={med.name} onChange={e => { const l = [...ans.oralList]; l[i].name = e.target.value; updateAns('oralList', l); }} placeholder="Name" />
+                  </div>
+                </div>
+              ))}
+              <button className="btn" onClick={() => updateAns('oralList', [...ans.oralList, { name: '', type: 'prescription' }])} style={{ width: 'fit-content' }}>+ Add Systemic</button>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 14 && (
+          <div className="ins-step">
+            {renderTitle('Zone-Specific Concerns')}
+            <div className="mt mb-4">What specific focus areas do you have?</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              {['full-face (Face)', 'scalp (Scalp)', 'general-body (Body)'].map(zoneLabel => {
+                const zone = zoneLabel.split(' ')[0];
+                const label = zoneLabel.split(' ')[1].replace(/[()]/g, '');
+                return (
+                <div key={zone}>
+                  <h4 style={{ color: 'var(--gold)' }}>{label}</h4>
+                  <div className="chips mt-2">
+                    {['Acne', 'Aging', 'Hyperpigmentation', 'Dryness', 'Redness', 'Texture', 'None'].map(opt => (
+                      <div key={opt} className={`chip ${(ans.concerns[zone] || []).includes(opt) ? 'on' : ''}`} onClick={() => {
+                        const existing = ans.concerns[zone] || [];
+                        let next = [];
+                        if (existing.includes(opt)) next = existing.filter(x => x !== opt);
+                        else next = [...existing, opt];
+                        updateAns('concerns', { ...ans.concerns, [zone]: next });
+                      }}>{opt}</div>
+                    ))}
+                  </div>
+                </div>
+              )})}
+            </div>
+          </div>
+        )}
+
+        {currentStep === 15 && (
+          <div className="ins-step" style={{ textAlign: 'center', margin: 'auto' }}>
+            <h3 style={{ fontSize: '3rem', color: 'var(--plum)' }}>The First Inscription is consecrated</h3>
+            <div className="mt" style={{ fontSize: '1.2rem', marginTop: '2rem' }}>Your chamber awaits.</div>
+          </div>
+        )}
+      </div>
+
+      <div id="fast-route-controls" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+        <button 
+          className="btn" 
+          onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
+          style={{ visibility: currentStep === 1 ? 'hidden' : 'visible' }}
+        >
+          Step Backwards
+        </button>
+        
+        <div id="ins-dots" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          {Array.from({ length: 15 }).map((_, idx) => (
+            <div key={idx} className={`dot ${idx + 1 === currentStep ? 'active' : ''}`} style={{ width: '8px', height: '8px', borderRadius: '50%', background: idx + 1 === currentStep ? 'var(--crimson)' : 'var(--border)' }} />
+          ))}
         </div>
+        
+        <button 
+          className="btn plum" 
+          onClick={() => {
+            if (currentStep < 15) setCurrentStep(prev => prev + 1);
+            else handleFinish();
+          }}
+        >
+          {currentStep === 15 ? 'Enter the Sanctuary' : 'Step Deeper'}
+        </button>
+      </div>
     </div>
   );
 }
-
