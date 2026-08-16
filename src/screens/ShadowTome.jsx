@@ -813,7 +813,7 @@ export default function ShadowTome({ pose }) {
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-              <i className="ph-duotone ph-tree-evergreen"></i> The Herbarium <SpeakerButton text="The Herbarium" />
+              <Icon name="ph-teapot" /> The Herbarium <SpeakerButton text="The Herbarium" />
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
