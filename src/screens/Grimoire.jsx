@@ -485,49 +485,62 @@ export default function Grimoire({ pose }) {
               </div>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', borderTop: '1px dashed var(--border)', paddingTop: '1rem', width: '100%' }}>
-              <div className="row" style={{ flex: '1', marginBottom: 0, border: 'none', background: 'transparent', justifyContent: 'center' }}>
-                <div>
-                  <div className="nm">The Reading <Icon name="ph-moon-stars" /></div>
-                  <div className="mt">
-                    A 30-day reflection to realign your regimens.
-                    {profile?.settings?.last_reading_date && <><br/>Last Communion: {new Date(profile.settings.last_reading_date).toLocaleDateString()}</>}
-                  </div>
+          </div>
+        </div>
+
+        <div className="card mt-4" style={{ alignSelf: 'flex-start', display: 'flex', flexDirection: 'column' }}>
+          <div className="corner tl"></div><div className="corner tr"></div>
+          <div className="corner bl"></div><div className="corner br"></div>
+          <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Icon name="ph-moon-stars" /> The Reading{' '}
+            <SpeakerButton text='The Reading' />
+          </h3>
+          <div className="mt mb-4" style={{ textAlign: 'center' }}>A 30-day reflection to realign your regimens.</div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
+            <div className="row" style={{ flex: '1', marginBottom: 0, border: 'none', background: 'transparent', justifyContent: 'center' }}>
+              <div>
+                <div className="mt">
+                  {profile?.settings?.last_reading_date && <>Last Communion: {new Date(profile.settings.last_reading_date).toLocaleDateString()}</>}
                 </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <button 
-                    className="btn plum" 
-                    onClick={handleStartReading}
-                  >
-                    Commune
-                </button>
-                <button 
-                  className="btn" 
-                  onClick={() => setShowScrying(true)}
-                  style={{ background: 'var(--card2)', color: 'var(--plum)', borderColor: 'var(--plum)' }}
-                >
-                  <Icon name="ph-camera" weight="duotone" size={20} />
-                  Offer a Testament
-                </button>
               </div>
             </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', borderTop: '1px dashed var(--border)', paddingTop: '1rem', width: '100%' }}>
-              <div className="row" style={{ flex: '1', marginBottom: 0, border: 'none', background: 'transparent', justifyContent: 'center' }}>
-                <div>
-                  <div className="nm">Wash-Day Ledger <Icon name="ph-drop" /></div>
-                  <div className="mt">Chronicle the cleansing of your crown.</div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <button 
                   className="btn plum" 
-                  onClick={() => setShowWashModal(true)}
+                  onClick={handleStartReading}
                 >
-                  Log Wash Day
-                </button>
-              </div>
+                  Commune
+              </button>
+              <button 
+                className="btn" 
+                onClick={() => setShowScrying(true)}
+                style={{ background: 'var(--card2)', color: 'var(--plum)', borderColor: 'var(--plum)' }}
+              >
+                <Icon name="ph-camera" weight="duotone" size={20} />
+                Offer a Testament
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="card mt-4" style={{ alignSelf: 'flex-start', display: 'flex', flexDirection: 'column' }}>
+          <div className="corner tl"></div><div className="corner tr"></div>
+          <div className="corner bl"></div><div className="corner br"></div>
+          <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Icon name="ph-drop" /> Wash-Day Ledger{' '}
+            <SpeakerButton text='Wash Day Ledger' />
+          </h3>
+          <div className="mt mb-4" style={{ textAlign: 'center' }}>Chronicle the cleansing of your crown.</div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', width: '100%' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <button 
+                className="btn plum" 
+                onClick={() => setShowWashModal(true)}
+              >
+                Log Wash Day
+              </button>
             </div>
           </div>
         </div>

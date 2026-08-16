@@ -774,11 +774,11 @@ export default function App() {
                     }
                   }} className="btn g" style={{ width: '100%' }}>Raze the Sanctuary to Ash</button>
                 </div>
-                
               </div>
-                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', width: '100%' }}>
-                <button onClick={() => saveSettings(settings)} className="btn plum" style={{ marginTop: '0', padding: '1rem', fontSize: '1.2rem' }}>Bind the Runes of Power</button>
-                </div>
+            </div>
+            
+            <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', width: '100%', paddingBottom: '1rem' }}>
+              <button onClick={() => saveSettings(settings)} className="btn plum" style={{ marginTop: '0', padding: '1rem', fontSize: '1.2rem' }}>Bind the Runes of Power</button>
             </div>
           </div>
         </div>

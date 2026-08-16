@@ -208,8 +208,8 @@ export default function Rootwork({ pose }) {
     
     // LAVENDER BAN
     if (/(lavender|lavandula|lavandin)/i.test(query)) {
-      setEchoStatus(<span><Icon name="warning" /> WARNING: Lavender detected. This formula is sealed in the Crypt of Ashes.</span>);
-      setEchoResult('Lavender is strictly forbidden from your routine. It has been sealed in the Crypt of Ashes.');
+      setEchoStatus(<span><Icon name="warning" /> WARNING: Lavender detected. This formula is permanently banished.</span>);
+      setEchoResult('Lavender is strictly forbidden from your routine. It has been permanently banished.');
       
       const isAlreadyBanished = items.some(i => i.name === 'Lavender Formula (Banished)');
       if (!isAlreadyBanished) {
@@ -280,7 +280,7 @@ export default function Rootwork({ pose }) {
     // Lavender Ban Check
     const allText = `${item.name || ''} ${item.brand || ''} ${Array.isArray(item.ingredients) ? item.ingredients.join(' ') : (item.ingredients || '')}`;
     if (/(lavender|lavandula|lavandin)/i.test(allText)) {
-      await alert("LAVENDER DETECTED: This item contains Lavender (or a derivative) and is permanently banned from your routine. It must be sealed in the Crypt of Ashes.");
+      await alert("LAVENDER DETECTED: This item contains Lavender (or a derivative) and is permanently banned from your routine. It is permanently banished.");
       return false;
     }
     // 0. Type Check
@@ -1416,7 +1416,7 @@ export default function Rootwork({ pose }) {
             <h3 style={{color: 'var(--plum)'}}>The Banishment of {banishState.name} <SpeakerButton text={`The Banishment of ${banishState.name}`} /></h3>
             
             <div style={{ padding: '1rem 0' }}>
-              <p style={{ color: 'var(--silver)', marginBottom: '1rem' }}>Why are you consigning this relic to the crypt?</p>
+              <p style={{ color: 'var(--silver)', marginBottom: '1rem' }}>Why are you permanently banishing this relic?</p>
               <select 
                 value={banishState.reason} 
                 onChange={(e) => setBanishState({ ...banishState, reason: e.target.value })}
@@ -1438,7 +1438,7 @@ export default function Rootwork({ pose }) {
                 disabled={!banishState.reason}
                 style={{ width: '100%' }}
               >
-                Seal in the Crypt
+                Banish Permanently
               </button>
             </div>
 
