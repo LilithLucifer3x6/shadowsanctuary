@@ -44,7 +44,7 @@ export default function Rites({ pose }) {
   });
 
   useEffect(() => {
-    async function fetchData() {
+    async function fetchData() { try {
       setLoading(true);
       const { data } = await supabase
         .from('items')
