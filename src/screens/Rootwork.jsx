@@ -837,7 +837,7 @@ export default function Rootwork({ pose }) {
               </div>
             )}
           </div>
-        <div className="card mb-4" style={{ marginBottom: 0, alignSelf: 'start', width: '100%', gridColumn: '2', gridRow: '1 / span 3' }}>
+        <div className="card mb-4" style={{ marginBottom: 0, alignSelf: 'start', width: '100%', gridColumn: '2', gridRow: '1' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ textAlign: 'center', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '0.5rem', wordBreak: 'break-word', overflowWrap: 'break-word' }}>The Silver Toll <SpeakerButton text="The Silver Toll" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>The material cost of your active rituals, tied to frequency of devotion.</div>
@@ -893,9 +893,9 @@ export default function Rootwork({ pose }) {
               );
             })()}
           </div>
-          <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '2' }}>
-            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ justifyContent: 'center', color: 'var(--alert)' }}>The Crypt of Ashes <SpeakerButton text="The Crypt of Ashes" /></h3>
+          <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '1 / span 2', order: 99 }}>
+              <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+              <h3 style={{ justifyContent: 'center', color: 'var(--alert)' }}>The Crypt of Ashes <SpeakerButton text="The Crypt of Ashes" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>Banished Relics (The Forgotten-Word Path).</div>
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {banished.length === 0 ? <div className="mt" style={{ textAlign: 'center' }}>The crypt is empty.</div> : banished.map(item => (
@@ -915,9 +915,9 @@ export default function Rootwork({ pose }) {
               ))}
             </div>
           </div>
-        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '1' }}>
-            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><i className="ph-duotone ph-scroll"></i> The Summoning Scroll <SpeakerButton text="The Summoning Scroll" /></h3>
+        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '1', gridRow: '2' }}>
+              <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+              <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><i className="ph-duotone ph-scroll"></i> The Summoning Scroll <SpeakerButton text="The Summoning Scroll" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>Items needing replenishment. Non-essential items wait for batches of 5.</div>
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {(() => {
@@ -946,9 +946,9 @@ export default function Rootwork({ pose }) {
               })()}
             </div>
           </div>
-        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '1' }}>
-            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><i className="ph-duotone ph-hourglass"></i> The Waning <SpeakerButton text="The Waning" /></h3>
+        <div className="card mb-4" style={{ marginBottom: 0, display: 'flex', flexDirection: 'column', maxHeight: '500px', gridColumn: '2', gridRow: '2' }}>
+              <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+              <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><i className="ph-duotone ph-hourglass"></i> The Waning <SpeakerButton text="The Waning" /></h3>
             <div className="mt mb-4" style={{ textAlign: 'center' }}>Relics nearing the end of their mortal potency.</div>
             <div style={{ flex: 1, overflowY: 'auto', paddingRight: '0.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {waningItems.length === 0 ? <div className="mt" style={{ textAlign: 'center' }}>All relics remain potent.</div> : waningItems.map(renderRow)}
