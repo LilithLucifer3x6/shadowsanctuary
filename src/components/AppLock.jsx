@@ -47,7 +47,7 @@ export default function AppLock({ onUnlock }) {
       <Icon name="sparkles" style={{ fontSize: '4rem', color: 'var(--gold)', marginBottom: '1rem' }} />
       <h2 style={{ color: 'var(--plum)', marginBottom: '0.5rem', textAlign: 'center' }}>The Sanctuary Gate</h2>
       <p style={{ color: 'var(--dim)', marginBottom: '2rem', textAlign: 'center' }}>
-        {isSettingPin ? 'Engrave a 4-digit ward to secure your vessel.' : 'Present your ward to unseal the Sanctuary.'}
+        {isSettingPin ? 'Engrave a 4-digit ward to secure the gate.' : 'Present your ward to unseal the Sanctuary.'}
       </p>
       
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>

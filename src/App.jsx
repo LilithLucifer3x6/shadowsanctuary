@@ -657,8 +657,8 @@ export default function App() {
                       </div>
                     )}
 
-                    <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
-                      <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.5rem' }}>
+                      <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', cursor: 'pointer' }}>
                         <input type="checkbox" style={{ marginTop: '0.2rem' }} checked={settings.health} onChange={async (e) => {
                           const checked = e.target.checked;
                           if (checked) {
@@ -669,30 +669,25 @@ export default function App() {
                               syncWearableSnapshot();
                             }
                           } else {
-                            setSettings({...settings, health: checked});
+                            setSettings({...settings, health: false});
                           }
-                        }} /> Corporeal Sensors (RingConn, Renpho, Samsung)
+                        }} /> <span style={{ color: 'var(--text)' }}>Corporeal Sensors (RingConn, Renpho, Samsung)</span>
                       </label>
                       
                       {settings.health && (
                         <div style={{ marginLeft: '1.5rem', marginBottom: '1rem' }}>
                           <button className="btn sm g" onClick={async (e) => {
                             const btn = e.target;
-                            const originalText = btn.innerText;
-                            btn.innerText = "Syncing...";
-                            btn.disabled = true;
-                            try {
-                              const { syncWearableSnapshot } = await import('./lib/health-connect.js');
-                              await syncWearableSnapshot();
-                              btn.innerText = "Sync Complete";
-                            } catch (err) {
-                              btn.innerText = "Sync Failed";
-                            }
-                            setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                            const ogText = btn.textContent;
+                            btn.textContent = 'Syncing...';
+                            const { syncWearableSnapshot } = await import('./lib/health-connect.js');
+                            await syncWearableSnapshot();
+                            btn.textContent = 'Synced';
+                            setTimeout(() => { btn.textContent = ogText; }, 2000);
                           }}>Sync Now</button>
                         </div>
                       )}
-                    </label>
+                    </div>
 
                     <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', color: 'var(--crimson)' }}>
                       <input type="checkbox" style={{ marginTop: '0.2rem' }} checked={settings.travel_mode || false} onChange={e => setSettings({...settings, travel_mode: e.target.checked})} />
