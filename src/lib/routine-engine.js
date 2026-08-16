@@ -136,10 +136,7 @@ export function buildBaseRoutines(items, userProfile = {}, wearables = {}) {
     const ing = (item.ingredients || '').toLowerCase();
     let weightMod = 0;
     
-    // Condition logic: If Rosacea/Eczema, penalize fragrance/essential oils in sequence (they shouldn't go on bare skin first)
-    if ((userConditions.includes('Rosacea') || userConditions.includes('Eczema')) && (ing.includes('fragrance') || ing.includes('parfum') || ing.includes('essential oil'))) {
-      weightMod += 2; // move it later in the routine
-    }
+
     
     // Texture logic: If they hate heavy/greasy, and it's a heavy cream, maybe we don't change weight, but we could.
     // We just wire them in as requested.
