@@ -32,25 +32,19 @@ export default function Landing({ onProceed, onOpenAvatar }) {
     }
   }, []);
 
-  useEffect(() => {
-    document.body.style.setProperty('--land-bg-landscape', 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")');
-    document.body.style.setProperty('--land-bg-portrait', 'url("/assets/avatar-tests/part5_916_action_manor_exterior.png")');
-  }, []);
-
   return (
     <div className="land" style={{ 
-        backgroundSize: 'cover', 
-        backgroundColor: 'var(--bg)', 
-        backgroundPosition: 'center', 
-        backgroundRepeat: 'no-repeat', 
-        minHeight: '100vh', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
+        backgroundImage: 'url("/assets/avatar-tests/part5_169_action_manor_exterior.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         position: 'relative',
         overflow: 'hidden'
-      }}>
+    }}>
       {/* Background Overlay to ensure text readability */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 1 }}></div>
 

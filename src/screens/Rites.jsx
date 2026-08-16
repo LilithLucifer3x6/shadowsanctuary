@@ -96,12 +96,15 @@ export default function Rites({ pose }) {
       setAmItems([isoItem, ...am]);
       setPmItems(pm);
       setConflicts(checkConflicts(itemsArr, userProfile || {}));
-      
+    } catch(e) {
+      console.error(e);
+    } finally {
       setLoading(false);
     }
+  }
     
-    fetchData();
-  }, []);
+  fetchData();
+}, []);
 
   const handleSaveAm = async () => {
     setAmSaving(true);

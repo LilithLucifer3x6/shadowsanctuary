@@ -1029,7 +1029,7 @@ export default function ShadowTome({ pose }) {
       
       {alchemyForm && (
         <div className="modal">
-          <div className="modal-content card" style={{maxWidth: '400px', maxHeight: "90vh", overflowY: "auto", overflowY: 'auto', margin: 'auto'}}>
+          <div className="modal-content card" style={{maxWidth: '400px', maxHeight: "90vh", overflowY: 'auto', margin: 'auto'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Ignite New Alchemy</h3>
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>

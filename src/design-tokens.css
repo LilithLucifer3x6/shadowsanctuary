@@ -221,6 +221,4 @@
 body.tts-disabled .spk { display: none !important; }
 
 .card h3 + div { text-align: center; }
-@media (orientation: landscape) { body { background-image: var(--bg-landscape, none); } } @media (orientation: portrait) { body { background-image: var(--bg-portrait, none); } }
-@media (orientation: landscape) { .land { background-image: var(--land-bg-landscape, none); } } @media (orientation: portrait) { .land { background-image: var(--land-bg-portrait, none); } }
 .altars-nav-grid { display: grid; grid-template-columns: auto auto; justify-content: center; gap: 1rem; }

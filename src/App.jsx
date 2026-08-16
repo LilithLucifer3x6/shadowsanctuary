@@ -157,19 +157,12 @@ export default function App() {
         bgUrl = tab?.bg || '/assets/bg_sanctuary.jpg';
       }
 
-      const portraitBgUrl = bgUrl.replace('169', '916').replace('bg_sanctuary.jpg', 'bg_sanctuary_portrait.jpg');
-
-      document.body.style.setProperty('--bg-landscape', `url('${bgUrl}')`);
-      document.body.style.setProperty('--bg-portrait', `url('${portraitBgUrl}')`);
-      // We remove the hardcoded backgroundImage so the CSS media queries take over
-      document.body.style.backgroundImage = '';
+      document.body.style.backgroundImage = `url('${bgUrl}')`;
       document.body.style.backgroundSize = 'contain';
       document.body.style.backgroundColor = 'var(--bg)';
       document.body.style.backgroundPosition = 'center';
       document.body.style.backgroundRepeat = 'no-repeat';
     } else {
-      document.body.style.setProperty('--bg-landscape', 'none');
-      document.body.style.setProperty('--bg-portrait', 'none');
       document.body.style.backgroundImage = 'none';
     }
   }, [activeTab, currentScreen]);
