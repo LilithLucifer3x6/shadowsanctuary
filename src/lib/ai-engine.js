@@ -880,57 +880,6 @@ export async function parseTCheckImage(images) {
     }
   ];
 
-  /**
- * Parses a dram/measuring vessel image using Claude Vision and extracts its details.
- * @param {Array<{base64: string, mediaType: string}>} images
- * @returns {Promise<Object>}
- */
-export async function parseDramImage(images) {
-  const tools = [
-    {
-      name: 'extract_dram_details',
-      description: 'Extract the measuring vessel details from an image of a dram, spoon, or measuring vessel',
-      input_schema: {
-        type: 'object',
-        properties: {
-          name: { type: 'string', description: 'A poetic name for this measuring vessel based on its appearance (e.g. "The Silver Thimble")' },
-          vessel_volume_ml: { type: 'number', description: 'Estimated volume capacity in milliliters, based on visible markings or typical size for this style of vessel' }
-        },
-        required: ['name', 'vessel_volume_ml']
-      }
-    }
-  ];
-
-  const contentBlocks = images.map(img => ({
-    type: 'image',
-    source: {
-      type: 'base64',
-      media_type: img.mediaType,
-      data: img.base64
-    }
-  }));
-
-  contentBlocks.push({
-    type: 'text',
-    text: 'You are looking at a photo of a measuring vessel (spoon, dram, dropper, jigger, etc.). If markings are visible, read the volume precisely. If not, estimate based on the typical size for this style of vessel. Also give it a poetic, fitting name based on its appearance.'
-  });
-
-  const { data, error } = await invokeAnthropicProxy({
-      max_tokens: 500,
-      messages: [{ role: 'user', content: contentBlocks }],
-      tools: tools,
-      tool_choice: { type: 'tool', name: 'extract_dram_details' }
-  });
-  if (error) throw error;
-
-  for (const block of data.content) {
-    if (block.type === 'tool_use' && block.name === 'extract_dram_details') {
-      return block.input;
-    }
-  }
-
-  throw new Error("Failed to extract dram details from image");
-}
   const contentBlocks = images.map(img => ({
     type: 'image',
     source: {
