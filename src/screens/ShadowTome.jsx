@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabase.js';
 import { ic, G } from '../lib/icons.jsx';
 import { attachVoice } from '../lib/voice.js';
 import * as AI from '../lib/ai-service.js';
-import { parseTeaImage, parseTCheckImage } from '../lib/ai-engine.js';
 import SpeakerButton from '../components/SpeakerButton.jsx';
 import Icon from '../components/Icon.jsx';
 import VoiceInput from '../components/VoiceInput.jsx';
