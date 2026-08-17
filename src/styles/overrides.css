@@ -42,3 +42,31 @@
 /* Hide scrollbars for modals */
 .modal::-webkit-scrollbar { display: none; }
 .modal { scrollbar-width: none; -ms-overflow-style: none; }
+
+.rw-echo { width: 100%; height: fit-content; align-self: start; }
+.rw-silver { width: 100%; align-self: stretch; }
+.rw-scroll { display: flex; flex-direction: column; max-height: 500px; align-self: start; }
+.rw-waning { display: flex; flex-direction: column; max-height: 500px; align-self: start; }
+
+@media (min-width: 900px) {
+  .rw-echo { grid-column: 1; grid-row: 1; }
+  .rw-scroll { grid-column: 1; grid-row: 2; }
+  .rw-waning { grid-column: 1; grid-row: 3; }
+  .rw-silver { grid-column: 2; grid-row: 1 / span 3; }
+}
+
+
+/* Phase 2: App-wide styling adjustments */
+.card {
+  max-width: none !important; /* Allow full available width */
+  background: var(--card-bg, rgba(16, 12, 16, 0.75)) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+h1 { font-size: 2.2rem !important; }
+h2 { font-size: 1.8rem !important; }
+h3 { font-size: 1.4rem !important; }
+
+.mt, .subtext, p { font-weight: 300 !important; color: var(--dim) !important; }
+
