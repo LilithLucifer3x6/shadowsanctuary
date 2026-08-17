@@ -15,7 +15,7 @@ export default function ShadowTome({ pose, isEnabled }) {
     return (
       <div className="card" style={{ width: '100%', maxWidth: '960px', margin: '2rem auto', textAlign: 'center', padding: '4rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-        <Icon name="ph-duotone ph-book-open" style={{ fontSize: '4rem', color: 'var(--dim)', marginBottom: '1rem' }} />
+        <Icon name="book-open" style={{ fontSize: '4rem', color: 'var(--dim)', marginBottom: '1rem' }} />
         <h2 style={{ color: 'var(--plum)', marginBottom: '1rem' }}>The Shadow Tome is Sealed</h2>
         <p style={{ color: 'var(--text)', maxWidth: '400px' }}>
           This domain is reserved for those who have embraced the deeper arts. To unbind these pages, seek the Shadow Tome Access sigil within your Sanctuary Settings.
@@ -825,7 +825,7 @@ export default function ShadowTome({ pose, isEnabled }) {
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-              <Icon name="teapot" /> The Herbarium <SpeakerButton text="The Herbarium" />
+              <Icon name="mortar-pestle" /> The Herbarium <SpeakerButton text="The Herbarium" />
             </h3>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -1138,6 +1138,8 @@ export default function ShadowTome({ pose, isEnabled }) {
     </div>
   );
 }
+
+
 
 
 

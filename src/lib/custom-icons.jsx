@@ -51,7 +51,8 @@ export const CUSTOM={
 
 export const ic = n => CUSTOM[n]
   ? <span className="cic">{CUSTOM[n]}</span>
-  : <i className={`ph-duotone ph-${n}`}></i>;
+  : <i className={`ph-duotone ${n.startsWith("ph-") ? n : "ph-" + n}`}></i>;
+
 
 
 
