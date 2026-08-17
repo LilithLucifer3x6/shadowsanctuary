@@ -3,12 +3,12 @@ import { supabase } from '../lib/supabase.js';
 import { ic, G } from '../lib/icons.jsx';
 import { attachVoice } from '../lib/voice.js';
 import * as AI from '../lib/ai-service.js';
-import { parseTeaImage, parseTCheckImage } from '../lib/ai-engine.js';
 import SpeakerButton from '../components/SpeakerButton.jsx';
 import Icon from '../components/Icon.jsx';
 import VoiceInput from '../components/VoiceInput.jsx';
 import { useDialog } from '../components/Dialogs.jsx';
 import { getReadiness } from '../lib/health-connect.js';
+import { parseTeaImage, parseTCheckImage, parseDramImage, compressImage } from '../lib/ai-engine.js';
 
 export default function ShadowTome({ pose, isEnabled }) {
   if (!isEnabled) {
@@ -669,6 +669,23 @@ export default function ShadowTome({ pose, isEnabled }) {
     }
   };
 
+  const handleDramPhotoUpload = async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  setIsRollingDram(true);
+  try {
+    const dataUrl = await compressImage(file, 1024, 0.8);
+    const base64 = dataUrl.split(',')[1];
+    const mediaType = dataUrl.substring(5, dataUrl.indexOf(';'));
+    const result = await parseDramImage([{ base64, mediaType }]);
+    setDramForm({ name: result.name, vessel_volume_ml: result.vessel_volume_ml });
+  } catch (err) {
+    console.error('Dram photo parse failed:', err);
+  } finally {
+    setIsRollingDram(false);
+  }
+};
+
   return (
     <div style={{ padding: '1rem', maxWidth: '1000px', margin: '0 auto' }}>
       
@@ -1107,6 +1124,15 @@ export default function ShadowTome({ pose, isEnabled }) {
             
             <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Register a Dram</h3>
             <div className="mt mb-4" style={{color: 'var(--plum)', textAlign: 'center'}}>Name the dram and declare its true volume in ml.</div>
+            
+            <div className="field">
+              <label>Divine by Photo</label>
+              <label className="btn sm" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                <Icon name="ph-camera" /> {isRollingDram ? '...' : 'Offer Image'}
+                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={handleDramPhotoUpload} disabled={isRollingDram} />
+              </label>
+            </div>
+            <div className="mt mb-3" style={{ textAlign: 'center', color: 'var(--dim)', fontStyle: 'italic' }}>or declare by hand</div>
             
             <div className="field">
               <label>Name</label>

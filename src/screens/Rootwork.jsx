@@ -789,12 +789,6 @@ export default function Rootwork({ pose }) {
         </div>
       </div>
 
-      <div className="rootwork-grid mt-4" style={{ width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', alignItems: 'start' }}>
-          <div className="card mb-4" style={{ marginBottom: 0, width: '100%', gridColumn: '1', gridRow: '1', height: 'fit-content', alignSelf: 'start' }}>
-            <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h3 style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', margin: 0, justifyContent: 'center' }}><i className="ph-duotone ph-waves"></i> The Echo <SpeakerButton text="The Echo" /></h3>
       <div className="rootwork-grid mt-4">
         {/* The Echo */}
         <div className="card mb-4 rw-echo">
@@ -1476,6 +1470,3 @@ export default function Rootwork({ pose }) {
     </div>
   );
 }
-
-
-
