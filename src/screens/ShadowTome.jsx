@@ -10,19 +10,8 @@ import { useDialog } from '../components/Dialogs.jsx';
 import { getReadiness } from '../lib/health-connect.js';
 import { parseTeaImage, parseTCheckImage, parseDramImage, compressImage } from '../lib/ai-engine.js';
 
-export default function ShadowTome({ pose, isEnabled }) {
-  if (!isEnabled) {
-    return (
-      <div className="card" style={{ width: '100%', maxWidth: '960px', margin: '2rem auto', textAlign: 'center', padding: '4rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
-        <Icon name="book-open" style={{ fontSize: '4rem', color: 'var(--dim)', marginBottom: '1rem' }} />
-        <h2 style={{ color: 'var(--plum)', marginBottom: '1rem' }}>The Shadow Tome is Sealed</h2>
-        <p style={{ color: 'var(--text)', maxWidth: '400px' }}>
-          This domain is reserved for those who have embraced the deeper arts. To unbind these pages, seek the Shadow Tome Access sigil within your Sanctuary Settings.
-        </p>
-      </div>
-    );
-  }
+export default function ShadowTome({ pose }) {
+  
   const { alert, confirm, confirmDestructive } = useDialog();
   const [activeTab, setActiveTab] = useState('journal');
   const [moodsList, setMoodsList] = useState([]);

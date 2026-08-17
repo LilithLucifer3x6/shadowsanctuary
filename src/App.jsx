@@ -346,7 +346,7 @@ export default function App() {
       case 'altars': return <ErrorBoundary fallbackLabel="The Altars"><Altars pose={pose} /></ErrorBoundary>;
       case 'root': return <ErrorBoundary fallbackLabel="The Rootwork"><Rootwork pose={pose} /></ErrorBoundary>;
       case 'pool': return <ErrorBoundary fallbackLabel="The Scrying Pool"><Scrying pose={pose} /></ErrorBoundary>;
-      case 'tome': return <ErrorBoundary fallbackLabel="The Shadow Tome"><ShadowTome pose={pose} isEnabled={settings.shadowTomeEnabled} /></ErrorBoundary>;
+      case 'tome': return <ErrorBoundary fallbackLabel="The Shadow Tome"><ShadowTome pose={pose} /></ErrorBoundary>;
       default: return null;
     }
   };
@@ -579,7 +579,7 @@ export default function App() {
                 
                 <div className="field" style={{ marginBottom: '1.5rem' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem' }}>Ancient Script</label>
-                  <div className="field" style={{ marginBottom: '1.5rem' }}><label style={{ display: 'block', marginBottom: '0.5rem' }}>Shadow Tome Access</label><select value={settings.shadowTomeEnabled ? 'enabled' : 'disabled'} onChange={e => setSettings({...settings, shadowTomeEnabled: e.target.value === 'enabled'})}><option value="disabled">Disabled</option><option value="enabled">Enabled</option></select></div><label style={{ display: 'block', marginBottom: '0.5rem' }}>Ancient Script</label><select value={settings.fontFamily} onChange={e => setSettings({...settings, fontFamily: e.target.value})}>
+                  <select value={settings.fontFamily} onChange={e => setSettings({...settings, fontFamily: e.target.value})}>
                     <option value="Sacramento">Sacramento</option>
                     <option value="Alex Brush">Alex Brush</option>
                     <option value="Petit Formal Script">Petit Formal Script</option>
