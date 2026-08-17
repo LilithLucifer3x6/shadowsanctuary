@@ -248,7 +248,7 @@ export default function Altars({ pose }) {
             key={altar.id}
             className={`btn sm ${activeAltarId === altar.id ? 'active' : ''}`}
             onClick={() => handleTabClick(altar.id, altar.name)}
-            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', width: '100%' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', justifyContent: 'center', width: 'auto' }}
           >
             <Icon name={altar.icon} /> {`The ${altar.name}`}
           </button>
@@ -278,3 +278,4 @@ export default function Altars({ pose }) {
     </div>
   );
 }
+

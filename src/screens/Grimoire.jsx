@@ -618,8 +618,8 @@ export default function Grimoire({ pose }) {
       </div>
       
       {overrideModal.show && (
-        <div className="modal">
-          <div className="modal-content card" style={{ maxWidth: '400px' }}>
+        <div className="modal-overlay">
+          <div className="modal card" style={{ maxWidth: '400px' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ color: 'var(--plum)', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}><Icon name="ph-pencil-simple" /> Rewrite Fate</h3>
             <div className="mt mb-4" style={{ color: 'var(--plum)' }}>
@@ -640,8 +640,8 @@ export default function Grimoire({ pose }) {
       )}
 
       {showScrying && (
-        <div className="modal">
-          <div className="modal-content" style={{maxWidth: '550px', background: 'transparent', border: 'none', padding: 0}}>
+        <div className="modal-overlay">
+          <div className="modal" style={{maxWidth: '550px', background: 'transparent', border: 'none', padding: 0}}>
             <VisualInscription 
               onSkip={() => setShowScrying(false)}
               onComplete={async (data, photoPreview) => {
@@ -663,8 +663,8 @@ export default function Grimoire({ pose }) {
       )}
 
       {scryingMessage && (
-        <div className="modal">
-          <div className="modal-content" style={{maxWidth: '450px'}}>
+        <div className="modal-overlay">
+          <div className="modal" style={{maxWidth: '450px'}}>
             <div className="card">
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{color: 'var(--plum)', margin: '0 0 1rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center'}}><Icon name="ph-check-circle" /> The Testament Recorded</h3>
@@ -685,8 +685,8 @@ export default function Grimoire({ pose }) {
       )}
 
       {showWashModal && (
-        <div className="modal">
-          <div className="modal-content card" style={{ maxWidth: '500px' }}>
+        <div className="modal-overlay">
+          <div className="modal card" style={{ maxWidth: '500px' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ color: 'var(--plum)', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}><Icon name="ph-bathtub" /> Wash-Day Ledger <SpeakerButton text="Wash Day Ledger" /></h3>
             <div className="mt mb-4" style={{ color: 'var(--dim)' }}>Record the cleansing of your crown. Add reflections and visual evidence of your regimen's outcome.</div>
@@ -793,3 +793,5 @@ export default function Grimoire({ pose }) {
     </div>
   );
 }
+
+

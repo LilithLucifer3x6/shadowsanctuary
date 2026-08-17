@@ -49,10 +49,15 @@ async function run() {
 
   // 3. Shadow Tome enabled
   console.log("3. Shadow Tome enabled...");
+  await page.click('button[title="Configurations"]');
+  await page.waitForTimeout(500);
   await page.evaluate(() => {
-    const sel = document.querySelector('select');
-    if (sel) { sel.value = 'Mugwort'; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+    const selects = document.querySelectorAll('select');
+    // The Shadow Tome Access is the first select in the modal now
+    if (selects[0]) { selects[0].value = 'enabled'; selects[0].dispatchEvent(new Event('change', { bubbles: true })); }
   });
+  await page.waitForTimeout(500);
+  await page.click('#setmodal button:has-text("X")'); // close modal
   await page.waitForTimeout(1000);
   await page.screenshot({ path: path.join(ARTIFACT_DIR, 'test_shadow_tome_enabled.png') });
 
@@ -82,17 +87,19 @@ async function run() {
 
   // 7. Font settings after reload
   console.log("7. Font settings after reload...");
-  await page.click('.ph-gear');
+  await page.click('button[title="Configurations"]');
   await page.waitForTimeout(1000);
   await page.evaluate(() => {
-    const sel = document.querySelectorAll('select')[0];
-    if (sel) { sel.value = 'Lora'; sel.dispatchEvent(new Event('change', { bubbles: true })); }
+    const sel = document.querySelectorAll('select')[1];
+    if (sel) { sel.value = 'Outfit'; sel.dispatchEvent(new Event('change', { bubbles: true })); }
   });
+  await page.waitForTimeout(1000);
+  await page.click('#setmodal button:has-text("X")'); // close modal
   await page.waitForTimeout(1000);
   await page.reload();
   await page.waitForSelector('.tabs', { timeout: 10000 });
   await page.waitForTimeout(2000);
-  await page.click('.ph-gear');
+  await page.click('button[title="Configurations"]');
   await page.waitForTimeout(1500);
   await page.screenshot({ path: path.join(ARTIFACT_DIR, 'test_font_persisted.png') });
 
@@ -100,3 +107,4 @@ async function run() {
   console.log("Done.");
 }
 run();
+

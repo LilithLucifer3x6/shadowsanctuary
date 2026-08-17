@@ -10,7 +10,19 @@ import VoiceInput from '../components/VoiceInput.jsx';
 import { useDialog } from '../components/Dialogs.jsx';
 import { getReadiness } from '../lib/health-connect.js';
 
-export default function ShadowTome({ pose }) {
+export default function ShadowTome({ pose, isEnabled }) {
+  if (!isEnabled) {
+    return (
+      <div className="card" style={{ width: '100%', maxWidth: '960px', margin: '2rem auto', textAlign: 'center', padding: '4rem 2rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
+        <Icon name="ph-duotone ph-book-open" style={{ fontSize: '4rem', color: 'var(--dim)', marginBottom: '1rem' }} />
+        <h2 style={{ color: 'var(--plum)', marginBottom: '1rem' }}>The Shadow Tome is Sealed</h2>
+        <p style={{ color: 'var(--text)', maxWidth: '400px' }}>
+          This domain is reserved for those who have embraced the deeper arts. To unbind these pages, seek the Shadow Tome Access sigil within your Sanctuary Settings.
+        </p>
+      </div>
+    );
+  }
   const { alert, confirm, confirmDestructive } = useDialog();
   const [activeTab, setActiveTab] = useState('journal');
   const [moodsList, setMoodsList] = useState([]);
@@ -934,8 +946,8 @@ export default function ShadowTome({ pose }) {
 
       {/* Tea Scanner Modal */}
       {showTeaModal && (
-        <div className="modal">
-          <div className="modal-content card" style={{maxWidth: '500px'}}>
+        <div className="modal-overlay">
+          <div className="modal card" style={{maxWidth: '500px'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
@@ -1028,8 +1040,8 @@ export default function ShadowTome({ pose }) {
       {/* Vessel Scanner Modal */}
       
       {alchemyForm && (
-        <div className="modal">
-          <div className="modal-content card" style={{maxWidth: '400px', margin: 'auto'}}>
+        <div className="modal-overlay">
+          <div className="modal card" style={{maxWidth: '400px', margin: 'auto'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Ignite New Alchemy</h3>
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>
@@ -1089,8 +1101,8 @@ export default function ShadowTome({ pose }) {
       )}
 
       {showDramModal && (
-        <div className="modal">
-          <div className="modal-content card" style={{maxWidth: '400px'}}>
+        <div className="modal-overlay">
+          <div className="modal card" style={{maxWidth: '400px'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             
             <h3 style={{color: 'var(--plum)', textAlign: 'center'}}>Register a Dram</h3>
@@ -1126,4 +1138,7 @@ export default function ShadowTome({ pose }) {
     </div>
   );
 }
+
+
+
 

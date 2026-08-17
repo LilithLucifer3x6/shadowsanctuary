@@ -141,8 +141,8 @@ export default function TheReadingQuiz({ onComplete, onAbandon, profile, context
   };
 
   return (
-    <div className="modal">
-      <div className="modal-content card" style={{ maxWidth: '600px' }}>
+    <div className="modal-overlay">
+      <div className="modal card" style={{ maxWidth: '600px' }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <h3 style={{ color: 'var(--plum)', margin: 0 }}>The Reading <SpeakerButton text="The Reading" /></h3>
@@ -161,3 +161,5 @@ export default function TheReadingQuiz({ onComplete, onAbandon, profile, context
     </div>
   );
 }
+
+

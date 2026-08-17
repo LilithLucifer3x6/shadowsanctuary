@@ -23,12 +23,12 @@ import ShadowTome from './screens/ShadowTome.jsx';
 import AppLock from './components/AppLock.jsx';
 
 const TABS = [
-  { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bg: '/assets/avatar-tests/part5_169_action_mortal_rites.png', pose: 'working' },
-  { id: 'grim', label: 'The Grimoire', glyph: G.tabGrim, bg: '/assets/avatar-tests/part5_169_action_grimoire.png', pose: 'reading' },
-  { id: 'altars', label: 'The Altars', glyph: G.tabAltars, bg: '/assets/avatar-tests/part5_169_action_altars.png', pose: 'meditating' },
-  { id: 'root', label: 'The Rootwork', glyph: G.tabRoot, bg: '/assets/avatar-tests/part5_169_action_rootwork.png', pose: 'working' },
-  { id: 'pool', label: 'The Scrying Pool', glyph: G.tabPool, bg: '/assets/avatar-tests/part5_169_action_scrying_pool.png', pose: 'scrying' },
-  { id: 'tome', label: 'The Shadow Tome', glyph: G.tabTome, bg: '/assets/avatar-tests/part5_169_action_shadow_tome.png', pose: 'reading' }
+  { id: 'rites', label: 'The Mortal Rites', glyph: G.tabRites, bgName: 'action_mortal_rites', pose: 'working' },
+  { id: 'grim', label: 'The Grimoire', glyph: G.tabGrim, bgName: 'action_grimoire', pose: 'reading' },
+  { id: 'altars', label: 'The Altars', glyph: G.tabAltars, bgName: 'action_altars', pose: 'meditating' },
+  { id: 'root', label: 'The Rootwork', glyph: G.tabRoot, bgName: 'action_rootwork', pose: 'working' },
+  { id: 'pool', label: 'The Scrying Pool', glyph: G.tabPool, bgName: 'action_scrying_pool', pose: 'scrying' },
+  { id: 'tome', label: 'The Shadow Tome', glyph: G.tabTome, bgName: 'action_shadow_tome', pose: 'reading' }
 ];
 
 function getSpellDate() {
@@ -54,6 +54,13 @@ export default function App() {
   const [dateStr, setDateStr] = useState(getSpellDate());
   const [supabaseError, setSupabaseError] = useState(false);
   const [isLocked, setIsLocked] = useState(window.location.search.includes('bypass') ? false : !!localStorage.getItem('avatar_config')); // lock if user has finished onboarding
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth > window.innerHeight);
+
+  useEffect(() => {
+    const handleResize = () => setIsLandscape(window.innerWidth > window.innerHeight);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Settings state
   const [settings, setSettings] = useState({
@@ -187,7 +194,8 @@ export default function App() {
       // Fall back to static illustrated room backgrounds
       if (!bgUrl) {
         const tab = TABS.find(t => t.id === activeTab);
-        bgUrl = tab?.bg || '/assets/bg_sanctuary.jpg';
+        const ratio = isLandscape ? '169' : '916';
+        bgUrl = tab ? `/assets/avatar-tests/part5_${ratio}_${tab.bgName}.png` : `/assets/avatar-tests/part5_${ratio}_action_mortal_rites.png`;
       }
 
       document.body.style.backgroundImage = `url('${bgUrl}')`;
@@ -198,7 +206,7 @@ export default function App() {
     } else {
       document.body.style.backgroundImage = 'none';
     }
-  }, [activeTab, currentScreen]);
+  }, [activeTab, currentScreen, isLandscape]);
 
   useEffect(() => {
     verifyGlyphs();
@@ -336,7 +344,7 @@ export default function App() {
       case 'altars': return <ErrorBoundary fallbackLabel="The Altars"><Altars pose={pose} /></ErrorBoundary>;
       case 'root': return <ErrorBoundary fallbackLabel="The Rootwork"><Rootwork pose={pose} /></ErrorBoundary>;
       case 'pool': return <ErrorBoundary fallbackLabel="The Scrying Pool"><Scrying pose={pose} /></ErrorBoundary>;
-      case 'tome': return <ErrorBoundary fallbackLabel="The Shadow Tome"><ShadowTome pose={pose} /></ErrorBoundary>;
+      case 'tome': return <ErrorBoundary fallbackLabel="The Shadow Tome"><ShadowTome pose={pose} isEnabled={settings.shadowTomeEnabled} /></ErrorBoundary>;
       default: return null;
     }
   };
@@ -543,8 +551,8 @@ export default function App() {
       )}
 
       {showSettings && (
-        <div id="setmodal" className="modal" style={{ display: 'block', padding: '1rem' }}>
-          <div className="modal-content card" style={{ maxWidth: '1000px', width: '95vw', maxHeight: '90vh', overflowY: 'auto', margin: '0 auto', display: 'flex', flexDirection: 'column' }}>
+        <div id="setmodal" className="modal-overlay" onClick={(e) => { if(e.target.id === 'setmodal') setShowSettings(false); }}>
+          <div className="modal card" style={{ maxWidth: '1000px', width: '95vw', padding: '2rem' }}>
             <div className="corner tl"></div><div className="corner tr"></div>
             <div className="corner bl"></div><div className="corner br"></div>
             
@@ -569,7 +577,7 @@ export default function App() {
                 
                 <div className="field" style={{ marginBottom: '1.5rem' }}>
                   <label style={{ display: 'block', marginBottom: '0.5rem' }}>Ancient Script</label>
-                  <select value={settings.fontFamily} onChange={e => setSettings({...settings, fontFamily: e.target.value})}>
+                  <div className="field" style={{ marginBottom: '1.5rem' }}><label style={{ display: 'block', marginBottom: '0.5rem' }}>Shadow Tome Access</label><select value={settings.shadowTomeEnabled ? 'enabled' : 'disabled'} onChange={e => setSettings({...settings, shadowTomeEnabled: e.target.value === 'enabled'})}><option value="disabled">Disabled</option><option value="enabled">Enabled</option></select></div><label style={{ display: 'block', marginBottom: '0.5rem' }}>Ancient Script</label><select value={settings.fontFamily} onChange={e => setSettings({...settings, fontFamily: e.target.value})}>
                     <option value="Sacramento">Sacramento</option>
                     <option value="Alex Brush">Alex Brush</option>
                     <option value="Petit Formal Script">Petit Formal Script</option>
@@ -602,7 +610,7 @@ export default function App() {
                     borderRadius: '8px',
                     border: '1px solid var(--border)'
                   }}>
-                    As above, so below. The ephemeral made concrete. 1234567890
+                    As above, so below.
                   </div>
                 </div>
 
@@ -787,5 +795,10 @@ export default function App() {
     </>
   );
 }
+
+
+
+
+
 
 

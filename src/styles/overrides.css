@@ -37,4 +37,8 @@
 @media (min-width: 900px) { .rootwork-grid { grid-template-columns: 1fr 1fr !important; } }
 
 /* Altars Layout Fix */
-.altars-nav-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 0.8rem !important; width: 100% !important; }
+.altars-nav-grid { display: grid !important; grid-template-columns: auto auto auto !important; justify-content: center !important; gap: 0.8rem !important; width: 100% !important; }
+
+/* Hide scrollbars for modals */
+.modal::-webkit-scrollbar { display: none; }
+.modal { scrollbar-width: none; -ms-overflow-style: none; }

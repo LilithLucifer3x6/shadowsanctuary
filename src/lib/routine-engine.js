@@ -21,6 +21,23 @@ export async function initEngineRules() {
   }
 }
 
+export function isShadowTomeItem(item) {
+  if (!item) return false;
+  
+  const domain = (item.domain || '').toLowerCase();
+  if (domain === 'herbal elixirs' || domain === 'measure' || domain === 'shadowtome' || domain === 'steeping') {
+    return true;
+  }
+  
+  const text = ((item.name || '') + ' ' + (item.category || '') + ' ' + (typeof item.ingredients === 'string' ? item.ingredients : (Array.isArray(item.ingredients) ? item.ingredients.join(' ') : ''))).toLowerCase();
+  
+  const stillroomKeywords = ['honey', 'lecithin', 'mct', 'carrier oil', 'raw herb', 'botanical', 'tincture', 'extract', 'syrup'];
+  const isMatch = stillroomKeywords.some(k => text.includes(k));
+  const isNotTea = !text.includes('tea') && !text.includes('blend') && (item.category || '').toLowerCase() !== 'tea';
+  
+  return isMatch && isNotTea;
+}
+
 
 // Risk Ward checks (presence-based triggers)
 const MELANIN_TRIGGERS = ['hydroquinone', 'citrus', 'lemon', 'lime', 'grapefruit'];

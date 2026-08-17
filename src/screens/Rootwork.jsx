@@ -6,7 +6,7 @@ import Icon from '../components/Icon.jsx';
 import VoiceInput from '../components/VoiceInput.jsx';
 import { useDialog } from '../components/Dialogs.jsx';
 import { attachVoice } from '../lib/voice.js';
-import { buildBaseRoutines } from '../lib/routine-engine.js';
+import { buildBaseRoutines, isShadowTomeItem } from '../lib/routine-engine.js';
 import SpeakerButton from '../components/SpeakerButton.jsx';
 
 export default function Rootwork({ pose }) {
@@ -174,6 +174,11 @@ export default function Rootwork({ pose }) {
       const mime = dataUrl.split(';')[0].split(':')[1];
       
       const details = await parseProductImage(base64, mime);
+      
+      if (isShadowTomeItem(details)) {
+        setPhotoStatus('Vision rejected: This item belongs in the Shadow Tome.');
+        return;
+      }
         
         setAddForm(prev => ({
           ...prev,
@@ -936,8 +941,8 @@ export default function Rootwork({ pose }) {
       </div>
 
       {showAddModal && (
-        <div className="modal">
-          <div className="modal-content card" style={{maxWidth: '500px'}}>
+        <div className="modal-overlay">
+          <div className="modal card" style={{maxWidth: '500px'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
@@ -1410,8 +1415,8 @@ export default function Rootwork({ pose }) {
       )}
 
       {banishState && (
-        <div className="modal">
-          <div className="modal-content card" style={{maxWidth: '500px'}}>
+        <div className="modal-overlay">
+          <div className="modal card" style={{maxWidth: '500px'}}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{color: 'var(--plum)'}}>The Banishment of {banishState.name} <SpeakerButton text={`The Banishment of ${banishState.name}`} /></h3>
             
@@ -1468,3 +1473,6 @@ export default function Rootwork({ pose }) {
     </div>
   );
 }
+
+
+
