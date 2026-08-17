@@ -352,8 +352,8 @@ export default function Grimoire({ pose }) {
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span>{i}</span>
           <div style={{ display: 'flex', gap: '0.2rem' }}>
-            {hasRetie && <span title="The Root Weaving" style={{ color: 'var(--plum)' }}><Icon name="ph-scissors" /></span>}
-            {hasNails && <span title="The Gilded Hand" style={{ color: 'var(--plum)' }}><Icon name="ph-hand-palm" /></span>}
+            {hasRetie && <span title="The Root Weaving" style={{ color: 'var(--plum)' }}><Icon name="locs" /></span>}
+            {hasNails && <span title="The Gilded Hand" style={{ color: 'var(--plum)' }}><Icon name="talon" /></span>}
           </div>
         </div>
         
@@ -442,7 +442,7 @@ export default function Grimoire({ pose }) {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <div className="row" style={{ flex: '0 1 auto', marginBottom: 0, justifyContent: 'center' }}>
                 <div>
-                  <div className="nm">The Root Weaving <Icon name="ph-scissors" /></div>
+                  <div className="nm">The Root Weaving <Icon name="locs" /></div>
                   <div className="mt">
                     Every 8 cycles.{retieAppt?.date ? ` Scheduled for ${new Date(retieAppt.date).toLocaleDateString()}.` : ''}
                   </div>
@@ -465,7 +465,7 @@ export default function Grimoire({ pose }) {
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
               <div className="row" style={{ flex: '0 1 auto', marginBottom: 0, justifyContent: 'center' }}>
                 <div>
-                  <div className="nm">The Gilded Hand <Icon name="ph-hand-palm" /></div>
+                  <div className="nm">The Gilded Hand <Icon name="talon" /></div>
                   <div className="mt">
                     Every 2 cycles.{nailsAppt?.date ? ` Scheduled for ${new Date(nailsAppt.date).toLocaleDateString()}.` : ''}
                   </div>
@@ -528,7 +528,7 @@ export default function Grimoire({ pose }) {
           <div className="corner tl"></div><div className="corner tr"></div>
           <div className="corner bl"></div><div className="corner br"></div>
           <h3 style={{ justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Icon name="ph-drop" /> Wash-Day Ledger{' '}
+            <Icon name="ph-bathtub" /> Wash-Day Ledger{' '}
             <SpeakerButton text='Wash Day Ledger' />
           </h3>
           <div className="mt mb-4" style={{ textAlign: 'center' }}>Chronicle the cleansing of your crown.</div>

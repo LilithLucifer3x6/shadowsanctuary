@@ -44,8 +44,11 @@ export const CUSTOM={
   'eyes': (<svg viewBox="0 0 256 256"><ellipse cx="176" cy="128" rx="48" ry="88" fill="#ffffff" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"/><ellipse cx="80" cy="128" rx="48" ry="88" fill="#ffffff" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"/><circle cx="56" cy="128" r="24" fill="#4a2c16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"/><circle cx="152" cy="128" r="24" fill="#4a2c16" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="16"/></svg>),
   'tooth':(<svg viewBox="0 0 256 256"><path d="M 40 112 Q 128 220 216 112 Z" fill="#ffffff" stroke="currentColor" strokeWidth="16" strokeLinejoin="round" /><line x1="88" y1="112" x2="88" y2="152" stroke="currentColor" strokeWidth="12" strokeLinecap="round"/><line x1="128" y1="112" x2="128" y2="165" stroke="currentColor" strokeWidth="12" strokeLinecap="round"/><line x1="168" y1="112" x2="168" y2="152" stroke="currentColor" strokeWidth="12" strokeLinecap="round"/></svg>),
   'teapot': (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M8 8h8v6a4 4 0 0 1-8 0V8z" fill="currentColor" fillOpacity=".2"/><path d="M8 8h8M10 5h4M12 5v3M4 10c0-2 2-2 4 0M20 10c0-2-2-2-4 0M12 14v4M9 18h6"/></svg>)
+  'floss-pick': (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M9 6v14a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V6"/><path d="M9 6c0-2 1.5-4 3-4s3 2 3 4"/><line x1="7" y1="6" x2="17" y2="6" stroke="currentColor" strokeWidth="1"/></svg>),
+  'mouthwash': (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M7 9v11a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9"/><path d="M9 5h6v4H9z"/><path d="M10 2h4v3h-4z"/><path d="M7 16h10" strokeOpacity="0.3"/><path d="M7 12h10" strokeOpacity="0.3"/></svg>)
 };
 
 export const ic = n => CUSTOM[n]
   ? <span className="cic">{CUSTOM[n]}</span>
   : <i className={`ph-duotone ph-${n}`}></i>;
+

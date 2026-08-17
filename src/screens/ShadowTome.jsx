@@ -545,7 +545,7 @@ export default function ShadowTome({ pose }) {
     // Lavender Active Scan Alert
     const allText = `${teaForm.name || ''} ${teaForm.brand || ''} ${teaForm.ingredients || ''}`;
     if (/(lavender|lavandula|lavandin)/i.test(allText)) {
-      await alert(`LAVENDER DETECTED: This item contains Lavender (or a derivative) and is permanently banned from your routine. It must be sealed in the Crypt of Ashes.`);
+      await alert(`LAVENDER DETECTED: This item contains Lavender (or a derivative) and is permanently banned from your routine. It has been permanently banished.`);
       return;
     }
 
@@ -795,7 +795,7 @@ export default function ShadowTome({ pose }) {
           <div className="card" style={{ padding: '1.5rem', textAlign: 'center' }}>
             <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
             <h3 style={{ fontSize: '1.5rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-              <i className="ph-duotone ph-tea-bag"></i> The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" />
+              <Icon name="teapot" style={{ fontSize: '1.4em', color: 'var(--silver)' }} /> The Herbal Elixirs <SpeakerButton text="The Herbal Elixirs" />
             </h3>
             
             <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--card2)', border: '1px dashed var(--border)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1.5rem 1rem', color: 'var(--plum)', cursor: 'pointer', borderRadius: '8px', marginTop: '1rem' }}>

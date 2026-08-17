@@ -6,7 +6,7 @@ import Icon from '../components/Icon.jsx';
 import VoiceInput from '../components/VoiceInput.jsx';
 import { useDialog } from '../components/Dialogs.jsx';
 import { attachVoice } from '../lib/voice.js';
-import { buildBaseRoutines, isShadowTomeItem } from '../lib/routine-engine.js';
+import { buildBaseRoutines } from '../lib/routine-engine.js';
 import SpeakerButton from '../components/SpeakerButton.jsx';
 
 export default function Rootwork({ pose }) {
@@ -126,7 +126,7 @@ export default function Rootwork({ pose }) {
   const ebbing = items.filter(i => i.lifecycle_state === 'ebbing' || i.lifecycle_state === 'hollow');
   const banished = items.filter(i => i.lifecycle_state === 'banished');
   const enrichedApothecary = items
-    .filter(i => (i.item_type === 'consumable' || i.item_type === 'composite') && !['ebbing', 'hollow', 'banished'].includes(i.lifecycle_state) && !isShadowTomeItem(i))
+    .filter(i => (i.item_type === 'consumable' || i.item_type === 'composite') && !['ebbing', 'hollow', 'banished'].includes(i.lifecycle_state))
     .map(i => {
       let expiryPAO = null;
       let expiryShelf = null;
@@ -159,7 +159,7 @@ export default function Rootwork({ pose }) {
 
   const apothecaryActive = enrichedApothecary.filter(i => !i.is_waning && !i.is_expired);
   const waningItems = enrichedApothecary.filter(i => i.is_waning || i.is_expired);
-  const arsenal = items.filter(i => i.item_type === 'tool' && !['ebbing', 'hollow', 'banished'].includes(i.lifecycle_state) && !isShadowTomeItem(i));
+  const arsenal = items.filter(i => i.item_type === 'tool' && !['ebbing', 'hollow', 'banished'].includes(i.lifecycle_state));
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];

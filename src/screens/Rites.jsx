@@ -319,14 +319,14 @@ export default function Rites({ pose }) {
     
     const getGlyph = (item) => {
       if (item.glyph) return item.glyph;
-      if (item.name === 'The Silk Thread') return 'ph-arrows-left-right';
+      if (item.name === 'The Silk Thread') return 'floss-pick';
       if (item.name === 'The Purifying Stream') return 'ph-waves';
-      if (item.name === 'The Minted Draught') return 'ph-drop';
-      if (item.name === 'The Bristled Cleanse') return 'ph-tooth';
+      if (item.name === 'The Minted Draught') return 'mouthwash';
+      if (item.name === 'The Bristled Cleanse') return 'toothbrush';
       if (item.name === 'The Cleansing Waters') return 'ph-shower';
       if (item.name === 'The Drying') return 'ph-towel';
-      if (item.name === 'The Purging of Blemishes') return 'ph-sparkle';
-      if (item.name === 'The Warm Gaze') return 'ph-eye-closed';
+      if (item.name === 'The Purging of Blemishes') return 'spot-patch';
+      if (item.name === 'The Warm Gaze') return 'eye-mask';
       const dom = (item.domain || '').toLowerCase();
     if (dom === 'grin') return 'tooth';
       const cat = (item.category || '').toLowerCase();
@@ -473,10 +473,10 @@ export default function Rites({ pose }) {
           <div className="mt mb-4" style={{ textAlign: 'center' }}>The Order of the Day</div>
           
           {renderScheduleStep('The Awakening', 'Allow 5 to 10 minutes for the veil of sleep to lift.', 'var(--crimson-b)', 'ph-cloud-sun')}
-          {renderScheduleStep('The Morning Respite', 'A 15-minute sanctuary. Imbibe 16 ounces of pure water.', 'var(--plum)', 'ph-coffee')}
-          {renderScheduleStep('The Midday Sustenance', 'A 45-minute pause for nourishment. Engage in gentle movement to stir stagnant energies.', 'var(--plum)', 'ph-fork-knife')}
-          {renderScheduleStep('The Afternoon Respite', 'A 15-minute sanctuary. Imbibe 16 ounces of pure water.', 'var(--plum)', 'ph-mug')}
-          {renderScheduleStep('The Descent', 'The day\'s labors conclude. Begin the grounding process to sever ties with the work.', 'var(--plum)', 'ph-sign-out')}
+          {renderScheduleStep('The Morning Respite', 'A 15-minute sanctuary. Imbibe 16 ounces of pure water.', 'var(--plum)', 'water-glass')}
+          {renderScheduleStep('The Midday Sustenance', 'A 45-minute pause for nourishment. Engage in gentle movement to stir stagnant energies.', 'var(--plum)', 'ph-bowl-food')}
+          {renderScheduleStep('The Afternoon Respite', 'A 15-minute sanctuary. Imbibe 16 ounces of pure water.', 'var(--plum)', 'teapot')}
+          {renderScheduleStep('The Descent', 'The day\'s labors conclude. Begin the grounding process to sever ties with the work.', 'var(--plum)', 'ph-moon-stars')}
         </div>
 
         {/* Right Column: Evening Invocation */}

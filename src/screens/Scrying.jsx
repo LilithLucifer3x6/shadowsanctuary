@@ -357,7 +357,7 @@ export default function Scrying({ pose }) {
       <div className="card mt-4" style={{ height: '100%', padding: '1.5rem', textAlign: 'center' }}>
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
         <h3 style={{ margin: '0 0 0.5rem 0', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <i className="ph-duotone ph-fire"></i> The Crypt of Ashes <SpeakerButton text="The Crypt of Ashes" />
+          <Icon name="urn" style={{ color: 'var(--silver)', fontSize: '1.4rem' }} /> The Crypt of Ashes <SpeakerButton text="The Crypt of Ashes" />
         </h3>
         <div className="mt" style={{ marginBottom: '1.5rem', textAlign: 'center' }}>Elements forever sealed away.</div>
         <div>
