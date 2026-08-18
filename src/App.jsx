@@ -67,7 +67,7 @@ export default function App() {
     ttsEnabled: true,
     fontFamily: 'Elsie',
     cal: false,
-    gcalClientId: '219612221408-dtdk611jt792pt9cq911f530fvqffmoc.apps.googleusercontent.com'
+    gcalClientId: '219612221408-qemmc4o3o51amkjgfs3d6f9sl0pu88ij.apps.googleusercontent.com'
   });
 
   const [session, setSession] = useState({ user: { id: 'dummy' } });
@@ -213,7 +213,7 @@ export default function App() {
     
     // Load Settings
     const saved = JSON.parse(localStorage.getItem('app_settings') || '{"fontSize":"18","fontFamily":"Sacramento","tts":false,"health":false,"cal":false}');
-    if (!saved.gcalClientId) saved.gcalClientId = '219612221408-dtdk611jt792pt9cq911f530fvqffmoc.apps.googleusercontent.com';
+    if (!saved.gcalClientId) saved.gcalClientId = '219612221408-qemmc4o3o51amkjgfs3d6f9sl0pu88ij.apps.googleusercontent.com';
     setSettings(saved);
     applySettings(saved);
     
@@ -253,7 +253,7 @@ export default function App() {
         const stored = localStorage.getItem('al_settings');
         if (stored) {
           const s = JSON.parse(stored);
-          if (!s.gcalClientId) s.gcalClientId = '219612221408-dtdk611jt792pt9cq911f530fvqffmoc.apps.googleusercontent.com';
+          if (!s.gcalClientId) s.gcalClientId = '219612221408-qemmc4o3o51amkjgfs3d6f9sl0pu88ij.apps.googleusercontent.com';
           setSettings(s);
           if (s.tts) setTtsEnabled(true);
           
