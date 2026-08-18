@@ -402,7 +402,7 @@ export default function Grimoire({ pose }) {
   ];
 
   return (
-    <div style={{ padding: '1rem', maxWidth: '1100px', margin: '0 auto' }}>
+    <div className="screen-wrapper">
       <div className="grim-grid mt-2">
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <div className="card" style={{ marginTop: 0 }}>

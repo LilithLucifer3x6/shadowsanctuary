@@ -755,7 +755,7 @@ export default function Rootwork({ pose }) {
   }
 
   return (
-    <div style={{padding: '1rem', maxWidth: '900px', margin: '0 auto'}}>
+    <div className="screen-wrapper">
       <div className="card mb-4">
         <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative', marginBottom: '1rem' }}>

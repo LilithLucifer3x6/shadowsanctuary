@@ -676,7 +676,7 @@ export default function ShadowTome({ pose }) {
 };
 
   return (
-    <div style={{ padding: '1rem', maxWidth: '1000px', margin: '0 auto' }}>
+    <div className="screen-wrapper">
       
       {healthStaleness && (
         <div style={{ textAlign: 'center', color: 'var(--silver)', opacity: 0.8, fontSize: '0.9rem', marginBottom: '1rem' }}>
