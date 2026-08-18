@@ -70,3 +70,14 @@ h3 { font-size: 1.4rem !important; }
 
 .mt, .subtext, p { font-weight: 300 !important; color: var(--dim) !important; }
 
+.screen-wrapper {
+  padding: 1rem;
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+@media (min-width: 900px) and (orientation: landscape) {
+  .screen-wrapper {
+    max-width: 95vw;
+  }
+}

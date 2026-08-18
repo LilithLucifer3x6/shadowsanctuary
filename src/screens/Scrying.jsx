@@ -221,7 +221,7 @@ export default function Scrying({ pose }) {
   const banishedItems = inventory.filter(i => i.lifecycle_state === 'banished');
 
   return (
-    <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="screen-wrapper">
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
         <div className="card mt-4" style={{ height: '100%', padding: '1.5rem', textAlign: 'center' }}>
           <div className="corner tl"></div><div className="corner tr"></div><div className="corner bl"></div><div className="corner br"></div>

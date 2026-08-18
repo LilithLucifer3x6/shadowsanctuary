@@ -241,7 +241,7 @@ export default function Altars({ pose }) {
   };
 
   return (
-    <div style={{ padding: '1rem', maxWidth: '900px', margin: '0 auto', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+    <div className="screen-wrapper" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
       <div className="altars-nav-grid">
         {ALTARS.map(altar => (
           <button

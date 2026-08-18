@@ -403,7 +403,7 @@ export default function Rites({ pose }) {
           Corporeal Data as of: {healthStaleness}
         </div>
       )}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start', marginTop: '1.5rem', maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="screen-wrapper"style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start', marginTop: '1.5rem' }}>
         
         {/* Lesser Rite Banner - Full Width */}
         {suggestLesserRite && (
